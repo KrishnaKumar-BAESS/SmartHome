@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.16);border-radius:6px;border:2px solid transparent;background-clip:padding-box}
+  input{font-family:inherit}
+  input::placeholder{color:#7c8a97;opacity:1}
+  @keyframes pulseDot{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.35)}}
+  @keyframes wireFlow{to{stroke-dashoffset:-28}}
+  @keyframes nodePulse{0%,100%{opacity:.4}50%{opacity:.08}}
+  @keyframes floatIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes feedScan{0%{top:-22%}100%{top:104%}}
+  @keyframes feedFlicker{0%,100%{opacity:.5}50%{opacity:.62}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .vsl{-webkit-appearance:none;appearance:none;background:transparent;outline:none;cursor:pointer;padding:0;margin:0;border:none}
+  .vsl::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:rgba(255,255,255,0.18)}
+  .vsl::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:#e0a043;clip-path:polygon(0 35%,60% 35%,60% 0,100% 50%,60% 100%,60% 65%,0 65%);margin-top:-5px;cursor:pointer;transition:background .15s,filter .15s}
+  .vsl:active::-webkit-slider-thumb,.vsl:focus::-webkit-slider-thumb{background:#f5c466;filter:drop-shadow(0 0 5px rgba(224,160,67,.65))}
+  .vsl::-moz-range-track{height:4px;border-radius:2px;background:rgba(255,255,255,.18)}
+  .vsl::-moz-range-thumb{width:12px;height:12px;border:none;background:#e0a043;border-radius:2px;cursor:pointer}
+</style>
+</helmet>
+
+<div style="position:relative;height:100vh;width:100%;overflow:hidden;background:#1b242d;font-family:'IBM Plex Sans',sans-serif;color:#e8edf2;-webkit-font-smoothing:antialiased">
+
+  <!-- stage backdrop -->
+  <div style="position:absolute;inset:0;background:{{ stageGrad }}"></div>
+  <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.045) 1px,transparent 1px);background-size:32px 32px;pointer-events:none"></div>
+
+  <!-- ===== THE 3D MODEL — persistent hero stage ===== -->
+  <div ref="{{ stageRef }}" onPointerDown="{{ onPointerDown }}" onPointerMove="{{ onPointerMove }}" onPointerUp="{{ onPointerUp }}" onPointerLeave="{{ onPointerUp }}" onContextMenu="{{ onContextMenu }}" style="position:absolute;inset:0;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none">
+    <svg viewBox="0 0 960 600" preserveAspectRatio="xMidYMid meet" style="position:absolute;inset:0;width:100%;height:100%;display:block">
+      {{ svgEls }}
+    </svg>
+  </div>
+  <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(125% 95% at 50% 42%,transparent 52%,rgba(8,12,16,0.62) 100%)"></div>
+
+  <!-- ===== TOP BAR ===== -->
+  <div style="{{ topbarStyle }}">
+
+    <!-- identity -->
+    <div style="{{ idBoxStyle }}">
+      <div style="width:18px;height:18px;border:1.5px solid #6ea0e0;transform:rotate(45deg);flex-shrink:0"></div>
+      <div style="min-width:0">
+        <div style="font:600 13px 'IBM Plex Mono',monospace;letter-spacing:0.03em;line-height:1;color:#eef3f8">HOUSE.SYS</div>
+        <div style="{{ idSubStyle }}">8502 Forrest St · April 147</div>
+      </div>
+    </div>
+
+    <!-- global search -->
+    <div style="{{ searchWrapStyle }}">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8a98a6" stroke-width="1.6" stroke-linecap="round" style="flex-shrink:0"><circle cx="7" cy="7" r="4.3"></circle><path d="M10.2 10.2 L14 14"></path></svg>
+      <input value="{{ q }}" onChange="{{ onSearch }}" onFocus="{{ onSearchFocus }}" onBlur="{{ onSearchBlur }}" placeholder="{{ searchPlaceholder }}" style="{{ searchInputStyle }}" />
+      <sc-if value="{{ hasQ }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ clearSearch }}" style="flex-shrink:0;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.12);color:#cdd6df;font:600 11px 'IBM Plex Sans';cursor:pointer">✕</div>
+      </sc-if>
+
+      <!-- results dropdown -->
+      <sc-if value="{{ showResults }}" hint-placeholder-val="{{ false }}">
+        <div style="{{ resultsStyle }}">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 9px 7px">
+            <span style="font:600 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.12em">RESULTS</span>
+            <span style="font:500 10px 'IBM Plex Mono',monospace;color:#8a94a0">{{ searchCountLabel }}</span>
+          </div>
+          <sc-for list="{{ searchResults }}" as="r" hint-placeholder-count="5">
+            <div onClick="{{ r.onClick }}" style="display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;cursor:pointer" style-hover="background:rgba(255,255,255,0.06)">
+              <span style="{{ r.swatch }}"></span>
+              <div style="flex:1;min-width:0">
+                <div style="font:500 12.5px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.label }}</div>
+                <div style="font:400 10.5px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.sub }}</div>
+              </div>
+              <div style="{{ r.chipStyle }}">{{ r.cat }}</div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:20px 14px;text-align:center;font:400 12px 'IBM Plex Sans';color:#8a94a0;line-height:1.5">No matches. Try a room, a device, “overdue”, “gateway”, “projector”…</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- suggestions when empty + focused -->
+      <sc-if value="{{ showSuggest }}" hint-placeholder-val="{{ false }}">
+        <div style="{{ resultsStyle }}">
+          <div style="font:600 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.12em;padding:7px 9px 8px">JUMP TO</div>
+          <sc-for list="{{ searchSuggest }}" as="s" hint-placeholder-count="6">
+            <div onClick="{{ s.onClick }}" style="display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;cursor:pointer" style-hover="background:rgba(255,255,255,0.06)">
+              <span style="width:6px;height:6px;border-radius:50%;background:#9aa4ad;flex-shrink:0"></span>
+              <div style="font:500 12.5px 'IBM Plex Sans';color:#cfd8e0">{{ s.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- view controls -->
+    <div style="{{ controlsWrapStyle }}">
+      <div onClick="{{ toggleIso }}" style="{{ isoBtnTopStyle }}">{{ isoTopLabel }}</div>
+    </div>
+  </div>
+
+  <!-- ===== NAV RAIL ===== -->
+  <div style="{{ railStyle }}">
+    <div style="{{ nav.overview.style }}" onClick="{{ nav.overview.onClick }}">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="5.4" height="5.4" rx="1"></rect><rect x="11" y="3.5" width="5.4" height="5.4" rx="1"></rect><rect x="3.5" y="11" width="5.4" height="5.4" rx="1"></rect><rect x="11" y="11" width="5.4" height="5.4" rx="1"></rect></svg>
+      <span style="{{ navLabelStyle }}">Overview</span>
+    </div>
+    <div style="{{ nav.electrical.style }}" onClick="{{ nav.electrical.onClick }}">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4.5 11 L9 11 L8 18 L15.5 8.5 L10.5 8.5 Z"></path></svg>
+      <span style="{{ navLabelStyle }}">Electrical</span>
+    </div>
+    <div style="{{ nav.lighting.style }}" onClick="{{ nav.lighting.onClick }}">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.6 a5.1 5.1 0 0 1 3.1 9.1 c-0.7 0.55 -1 1.15 -1.1 2.1 H8 c-0.1 -0.95 -0.4 -1.55 -1.1 -2.1 A5.1 5.1 0 0 1 10 2.6 Z"></path><path d="M8 16.4 h4"></path><path d="M8.6 18.1 h2.8"></path></svg>
+      <span style="{{ navLabelStyle }}">Lighting</span>
+    </div>
+    <div style="{{ nav.network.style }}" onClick="{{ nav.network.onClick }}">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 5.2 L4.8 14.2 M10 5.2 L15.2 14.2 M4.8 14.2 L15.2 14.2"></path><circle cx="10" cy="5" r="2.1" fill="currentColor" stroke="none"></circle><circle cx="4.7" cy="14.4" r="1.9" fill="currentColor" stroke="none"></circle><circle cx="15.3" cy="14.4" r="1.9" fill="currentColor" stroke="none"></circle></svg>
+      <span style="{{ navLabelStyle }}">Network</span>
+    </div>
+    <div style="{{ nav.sound.style }}" onClick="{{ nav.sound.onClick }}">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M3.5 8 H6.5 L10.5 4.5 V15.5 L6.5 12 H3.5 Z" fill="currentColor"></path><path d="M13.5 7.6 a3.4 3.4 0 0 1 0 4.8"></path><path d="M15.6 5.6 a6 6 0 0 1 0 8.8"></path></svg>
+      <span style="{{ navLabelStyle }}">Sound</span>
+    </div>
+    <div style="{{ nav.security.style }}" onClick="{{ nav.security.onClick }}">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="2.8" y="6" width="10.6" height="8.2" rx="2"></rect><path d="M13.4 8.8 L17 6.6 V13.6 L13.4 11.4"></path><circle cx="7.8" cy="10.1" r="1.9"></circle></svg>
+      <span style="{{ navLabelStyle }}">Security</span>
+    </div>
+    <div style="{{ nav.climate.style }}" onClick="{{ nav.climate.onClick }}">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8.4 3.4 V11.3"></path><circle cx="8.4" cy="14" r="2.6" fill="currentColor" stroke="none"></circle><path d="M12 6.2 h3.4 M12 9.2 h2.6 M12 12.2 h3"></path></svg>
+      <span style="{{ navLabelStyle }}">Climate</span>
+    </div>
+    <div style="{{ nav.upkeep.style }}" onClick="{{ nav.upkeep.onClick }}">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.4 7 A6 6 0 1 0 16.3 11.6"></path><path d="M15.9 3 V7 H11.9"></path></svg>
+      <span style="{{ navLabelStyle }}">Upkeep</span>
+    </div>
+  </div>
+
+  <!-- ===== ISOLATE PANEL ===== -->
+  <sc-if value="{{ showIsoPanel }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ isoPanelStyle }}">
+      <div style="padding:12px 13px 11px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font:600 12.5px 'IBM Plex Sans'">Isolate view</div>
+          <div onClick="{{ isoClear }}" style="font:500 10.5px 'IBM Plex Mono',monospace;color:#3b6fb0;cursor:pointer">{{ isoClearLabel }}</div>
+        </div>
+        <div style="font:400 10.5px 'IBM Plex Sans';color:#9aa8b4;margin-top:3px">{{ isoCountLabel }}</div>
+        <div style="display:flex;gap:4px;margin-top:10px">
+          <sc-for list="{{ isoFloors }}" as="f" hint-placeholder-count="4">
+            <div onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="overflow:auto;padding:9px 12px 13px">
+        <div style="font:500 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.1em;margin:1px 1px 2px">OR PICK ROOMS</div>
+        <sc-for list="{{ isoRoomGroups }}" as="g" hint-placeholder-count="3">
+          <div style="font:600 9.5px 'IBM Plex Mono',monospace;color:#9aa4ad;letter-spacing:0.04em;margin:11px 1px 6px">{{ g.label }}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            <sc-for list="{{ g.rooms }}" as="r" hint-placeholder-count="4">
+              <div onClick="{{ r.onClick }}" style="{{ r.style }}">{{ r.name }}</div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== SELECT PROMPT ===== -->
+  <sc-if value="{{ showPrompt }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:16;font:500 11.5px 'IBM Plex Sans';color:#c4d0db;background:rgba(22,30,38,0.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:8px 16px;border:1px solid rgba(255,255,255,0.10);border-radius:20px;white-space:nowrap;animation:floatIn .3s ease both">{{ promptText }}</div>
+  </sc-if>
+
+  <!-- ================= LEFT DOCK ================= -->
+  <aside style="{{ listPanelStyle }}">
+
+    <!-- OVERVIEW -->
+    <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:16px 17px 13px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0">
+        <div style="font:600 15px 'IBM Plex Sans';letter-spacing:-0.01em">Home Documentation</div>
+        <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4;margin-top:3px;line-height:1.45">Every circuit, bulb, node and speaker — mapped to where it physically lives.</div>
+      </div>
+      <div style="overflow:auto;padding:14px 16px 18px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+          <sc-for list="{{ overviewStats }}" as="s" hint-placeholder-count="4">
+            <div onClick="{{ s.onClick }}" style="background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);border-left:3px solid {{ s.accent }};border-radius:7px;padding:11px 12px;cursor:pointer">
+              <div style="font:500 9px 'IBM Plex Mono',monospace;color:#9aa8b4;letter-spacing:0.08em">{{ s.label }}</div>
+              <div style="font:600 23px 'IBM Plex Sans';margin-top:5px;line-height:1">{{ s.stat }}</div>
+              <div style="font:400 10.5px 'IBM Plex Sans';color:#8a94a0;margin-top:2px">{{ s.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div onClick="{{ goClimate }}" style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;background:rgba(63,154,140,0.14);border:1px solid rgba(63,154,140,0.32);border-radius:7px;cursor:pointer">
+          <span style="width:10px;height:10px;background:#3f9a8c;transform:rotate(45deg);flex-shrink:0;opacity:0.7"></span>
+          <div style="flex:1;font:500 11.5px 'IBM Plex Sans';color:#7fc7b8">{{ climateBannerText }}</div>
+          <div style="font:500 10px 'IBM Plex Mono',monospace;color:#3f9a8c">→</div>
+        </div>
+        <div style="font:500 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.12em;margin:18px 2px 8px">THE HOUSE</div>
+        <sc-for list="{{ quickFacts }}" as="f" hint-placeholder-count="6">
+          <div style="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+            <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4;flex-shrink:0">{{ f.label }}</div>
+            <div style="font:500 11.5px 'IBM Plex Sans';color:#e8edf2;text-align:right">{{ f.val }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ELECTRICAL -->
+    <sc-if value="{{ isElectrical }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font:600 13px 'IBM Plex Sans'">Circuits</div>
+          <div style="font:400 10.5px 'IBM Plex Mono',monospace;color:#8a94a0">{{ ecount }} shown</div>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:11px">
+          <sc-for list="{{ typeFilters }}" as="t" hint-placeholder-count="5">
+            <div style="{{ t.style }}" onClick="{{ t.onClick }}">{{ t.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="overflow:auto;padding:8px 11px 14px">
+        <sc-for list="{{ circGroups }}" as="grp" hint-placeholder-count="2">
+          <div style="display:flex;align-items:baseline;gap:8px;padding:11px 5px 6px">
+            <div style="font:600 10px 'IBM Plex Mono',monospace;color:#e8edf2;letter-spacing:0.06em">{{ grp.boxShort }}</div>
+            <div style="font:400 10.5px 'IBM Plex Sans';color:#8a94a0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ grp.boxName }}</div>
+          </div>
+          <sc-for list="{{ grp.items }}" as="c" hint-placeholder-count="6">
+            <div onClick="{{ c.onClick }}" style="{{ c.rowStyle }}">
+              <span style="{{ c.dotStyle }}"></span>
+              <div style="{{ c.tagStyle }}">{{ c.tag }}</div>
+              <div style="{{ c.labelStyle }}">{{ c.label }}</div>
+              <div style="{{ c.ampStyle }}">{{ c.amp }}</div>
+            </div>
+          </sc-for>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- LIGHTING -->
+    <sc-if value="{{ isLighting }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font:600 13px 'IBM Plex Sans'">Bulbs</div>
+          <div style="font:400 10.5px 'IBM Plex Mono',monospace;color:#8a94a0">{{ lcount }}</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:11px">
+          <sc-for list="{{ lsum }}" as="s" hint-placeholder-count="4">
+            <div style="flex:1;text-align:center;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);border-radius:6px;padding:7px 4px">
+              <div style="font:600 16px 'IBM Plex Sans';color:{{ s.color }};line-height:1">{{ s.val }}</div>
+              <div style="font:400 8.5px 'IBM Plex Mono',monospace;color:#8a94a0;margin-top:3px;letter-spacing:0.03em">{{ s.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px">
+          <sc-for list="{{ lfilters }}" as="f" hint-placeholder-count="4">
+            <div style="{{ f.style }}" onClick="{{ f.onClick }}">{{ f.label }}</div>
+          </sc-for>
+          <select value="{{ lroom }}" onChange="{{ setLroom }}" style="flex:1;min-width:0;padding:5px 8px;border:1px solid rgba(255,255,255,0.14);border-radius:6px;background:rgba(255,255,255,0.06);font:500 11px 'IBM Plex Sans';color:#e8edf2;cursor:pointer">
+            <sc-for list="{{ lroomOpts }}" as="o" hint-placeholder-count="6">
+              <option value="{{ o.val }}">{{ o.label }}</option>
+            </sc-for>
+          </select>
+        </div>
+      </div>
+      <div style="overflow:auto;padding:9px 11px 14px">
+        <sc-for list="{{ bulbRows }}" as="b" hint-placeholder-count="8">
+          <div onClick="{{ b.onClick }}" style="{{ b.rowStyle }}">
+            <span style="width:8px;height:8px;border-radius:50%;background:{{ b.color }};flex-shrink:0"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font:500 12px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.room }}</div>
+              <div style="font:400 10.5px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.fixture }}</div>
+            </div>
+            <span style="width:13px;height:13px;border-radius:50%;background:{{ b.kColor }};border:1px solid #00000018;flex-shrink:0" title="{{ b.spec }}"></span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- NETWORK -->
+    <sc-if value="{{ isNetwork }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0">
+        <div style="font:600 13px 'IBM Plex Sans'">Networks</div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-top:10px">
+          <sc-for list="{{ networks }}" as="n" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:9px;height:9px;border-radius:2px;background:{{ n.color }};flex-shrink:0"></span>
+              <div style="font:500 11.5px 'IBM Plex Sans';color:#e8edf2">{{ n.name }}</div>
+              <div style="font:400 10px 'IBM Plex Mono',monospace;color:#8a94a0;margin-left:auto">{{ n.band }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="overflow:auto;padding:11px 13px 14px">
+        <div style="font:500 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.12em;margin:2px 2px 8px">MESH NODES</div>
+        <sc-for list="{{ nodeList }}" as="n" hint-placeholder-count="6">
+          <div onClick="{{ n.onClick }}" style="{{ n.rowStyle }}">
+            <span style="width:8px;height:8px;border-radius:50%;background:{{ n.statusColor }};flex-shrink:0"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font:500 12px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ n.name }}</div>
+              <div style="font:400 10px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ n.role }} · {{ n.room }}</div>
+            </div>
+            <div style="display:flex;gap:3px;flex-shrink:0">
+              <sc-for list="{{ n.netDots }}" as="d" hint-placeholder-count="2">
+                <span style="width:8px;height:8px;border-radius:2px;background:{{ d.color }}"></span>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- SOUND -->
+    <sc-if value="{{ isSound }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0">
+        <div style="font:600 13px 'IBM Plex Sans'">Sound Zones</div>
+        <div style="font:400 11px 'IBM Plex Sans';color:#9aa8b4;margin-top:3px">Two full surround zones — select one to light its speakers in the model.</div>
+      </div>
+      <div style="overflow:auto;padding:12px 13px 14px">
+        <sc-for list="{{ zoneList }}" as="z" hint-placeholder-count="2">
+          <div onClick="{{ z.onClick }}" style="{{ z.cardStyle }}">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+              <div>
+                <div style="font:600 14px 'IBM Plex Sans';color:#e8edf2">{{ z.name }}</div>
+                <div style="font:400 10.5px 'IBM Plex Sans';color:#8a94a0;margin-top:2px">{{ z.room }}</div>
+              </div>
+              <div style="font:600 10px 'IBM Plex Mono',monospace;color:#b49af0;background:rgba(123,92,214,0.18);border:1px solid rgba(123,92,214,0.4);padding:3px 8px;border-radius:4px;flex-shrink:0">{{ z.config }}</div>
+            </div>
+            <div style="display:flex;gap:14px;margin-top:9px">
+              <div style="font:400 10.5px 'IBM Plex Sans';color:#aab6c1">⚡ {{ z.power }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- SECURITY -->
+    <sc-if value="{{ isSecurity }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font:600 13px 'IBM Plex Sans'">Cameras</div>
+          <div onClick="{{ openGrid }}" style="font:600 10px 'IBM Plex Mono',monospace;color:#c0573b;background:rgba(192,87,59,0.16);border:1px solid rgba(192,87,59,0.34);padding:4px 9px;border-radius:6px;cursor:pointer;white-space:nowrap;flex-shrink:0">▦ All feeds</div>
+        </div>
+        <div style="font:400 11px 'IBM Plex Sans';color:#9aa8b4;margin-top:4px">{{ camOnline }} of {{ camTotal }} online · click to view live</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px">
+          <sc-for list="{{ camFilters }}" as="f" hint-placeholder-count="4">
+            <div style="{{ f.style }}" onClick="{{ f.onClick }}">{{ f.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="overflow:auto;padding:9px 11px 14px">
+        <sc-for list="{{ camList }}" as="c" hint-placeholder-count="8">
+          <div onClick="{{ c.onClick }}" style="{{ c.rowStyle }}">
+            <span style="width:8px;height:8px;border-radius:50%;background:{{ c.statusColor }};flex-shrink:0"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font:500 12px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.name }}</div>
+              <div style="font:400 10.5px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.sub }}</div>
+            </div>
+            <div style="font:500 9px 'IBM Plex Mono',monospace;color:#8a94a0;flex-shrink:0">{{ c.res }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- CLIMATE -->
+    <sc-if value="{{ isClimate }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font:600 13px 'IBM Plex Sans'">Climate Sensors</div>
+          <div style="font:600 9px 'IBM Plex Mono',monospace;color:#e3b264;background:rgba(192,137,47,0.16);border:1px solid rgba(192,137,47,0.34);padding:3px 8px;border-radius:5px">PLANNED</div>
+        </div>
+        <div style="font:400 11px 'IBM Plex Sans';color:#9aa8b4;margin-top:4px;line-height:1.45">{{ sensorsPlanned }} temp / humidity sensors mapped for the smart-home rollout — none connected yet.</div>
+      </div>
+      <div style="overflow:auto;padding:9px 11px 14px">
+        <sc-for list="{{ sensorList }}" as="s" hint-placeholder-count="7">
+          <div onClick="{{ s.onClick }}" style="{{ s.rowStyle }}">
+            <span style="width:9px;height:9px;background:{{ s.dot }};transform:rotate(45deg);flex-shrink:0;opacity:0.75"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font:500 12px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.name }}</div>
+              <div style="font:400 10.5px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.mount }}</div>
+            </div>
+            <div style="font:600 8.5px 'IBM Plex Mono',monospace;color:#8a94a0;flex-shrink:0">{{ s.badge }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- UPKEEP -->
+    <sc-if value="{{ isUpkeep }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font:600 13px 'IBM Plex Sans'">Replacements</div>
+          <div style="font:400 10.5px 'IBM Plex Mono',monospace;color:#8a94a0">{{ upTotal }} tracked</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:11px">
+          <sc-for list="{{ upSummary }}" as="s" hint-placeholder-count="3">
+            <div style="flex:1;text-align:center;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);border-radius:6px;padding:7px 4px">
+              <div style="font:600 16px 'IBM Plex Sans';color:{{ s.color }};line-height:1">{{ s.val }}</div>
+              <div style="font:400 8.5px 'IBM Plex Mono',monospace;color:#8a94a0;margin-top:3px;letter-spacing:0.03em">{{ s.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="overflow:auto;padding:9px 11px 14px">
+        <sc-for list="{{ upList }}" as="u" hint-placeholder-count="6">
+          <div onClick="{{ u.onClick }}" style="{{ u.rowStyle }}">
+            <div style="display:flex;align-items:center;gap:9px">
+              <span style="width:9px;height:9px;border-radius:50%;background:{{ u.statusColor }};flex-shrink:0"></span>
+              <div style="flex:1;min-width:0">
+                <div style="font:500 12px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.kind }}</div>
+                <div style="font:400 10px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.device }}</div>
+              </div>
+              <div style="font:500 9.5px 'IBM Plex Mono',monospace;color:{{ u.statusColor }};flex-shrink:0">{{ u.dueLabel }}</div>
+            </div>
+            <div style="height:5px;border-radius:3px;background:#e6ebef;margin-top:8px;overflow:hidden">
+              <div style="height:100%;width:{{ u.barPct }}%;background:{{ u.barColor }};border-radius:3px"></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </aside>
+
+  <!-- left slide tab -->
+  <div onClick="{{ toggleLeft }}" style="{{ leftTabStyle }}">{{ leftTabChevron }}</div>
+
+  <!-- ================= RIGHT DETAIL ================= -->
+  <aside style="{{ detailPanelStyle }}">
+    <div style="padding:17px 18px 20px">
+
+      <!-- OVERVIEW detail -->
+      <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+        <div onClick="{{ goLighting }}" style="display:flex;align-items:center;gap:11px;padding:12px 14px;background:rgba(192,137,47,0.16);border:1px solid rgba(192,137,47,0.34);border-radius:8px;cursor:pointer">
+          <span style="width:9px;height:9px;border-radius:50%;background:#c0892f;flex-shrink:0;animation:pulseDot 1.8s ease-in-out infinite"></span>
+          <div style="font:500 12px 'IBM Plex Sans';color:#e3b264;flex:1">{{ alertText }}</div>
+          <div style="font:500 10px 'IBM Plex Mono',monospace;color:#d9a24e">→</div>
+        </div>
+        <div onClick="{{ goUpkeep }}" style="display:flex;align-items:center;gap:11px;padding:12px 14px;margin-top:9px;background:rgba(192,87,59,0.16);border:1px solid rgba(192,87,59,0.34);border-radius:8px;cursor:pointer">
+          <span style="width:9px;height:9px;border-radius:50%;background:#c0573b;flex-shrink:0;animation:pulseDot 1.8s ease-in-out infinite"></span>
+          <div style="font:500 12px 'IBM Plex Sans';color:#e08a72;flex:1">{{ upAlertText }}</div>
+          <div style="font:500 10px 'IBM Plex Mono',monospace;color:#d98a76">→</div>
+        </div>
+        <div style="font:500 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.12em;margin:18px 2px 9px">NEEDS ATTENTION</div>
+        <sc-for list="{{ needs }}" as="b" hint-placeholder-count="6">
+          <div onClick="{{ b.onClick }}" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.07);cursor:pointer">
+            <span style="{{ b.dotStyle }}"></span>
+            <div style="min-width:0;flex:1">
+              <div style="font:500 12px 'IBM Plex Sans';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.room }}</div>
+              <div style="font:400 10.5px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.fixture }}</div>
+            </div>
+            <div style="font:500 10px 'IBM Plex Mono',monospace;color:{{ b.color }};flex-shrink:0">{{ b.statusLabel }}</div>
+          </div>
+        </sc-for>
+      </sc-if>
+
+      <!-- ELECTRICAL detail -->
+      <sc-if value="{{ isElectrical }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ noSel }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:11px;padding:48px 18px;color:#8a94a0">
+            <div style="width:24px;height:24px;border:1.5px solid #c3cdd6;transform:rotate(45deg)"></div>
+            <div style="font:400 12.5px 'IBM Plex Sans';max-width:220px;line-height:1.5">Select a circuit to energize its wiring path through the house.</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:9px">
+            <span style="width:12px;height:12px;border-radius:3px;flex-shrink:0;background:{{ circDet.typeColor }}"></span>
+            <div style="font:600 16px 'IBM Plex Mono',monospace;color:#e8edf2">{{ circDet.tag }}</div>
+            <div style="font:500 10px 'IBM Plex Mono',monospace;color:#9aa8b4;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.11);padding:2px 8px;border-radius:4px;margin-left:auto">{{ circDet.amp }} · {{ circDet.typeLabel }}</div>
+          </div>
+          <div style="font:500 15px 'IBM Plex Sans';color:#e8edf2;margin-top:12px;line-height:1.35">{{ circDet.label }}</div>
+          <div style="font:400 12px 'IBM Plex Sans';color:#9aa8b4;margin-top:8px">Fed from <span style="color:#e8edf2;font-weight:500">{{ circDet.boxName }}</span> · {{ circDet.boxLoc }}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:13px;padding:9px 12px;border-radius:7px;background:rgba(192,137,47,0.16);border:1px solid rgba(192,137,47,0.34)">
+            <span style="width:7px;height:7px;border-radius:50%;background:#c0892f;flex-shrink:0;animation:pulseDot 1.8s ease-in-out infinite"></span>
+            <div style="font:500 12px 'IBM Plex Sans';color:#e3b264">{{ circDet.spansText }}</div>
+          </div>
+          <div style="font:500 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.08em;margin:18px 0 7px">SERVES {{ circDet.loadCount }} AREAS</div>
+          <sc-for list="{{ circDet.rooms }}" as="r" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+              <span style="{{ r.fdot }}"></span>
+              <div style="font:500 12px 'IBM Plex Sans';color:#e8edf2;flex:1;min-width:0">{{ r.name }}</div>
+              <div style="font:400 10px 'IBM Plex Mono',monospace;color:#8a94a0">{{ r.floorLabel }}</div>
+            </div>
+          </sc-for>
+        </sc-if>
+      </sc-if>
+
+      <!-- LIGHTING detail -->
+      <sc-if value="{{ isLighting }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ noBulb }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:11px;padding:48px 18px;color:#8a94a0">
+            <div style="width:22px;height:22px;border-radius:50%;border:1.5px solid #c3cdd6"></div>
+            <div style="font:400 12.5px 'IBM Plex Sans';max-width:210px;line-height:1.5">Select a bulb to pin it in the model and see full specs.</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasBulb }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:11px">
+            <div style="width:36px;height:36px;border-radius:50%;background:{{ bd.kColor }};border:1px solid #00000018;flex-shrink:0;box-shadow:0 0 14px {{ bd.glow }}"></div>
+            <div>
+              <div style="font:600 16px 'IBM Plex Sans';line-height:1.1">{{ bd.room }}</div>
+              <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4">{{ bd.fixture }}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:13px;padding:9px 12px;border-radius:7px;background:{{ bd.statusBg }};border:1px solid {{ bd.statusBd }}">
+            <span style="width:8px;height:8px;border-radius:50%;background:{{ bd.color }}"></span>
+            <div style="font:500 11.5px 'IBM Plex Sans';color:{{ bd.color }}">{{ bd.statusFull }}</div>
+          </div>
+          <div style="margin-top:14px">
+            <sc-for list="{{ bd.specs }}" as="sp" hint-placeholder-count="7">
+              <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+                <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4">{{ sp.k }}</div>
+                <div style="font:500 11.5px 'IBM Plex Sans';color:#e8edf2;text-align:right">{{ sp.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09)">
+            <span style="width:8px;height:8px;border-radius:50%;background:{{ locate.color }};flex-shrink:0"></span>
+            <div style="font:500 11px 'IBM Plex Sans';color:#aab6c1">{{ locate.floorLabel }}</div>
+            <div style="font:400 11px 'IBM Plex Sans';color:#8a94a0;margin-left:auto">{{ locate.pinNote }}</div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- NETWORK detail -->
+      <sc-if value="{{ isNetwork }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#28323b;color:#e8edf2;border-radius:8px;padding:13px 15px;display:flex;align-items:center;gap:11px">
+          <span style="width:9px;height:9px;border-radius:50%;background:#5a9c6e;flex-shrink:0"></span>
+          <div style="min-width:0">
+            <div style="font:600 13px 'IBM Plex Sans'">{{ gateway.name }}</div>
+            <div style="font:400 10px 'IBM Plex Mono',monospace;color:#9aa8b4;margin-top:2px">{{ gateway.role }} · {{ gateway.room }}</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:10px;margin-top:9px;padding:0 2px">
+          <div><div style="font:400 8.5px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.06em">UPLINK</div><div style="font:500 11px 'IBM Plex Sans';margin-top:2px">{{ gateway.backhaul }}</div></div>
+          <div style="text-align:right"><div style="font:400 8.5px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.06em">BROADCASTS</div><div style="font:500 11px 'IBM Plex Sans';margin-top:2px">All 3 networks</div></div>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,0.085);margin:15px 0"></div>
+        <sc-if value="{{ nodeDet.show }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:9px">
+            <span style="width:11px;height:11px;border-radius:3px;background:{{ nodeDet.statusColor }};flex-shrink:0"></span>
+            <div style="font:600 15px 'IBM Plex Sans'">{{ nodeDet.name }}</div>
+            <div style="display:flex;gap:3px;margin-left:auto">
+              <sc-for list="{{ nodeDet.netDots }}" as="d" hint-placeholder-count="2">
+                <span style="width:9px;height:9px;border-radius:2px;background:{{ d.color }}"></span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4;margin-top:4px">{{ nodeDet.role }} · {{ nodeDet.room }}</div>
+          <div style="margin-top:12px;display:grid;grid-template-columns:auto 1fr;gap:7px 12px">
+            <div style="font:400 11px 'IBM Plex Sans';color:#8a94a0">Backhaul</div><div style="font:500 11px 'IBM Plex Sans';text-align:right">{{ nodeDet.backhaul }}</div>
+            <div style="font:400 11px 'IBM Plex Sans';color:#8a94a0">Plugged into</div><div style="font:500 11px 'IBM Plex Sans';text-align:right">{{ nodeDet.plug }}</div>
+            <div style="font:400 11px 'IBM Plex Sans';color:#8a94a0">Model</div><div style="font:500 11px 'IBM Plex Mono',monospace;color:#9aa8b4;text-align:right">{{ nodeDet.model }}</div>
+          </div>
+          <sc-if value="{{ nodeDet.hasServers }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:13px;padding-top:13px;border-top:1px dashed rgba(255,255,255,0.12)">
+              <div style="font:400 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.08em;margin-bottom:8px">ATTACHED SERVERS</div>
+              <sc-for list="{{ nodeDet.servers }}" as="sv" hint-placeholder-count="1">
+                <div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+                  <span style="width:6px;height:6px;background:#3b6fb0;transform:rotate(45deg);flex-shrink:0"></span>
+                  <div style="font:500 11.5px 'IBM Plex Sans'">{{ sv.name }}</div>
+                  <div style="font:400 10.5px 'IBM Plex Sans';color:#9aa8b4">{{ sv.kind }}</div>
+                  <div style="margin-left:auto;font:400 9.5px 'IBM Plex Mono',monospace;color:#8a94a0">{{ sv.power }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </sc-if>
+      </sc-if>
+
+      <!-- SOUND detail -->
+      <sc-if value="{{ isSound }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font:600 16px 'IBM Plex Sans'">{{ zoneDet.name }}</div>
+            <div style="font:400 11px 'IBM Plex Sans';color:#9aa8b4;margin-top:2px">{{ zoneDet.room }}</div>
+          </div>
+          <div style="font:600 11px 'IBM Plex Mono',monospace;color:#b49af0;background:rgba(123,92,214,0.18);border:1px solid rgba(123,92,214,0.4);padding:4px 9px;border-radius:5px;flex-shrink:0">{{ zoneDet.config }}</div>
+        </div>
+        <div style="position:relative;height:172px;margin-top:13px;border:1px solid rgba(255,255,255,0.1);border-radius:7px;background:rgba(255,255,255,0.03);background-image:linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:18px 18px;overflow:hidden">
+          <div style="position:absolute;left:8px;top:7px;font:500 9px 'IBM Plex Mono',monospace;color:#a8b2bc">SPEAKER LAYOUT</div>
+          <sc-for list="{{ zoneDet.spk }}" as="p" hint-placeholder-count="11">
+            <div style="{{ p.style }}">{{ p.label }}</div>
+          </sc-for>
+        </div>
+        <div style="margin-top:13px">
+          <sc-for list="{{ zoneDet.gear }}" as="g" hint-placeholder-count="6">
+            <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+              <div style="font:500 11.5px 'IBM Plex Sans'">{{ g.l }}</div>
+              <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4;text-align:right">{{ g.d }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+          <div style="font:400 11px 'IBM Plex Sans';color:#aab6c1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.11);padding:5px 10px;border-radius:5px">⚡ {{ zoneDet.power }}</div>
+          <div style="font:400 11px 'IBM Plex Sans';color:#aab6c1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.11);padding:5px 10px;border-radius:5px">♪ {{ zoneDet.source }}</div>
+        </div>
+      </sc-if>
+
+      <!-- SECURITY detail — live feed -->
+      <sc-if value="{{ isSecurity }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:#0b1015;border:1px solid #20303c;box-shadow:inset 0 0 60px rgba(0,0,0,0.6)">
+          <div style="position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 122%,rgba(74,96,116,0.4),transparent 60%),linear-gradient(180deg,#10161d 0%,#0b1015 55%,#070a0e 100%)"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;height:44%;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.05) 0 1px,transparent 1px 38px),linear-gradient(180deg,transparent,rgba(40,60,80,0.22));transform:perspective(170px) rotateX(58deg);transform-origin:bottom"></div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 24px 'IBM Plex Sans';color:rgba(255,255,255,0.055);letter-spacing:0.06em;text-align:center;padding:0 14px">{{ camDet.watermark }}</div>
+          <div style="position:absolute;left:0;right:0;height:22%;background:linear-gradient(180deg,transparent,rgba(120,160,200,0.10),transparent);animation:feedScan 4.5s linear infinite"></div>
+          <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:linear-gradient(180deg,rgba(0,0,0,0.55),transparent)">
+            <div style="display:flex;align-items:center;gap:6px;font:600 10px 'IBM Plex Mono',monospace;color:{{ camDet.liveColor }}">
+              <span style="width:7px;height:7px;border-radius:50%;background:{{ camDet.liveColor }};animation:pulseDot 1.4s ease-in-out infinite"></span>{{ camDet.liveLabel }}
+            </div>
+            <div style="font:600 10px 'IBM Plex Mono',monospace;color:#cdd6df">{{ camDet.res }}</div>
+          </div>
+          <div style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:linear-gradient(0deg,rgba(0,0,0,0.6),transparent)">
+            <div style="font:600 10px 'IBM Plex Mono',monospace;color:#dfe7ee;text-shadow:0 1px 2px #000">{{ camDet.name }}</div>
+            <div style="font:500 10px 'IBM Plex Mono',monospace;color:#aeb9c4">{{ camDet.time }}</div>
+          </div>
+          <sc-if value="{{ camDet.offline }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,10,12,0.74);font:600 12px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.16em">NO SIGNAL</div>
+          </sc-if>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;margin-top:13px">
+          <span style="width:9px;height:9px;border-radius:50%;background:{{ camDet.statusColor }};flex-shrink:0"></span>
+          <div style="font:600 16px 'IBM Plex Sans'">{{ camDet.name }}</div>
+          <div style="font:500 10px 'IBM Plex Mono',monospace;color:#9aa8b4;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.11);padding:2px 8px;border-radius:4px;margin-left:auto">{{ camDet.type }}</div>
+        </div>
+        <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4;margin-top:3px">{{ camDet.room }} · {{ camDet.coverage }}</div>
+        <div style="margin-top:13px">
+          <sc-for list="{{ camDet.specs }}" as="sp" hint-placeholder-count="8">
+            <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+              <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4">{{ sp.k }}</div>
+              <div style="font:500 11.5px 'IBM Plex Sans';color:#e8edf2;text-align:right">{{ sp.v }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <div onClick="{{ openExpand }}" style="flex:1;text-align:center;font:600 11.5px 'IBM Plex Sans';color:#fff;background:#c0573b;border-radius:7px;padding:10px;cursor:pointer">⛶ Expand &amp; review history</div>
+          <div onClick="{{ openGrid }}" style="flex-shrink:0;text-align:center;font:600 11.5px 'IBM Plex Sans';color:#c0573b;background:rgba(192,87,59,0.14);border:1px solid rgba(192,87,59,0.34);border-radius:7px;padding:10px 13px;cursor:pointer">▦ All</div>
+        </div>
+      </sc-if>
+
+      <!-- CLIMATE detail -->
+      <sc-if value="{{ isClimate }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:11px">
+          <span style="width:13px;height:13px;background:#8a94a0;transform:rotate(45deg);flex-shrink:0;opacity:0.7"></span>
+          <div>
+            <div style="font:600 16px 'IBM Plex Sans';line-height:1.1">{{ sensorDet.name }}</div>
+            <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4">{{ sensorDet.mount }}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:13px;padding:9px 12px;border-radius:7px;background:rgba(192,137,47,0.16);border:1px solid rgba(192,137,47,0.34)">
+          <span style="width:8px;height:8px;border-radius:50%;background:#c0892f;flex-shrink:0"></span>
+          <div style="font:500 11.5px 'IBM Plex Sans';color:#e3b264">Disconnected · awaiting commissioning</div>
+        </div>
+        <div style="display:flex;gap:9px;margin-top:13px">
+          <div style="flex:1;text-align:center;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:13px 4px">
+            <div style="font:600 26px 'IBM Plex Sans';color:#aab4bd;line-height:1">—</div>
+            <div style="font:400 9px 'IBM Plex Mono',monospace;color:#8a94a0;margin-top:4px;letter-spacing:0.06em">TEMPERATURE °F</div>
+          </div>
+          <div style="flex:1;text-align:center;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:13px 4px">
+            <div style="font:600 26px 'IBM Plex Sans';color:#aab4bd;line-height:1">—</div>
+            <div style="font:400 9px 'IBM Plex Mono',monospace;color:#8a94a0;margin-top:4px;letter-spacing:0.06em">HUMIDITY %RH</div>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+            <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4">Mount</div>
+            <div style="font:500 11.5px 'IBM Plex Sans';color:#e8edf2;text-align:right">{{ sensorDet.mount }}</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+            <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4">Will report</div>
+            <div style="font:500 11.5px 'IBM Plex Sans';color:#e8edf2;text-align:right">{{ sensorDet.target }}</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+            <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4">Floor</div>
+            <div style="font:500 11.5px 'IBM Plex Sans';color:#e8edf2;text-align:right">{{ sensorDet.floorLabel }}</div>
+          </div>
+        </div>
+        <div style="margin-top:13px;padding:10px 12px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);font:400 11px 'IBM Plex Sans';color:#aab6c1;line-height:1.5">Position is pinned in the model so the future install can pull power and pair to the IoT network with no re-survey.</div>
+      </sc-if>
+
+      <!-- UPKEEP detail -->
+      <sc-if value="{{ isUpkeep }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font:600 16px 'IBM Plex Sans'">{{ upDet.kind }}</div>
+            <div style="font:400 11px 'IBM Plex Sans';color:#9aa8b4;margin-top:2px">{{ upDet.device }}</div>
+          </div>
+          <div style="font:600 10px 'IBM Plex Mono',monospace;color:{{ upDet.statusColor }};background:{{ upDet.statusBg }};border:1px solid {{ upDet.statusBd }};padding:4px 9px;border-radius:5px;flex-shrink:0">{{ upDet.statusLabel }}</div>
+        </div>
+        <div style="margin-top:14px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <div style="font:500 11px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.04em">{{ upDet.metricLabel }}</div>
+            <div style="font:600 12px 'IBM Plex Sans';color:#e8edf2">{{ upDet.metricVal }}</div>
+          </div>
+          <div style="height:9px;border-radius:5px;background:#e6ebef;margin-top:8px;overflow:hidden">
+            <div style="height:100%;width:{{ upDet.barPct }}%;background:{{ upDet.barColor }};border-radius:5px"></div>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <sc-for list="{{ upDet.specs }}" as="sp" hint-placeholder-count="4">
+            <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+              <div style="font:400 11.5px 'IBM Plex Sans';color:#9aa8b4">{{ sp.k }}</div>
+              <div style="font:500 11.5px 'IBM Plex Sans';color:#e8edf2;text-align:right">{{ sp.v }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:13px;padding:10px 12px;border-radius:7px;background:{{ upDet.statusBg }};border:1px solid {{ upDet.statusBd }};font:400 11px 'IBM Plex Sans';color:#aab6c1;line-height:1.5">{{ upDet.note }}</div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09)">
+          <span style="width:8px;height:8px;border-radius:50%;background:{{ upDet.barColor }};flex-shrink:0"></span>
+          <div style="font:500 11px 'IBM Plex Sans';color:#aab6c1">{{ upDet.floorLabel }}</div>
+          <div style="font:400 11px 'IBM Plex Sans';color:#8a94a0;margin-left:auto">pinned in model</div>
+        </div>
+      </sc-if>
+    </div>
+  </aside>
+
+  <!-- map controls bar removed — all controls now in right cluster -->
+
+  <!-- right slide tab -->
+  <div onClick="{{ toggleRight }}" style="{{ rightTabStyle }}">{{ rightTabChevron }}</div>
+
+  <!-- ===== LEGEND ===== -->
+  <sc-if value="{{ showLegend }}" hint-placeholder-val="{{ true }}">
+    <div style="{{ legendPanelStyle }}">
+      <div style="font:500 8.5px 'IBM Plex Mono',monospace;color:#8a98a6;letter-spacing:0.12em;margin-bottom:1px">{{ legendTitle }}</div>
+      <sc-for list="{{ legendItems }}" as="l" hint-placeholder-count="4">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="{{ l.swatch }}"></span>
+          <span style="font:400 10.5px 'IBM Plex Mono',monospace;color:#c4d0db">{{ l.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <!-- ===== RIGHT CONTROLS CLUSTER ===== -->
+  <div style="{{ ctrlClusterStyle }}">
+
+    <!-- VIEW OPTIONS DRAWER (expandable) -->
+    <sc-if value="{{ viewOptsOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ voDrawerStyle }}">
+
+        <!-- FLOOR VIEW -->
+        <div style="{{ voSectionLabelStyle }}">FLOOR VIEW</div>
+        <div style="display:flex;gap:4px;margin-bottom:6px">
+          <div onClick="{{ setExplode2 }}" style="{{ explodeBtn2Style }}">Exploded</div>
+          <div onClick="{{ setExplode1 }}" style="{{ explodeBtn1Style }}">Floors</div>
+          <div onClick="{{ setExplode0 }}" style="{{ explodeBtn0Style }}">Stacked</div>
+        </div>
+
+        <div style="{{ voDivStyle }}"></div>
+
+        <!-- Reset view -->
+        <div onClick="{{ resetView }}" style="{{ voResetRowStyle }}">
+          <span style="{{ voIconCellStyle }}">↺</span>
+          <span>Reset view</span>
+        </div>
+
+        <div style="{{ voDivStyle }}"></div>
+
+        <!-- Auto-spin -->
+        <div onClick="{{ toggleAuto }}" style="{{ voAutoRowStyle }}">
+          <span style="{{ voIconCellStyle }}">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linejoin="round">
+              <path d="M8 1.5 L13.5 4.5 L8 7.5 L2.5 4.5 Z" stroke-width="1.1"/>
+              <path d="M2.5 4.5 L8 7.5 L8 13 L2.5 10 Z" stroke-width="1.1"/>
+              <path d="M13.5 4.5 L13.5 10 L8 13 L8 7.5 Z" stroke-width="1.1"/>
+              <path d="M15 7 A7.5 7.5 0 1 1 9.5 15" stroke="{{ autoOrbitColor }}" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M8 13.5 L9.5 15.2 L11 13.5" stroke="{{ autoOrbitColor }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span style="flex:1">Auto-spin</span>
+          <span style="{{ voAutoToggleStyle }}"></span>
+        </div>
+
+        <!-- Room labels -->
+        <div onClick="{{ toggleLabels }}" style="{{ voLabelsRowStyle }}">
+          <span style="{{ voIconCellStyle }}">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="currentColor">
+              <rect x="1" y="2" width="8" height="1.8" rx="0.9" opacity="0.95"/>
+              <rect x="1" y="5.8" width="6" height="1.8" rx="0.9" opacity="0.75"/>
+              <rect x="1" y="9.6" width="7" height="1.8" rx="0.9" opacity="0.85"/>
+            </svg>
+          </span>
+          <span style="flex:1">Room labels</span>
+          <span style="{{ voLabelsToggleStyle }}"></span>
+        </div>
+
+        <!-- Legend -->
+        <div onClick="{{ toggleLegend }}" style="{{ voLegendRowStyle }}">
+          <span style="{{ voIconCellStyle }}">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1">
+              <rect x="1" y="1" width="12" height="12" rx="2"/>
+              <rect x="2.5" y="3.5" width="3" height="3" rx="0.5" fill="currentColor" opacity="0.6" stroke="none"/>
+              <path d="M7.5 5 h3.5" stroke-linecap="round"/>
+              <rect x="2.5" y="8" width="3" height="3" rx="0.5" fill="currentColor" opacity="0.6" stroke="none"/>
+              <path d="M7.5 9.5 h3.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span style="flex:1">Legend</span>
+          <span style="{{ voLegendToggleStyle }}"></span>
+        </div>
+
+      </div>
+    </sc-if>
+
+    <!-- ZOOM BAR (always visible) -->
+    <div style="{{ zoomBarStyle }}">
+      <div onClick="{{ zoomOut }}" style="{{ zoomBtnStyle }}" title="Zoom out">−</div>
+      <div style="{{ zoomPctStyle }}">{{ zoomPct }}</div>
+      <div onClick="{{ zoomIn }}" style="{{ zoomBtnStyle }}" title="Zoom in">+</div>
+      <div style="width:1px;height:16px;background:rgba(255,255,255,0.12);margin:0 3px;flex-shrink:0"></div>
+      <div onClick="{{ toggleViewOpts }}" style="{{ viewOptsBtnStyle }}" title="View options">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+          <line x1="1.5" y1="3.5" x2="12.5" y2="3.5"/>
+          <circle cx="4.5" cy="3.5" r="1.5" fill="currentColor" stroke="none"/>
+          <line x1="1.5" y1="7" x2="12.5" y2="7"/>
+          <circle cx="9.5" cy="7" r="1.5" fill="currentColor" stroke="none"/>
+          <line x1="1.5" y1="10.5" x2="12.5" y2="10.5"/>
+          <circle cx="5.5" cy="10.5" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== ALL FEEDS GRID ===== -->
+  <sc-if value="{{ showGrid }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:40;background:rgba(10,14,18,0.88);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);display:flex;flex-direction:column;padding:20px 26px;animation:floatIn .25s ease both">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:15px">
+        <div>
+          <div style="font:600 15px 'IBM Plex Sans';color:#eef3f8">Live Feeds · Security Network</div>
+          <div style="font:400 11px 'IBM Plex Mono',monospace;color:#8a98a6;margin-top:3px">{{ feedGridSub }}</div>
+        </div>
+        <div onClick="{{ closeGrid }}" style="font:500 11.5px 'IBM Plex Sans';color:#cdd6df;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:8px 14px;border-radius:8px;cursor:pointer">Close ✕</div>
+      </div>
+      <div style="flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-content:start">
+        <sc-for list="{{ feedTiles }}" as="t" hint-placeholder-count="8">
+          <div onClick="{{ t.onClick }}" style="{{ t.wrapStyle }}">
+            <div style="position:relative;width:100%;aspect-ratio:16/9;background:#0b1015;overflow:hidden">
+              <div style="position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 122%,rgba(74,96,116,0.4),transparent 60%),linear-gradient(180deg,#10161d 0%,#0b1015 55%,#070a0e 100%)"></div>
+              <div style="position:absolute;left:0;right:0;bottom:0;height:44%;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.05) 0 1px,transparent 1px 34px),linear-gradient(180deg,transparent,rgba(40,60,80,0.22));transform:perspective(150px) rotateX(58deg);transform-origin:bottom"></div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 16px 'IBM Plex Sans';color:rgba(255,255,255,0.06);letter-spacing:0.05em;text-align:center;padding:0 10px">{{ t.watermark }}</div>
+              <div style="position:absolute;left:0;right:0;height:24%;background:linear-gradient(180deg,transparent,rgba(120,160,200,0.10),transparent);animation:feedScan 4.5s linear infinite"></div>
+              <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:7px 9px;background:linear-gradient(180deg,rgba(0,0,0,0.55),transparent)">
+                <div style="display:flex;align-items:center;gap:5px;font:600 9px 'IBM Plex Mono',monospace;color:{{ t.liveColor }}">
+                  <span style="width:6px;height:6px;border-radius:50%;background:{{ t.liveColor }};animation:pulseDot 1.4s ease-in-out infinite"></span>{{ t.liveLabel }}
+                </div>
+                <div style="font:600 9px 'IBM Plex Mono',monospace;color:#cdd6df">{{ t.res }}</div>
+              </div>
+              <div style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:7px 9px;background:linear-gradient(0deg,rgba(0,0,0,0.6),transparent)">
+                <div style="font:600 9.5px 'IBM Plex Mono',monospace;color:#dfe7ee;text-shadow:0 1px 2px #000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.name }}</div>
+                <div style="font:500 9px 'IBM Plex Mono',monospace;color:#aeb9c4;flex-shrink:0;margin-left:6px">{{ t.time }}</div>
+              </div>
+              <sc-if value="{{ t.offline }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,10,12,0.74);font:600 11px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.14em">NO SIGNAL</div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== EXPANDED CAMERA + HISTORY ===== -->
+  <sc-if value="{{ showCamExpanded }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:44;background:rgba(7,11,15,0.93);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);display:flex;flex-direction:column;padding:20px 26px;animation:floatIn .25s ease both">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;flex-shrink:0">
+        <div>
+          <div style="font:600 15px 'IBM Plex Sans';color:#eef3f8">{{ bigFeed.name }} · Review</div>
+          <div style="font:400 11px 'IBM Plex Mono',monospace;color:#8a98a6;margin-top:3px">{{ expandSub }}</div>
+        </div>
+        <div onClick="{{ closeExpand }}" style="font:500 11.5px 'IBM Plex Sans';color:#cdd6df;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:8px 14px;border-radius:8px;cursor:pointer">Close ✕</div>
+      </div>
+      <div style="flex:1;min-height:0;display:flex;gap:18px">
+        <!-- big feed -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">
+          <div style="position:relative;flex:1;min-height:0;border-radius:12px;overflow:hidden;background:#0b1015;border:1px solid #20303c;box-shadow:inset 0 0 80px rgba(0,0,0,0.6)">
+            <div style="position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 122%,rgba(74,96,116,0.4),transparent 60%),linear-gradient(180deg,#10161d 0%,#0b1015 55%,#070a0e 100%)"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;height:44%;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.05) 0 1px,transparent 1px 46px),linear-gradient(180deg,transparent,rgba(40,60,80,0.22));transform:perspective(220px) rotateX(58deg);transform-origin:bottom"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 40px 'IBM Plex Sans';color:rgba(255,255,255,0.05);letter-spacing:0.07em;text-align:center;padding:0 20px">{{ bigFeed.watermark }}</div>
+            <div style="position:absolute;left:0;right:0;height:20%;background:linear-gradient(180deg,transparent,rgba(120,160,200,0.10),transparent);animation:feedScan 4.5s linear infinite"></div>
+            <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:12px 15px;background:linear-gradient(180deg,rgba(0,0,0,0.55),transparent)">
+              <div style="display:flex;align-items:center;gap:7px;font:600 11px 'IBM Plex Mono',monospace;color:{{ bigFeed.liveColor }}">
+                <span style="width:8px;height:8px;border-radius:50%;background:{{ bigFeed.liveColor }};animation:pulseDot 1.4s ease-in-out infinite"></span>{{ bigFeed.liveLabel }}
+              </div>
+              <div style="font:600 11px 'IBM Plex Mono',monospace;color:#cdd6df">{{ bigFeed.res }}</div>
+            </div>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font:600 11px 'IBM Plex Mono',monospace;color:#dfe7ee;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.12);padding:5px 12px;border-radius:20px">{{ bigFeed.eventLabel }}</div>
+            <div style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:12px 15px;background:linear-gradient(0deg,rgba(0,0,0,0.6),transparent)">
+              <div style="font:600 11px 'IBM Plex Mono',monospace;color:#dfe7ee;text-shadow:0 1px 2px #000">{{ bigFeed.room }}</div>
+              <div style="font:500 11px 'IBM Plex Mono',monospace;color:#aeb9c4">{{ bigFeed.time }}</div>
+            </div>
+            <sc-if value="{{ bigFeed.showOffline }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,10,12,0.74);font:600 14px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.16em">NO SIGNAL</div>
+            </sc-if>
+          </div>
+          <div style="flex-shrink:0;display:flex;align-items:center;gap:10px;padding:11px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px">
+            <span style="font:600 8.5px 'IBM Plex Mono',monospace;color:#7f8d9a;letter-spacing:0.12em;flex-shrink:0">TIMELINE</span>
+            <div style="position:relative;flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,0.08)">
+              <div style="position:absolute;left:0;top:0;bottom:0;width:64%;border-radius:4px;background:linear-gradient(90deg,rgba(192,87,59,0.2),rgba(192,87,59,0.55))"></div>
+              <sc-for list="{{ histTiles }}" as="t" hint-placeholder-count="9">
+                <div onClick="{{ t.onClick }}" style="{{ t.dotStyle }}"></div>
+              </sc-for>
+            </div>
+            <span style="font:500 9px 'IBM Plex Mono',monospace;color:#9aa8b4;flex-shrink:0">last ~4h</span>
+          </div>
+        </div>
+        <!-- history list -->
+        <div style="width:236px;flex-shrink:0;display:flex;flex-direction:column;min-height:0">
+          <div style="font:600 9px 'IBM Plex Mono',monospace;color:#8a98a6;letter-spacing:0.12em;margin:0 2px 9px">EVENT HISTORY</div>
+          <div style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:9px;padding-right:2px">
+            <sc-for list="{{ histTiles }}" as="t" hint-placeholder-count="9">
+              <div onClick="{{ t.onClick }}" style="{{ t.wrapStyle }}">
+                <div style="position:relative;width:100%;aspect-ratio:16/9;background:#0b1015;overflow:hidden">
+                  <div style="position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 122%,rgba(74,96,116,0.4),transparent 60%),linear-gradient(180deg,#10161d 0%,#0b1015 55%,#070a0e 100%)"></div>
+                  <div style="position:absolute;left:0;right:0;bottom:0;height:44%;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.05) 0 1px,transparent 1px 26px),linear-gradient(180deg,transparent,rgba(40,60,80,0.22));transform:perspective(120px) rotateX(58deg);transform-origin:bottom"></div>
+                  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 12px 'IBM Plex Sans';color:rgba(255,255,255,0.06);letter-spacing:0.05em;text-align:center;padding:0 8px">{{ t.watermark }}</div>
+                  <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:6px 8px">
+                    <div style="display:flex;align-items:center;gap:5px;font:600 8.5px 'IBM Plex Mono',monospace;color:{{ t.color }}">
+                      <span style="width:6px;height:6px;border-radius:50%;background:{{ t.color }}"></span>{{ t.label }}
+                    </div>
+                    <div style="font:600 8.5px 'IBM Plex Mono',monospace;color:#cdd6df">{{ t.time }}</div>
+                  </div>
+                  <div style="position:absolute;bottom:0;left:0;right:0;padding:6px 8px;font:500 8.5px 'IBM Plex Mono',monospace;color:#aeb9c4;background:linear-gradient(0deg,rgba(0,0,0,0.6),transparent)">{{ t.sub }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;stageTone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ink&quot;,&quot;options&quot;:[&quot;slate&quot;,&quot;ink&quot;,&quot;navy&quot;],&quot;tsType&quot;:&quot;'slate'|'ink'|'navy'&quot;}}">
+class Component extends DCLogic {
+  state = { mode:'overview', etype:'all', selCirc:null,
+            lf:'all', lroom:'all', bulb:null,
+            selNode:'n1', selZone:'zoneA',
+            selCam:'c1', camFilter:'all', feedGrid:false,
+            selSensor:'ts1', selUp:'u1',
+            yaw:35, pitch:58, zoom:1, panX:0, panY:0, explode:'full', explodeT:2, legend:false, autoRotate:false,
+            isoFloor:'all', isoRooms:[], isoPanel:false, leftHidden:false, rightHidden:false,
+            camExpanded:false, histIdx:0,
+            q:'', searchFocus:false, vw:1280, showRoomLabels:true, sliderFocused:false, viewOptsOpen:false };
+
+  boxes = [
+    {id:'MP',name:'Main Panel',short:'MP',size:'Large · 40-space',loc:'Main floor · garage wall',total:34},
+    {id:'BS',name:'Basement Subpanel',short:'BS',size:'Medium · 24-space',loc:'Basement · stair storage',total:24},
+  ];
+
+  circuits = [
+    {id:'m01',box:'MP',no:2,amp:20,type:'Mixed',label:'Garage lights, door & workshop'},
+    {id:'m02',box:'MP',no:4,amp:20,type:'Outlets',label:'Garage workshop outlets'},
+    {id:'m03',box:'MP',no:6,amp:15,type:'Lighting',label:'Kitchen ceiling & under-cabinet'},
+    {id:'m04',box:'MP',no:8,amp:20,type:'Outlets',label:'Kitchen counter (GFCI)'},
+    {id:'m05',box:'MP',no:10,amp:40,type:'Appliance',label:'Range / oven (240V)'},
+    {id:'m06',box:'MP',no:12,amp:20,type:'Appliance',label:'Refrigerator'},
+    {id:'m07',box:'MP',no:14,amp:15,type:'Lighting',label:'Great room lighting'},
+    {id:'m08',box:'MP',no:16,amp:20,type:'Outlets',label:'Great room outlets & AV'},
+    {id:'m09',box:'MP',no:18,amp:15,type:'Lighting',label:'Foyer, porch & entry'},
+    {id:'m10',box:'MP',no:20,amp:20,type:'Outlets',label:'Rear deck (ext GFCI)'},
+    {id:'m11',box:'MP',no:22,amp:15,type:'Lighting',label:'Second floor bedroom lighting'},
+    {id:'m12',box:'MP',no:24,amp:20,type:'Outlets',label:'Second floor outlets'},
+    {id:'m13',box:'MP',no:26,amp:30,type:'Appliance',label:'Furnace / HVAC (240V)'},
+    {id:'b01',box:'BS',no:2,amp:15,type:'Lighting',label:'Theater sconces (dimmable)'},
+    {id:'b02',box:'BS',no:4,amp:20,type:'Outlets',label:'Theater AV, built-ins & projector'},
+    {id:'b03',box:'BS',no:6,amp:20,type:'Mixed',label:'Wine cellar cooling & light'},
+    {id:'b04',box:'BS',no:8,amp:20,type:'Mixed',label:'Bar — fridge, mirror light & cove'},
+    {id:'b05',box:'BS',no:10,amp:15,type:'Lighting',label:'Living room recessed & cove'},
+    {id:'b06',box:'BS',no:12,amp:20,type:'Outlets',label:'Living room & workout outlets'},
+    {id:'b07',box:'BS',no:14,amp:20,type:'Mixed',label:'Boiler, HVAC controls & sump'},
+    {id:'b08',box:'BS',no:16,amp:15,type:'Lighting',label:'Workout room lights & mirrors'},
+    {id:'b09',box:'BS',no:18,amp:20,type:'Mixed',label:'Study lights & outlets'},
+    {id:'b10',box:'BS',no:20,amp:20,type:'Mixed',label:'Bathroom (GFCI, light, fan)'},
+    {id:'b11',box:'BS',no:22,amp:15,type:'Lighting',label:'Basement hall & stairs'},
+  ];
+
+  rooms = [
+    {id:'bsmt_wine_cellar', name:'Wine Cellar', short:'Wine', floor:'basement', height:0.9,
+      verts:[[1.81,0],[0.48,0],[0.48,0.85],[1.81,0.85]], sw:[{c:'b03'}]},
+    {id:'bsmt_home_theater', name:'Home Theater', short:'Theater', floor:'basement', height:0.9,
+      verts:[[3.14,0],[3.14,2.03],[1.81,2.03],[1.81,0]], sw:[{c:'b01'},{c:'b02'}]},
+    {id:'bsmt_boiler', name:'Boiler Room', short:'Boiler', floor:'basement', height:0.9,
+      verts:[[3.14,0.85],[3.14,0],[4.35,0],[4.35,0.85]], sw:[{c:'b07'}]},
+    {id:'bsmt_workout_room', name:'Home Gym', short:'Gym', floor:'basement', height:0.9,
+      verts:[[4.35,0],[4.35,-1.23],[4.07,-1.23],[4.07,-1.43],[2.92,-1.43],[2.92,0]], sw:[{c:'b08'},{c:'b06'}]},
+    {id:'bsmt_hallway', name:'Hall & Stairs', short:'Hall', floor:'basement', height:0.9,
+      verts:[[4.35,0.45],[4.35,-1.5],[5.35,-1.5],[5.35,-0.4],[4.95,-0.4],[4.95,0.45]], sw:[{c:'b11'}]},
+    {id:'bsmt_living_north', name:'Living & Mini Bar', short:'Liv/Bar', floor:'basement', height:0.9,
+      verts:[[3.14,0.85],[4.35,0.85],[4.35,0.45],[4.95,0.45],[5.35,0.85],[6.84,0.85],[6.84,2.03],[5.35,2.03],[5.35,2.79],[3.60,2.79],[3.60,2.03],[3.14,2.03]], sw:[{c:'b04'},{c:'b05'},{c:'b06'}]},
+    {id:'bsmt_bath_and_stairs', name:'Bathroom', short:'Bath', floor:'basement', height:0.9,
+      verts:[[5.35,0],[6.84,0],[6.84,0.85],[5.35,0.85]], sw:[{c:'b10'}]},
+    {id:'bsmt_study', name:'Study', short:'Study', floor:'basement', height:0.9,
+      verts:[[5.35,0],[5.35,-1.52],[6.84,-1.52],[6.84,0]], sw:[{c:'b09'}]},
+    {id:'garage', name:'Garage', short:'Garage', floor:'main', height:1.1,
+      verts:[[0,-2.1],[1.1,-2.1],[1.1,-2.2],[3.1,-2.2],[3.1,0],[0,0]], sw:[{c:'m01'},{c:'m02'}]},
+    {id:'mud_room', name:'Mud Room', short:'Mud', floor:'main', height:1.1,
+      verts:[[0.5,0],[0.5,0.9],[1.85,0.9],[1.85,0]], sw:[{c:'m01'},{c:'m10'}]},
+    {id:'kitchen_breakfast_room', name:'Kitchen & Breakfast', short:'Kitchen', floor:'main', height:1.1,
+      verts:[[1.85,0],[1.85,2.25],[1.95,2.25],[2.15,2.4],[2.65,2.4],[2.85,2.25],[3.5,2.25],[3.5,0]], sw:[{c:'m03'},{c:'m04'},{c:'m05'},{c:'m06'}]},
+    {id:'dining_room', name:'Dining Room', short:'Dining', floor:'main', height:1.1,
+      verts:[[3.1,0],[3.1,-1.5],[3.275,-1.5],[3.475,-1.65],[3.975,-1.65],[4.175,-1.5],[4.35,-1.5],[4.35,0]], sw:[{c:'m08'}]},
+    {id:'living_room', name:'Great Room', short:'Great Rm', floor:'main', height:1.1,
+      verts:[[3.5,0],[3.5,3.05],[5.4,3.05],[5.4,0]], sw:[{c:'m07'},{c:'m08'},{c:'m13'}]},
+    {id:'foyer', name:'Entry Foyer', short:'Foyer', floor:'main', height:1.1,
+      verts:[[4.35,0],[4.35,-1.5],[5.35,-1.5],[5.35,0]], sw:[{c:'m09'}]},
+    {id:'parlor', name:'Parlor', short:'Parlor', floor:'main', height:1.1,
+      verts:[[5.35,0],[5.35,-1.5],[5.7,-1.5],[5.9,-1.65],[6.4,-1.65],[6.6,-1.5],[6.95,-1.5],[6.95,0]], sw:[{c:'m09'}]},
+    {id:'ground_floor_bedroom', name:'Main Bedroom', short:'Bedroom', floor:'main', height:1.1,
+      verts:[[5.4,0],[5.4,2.25],[6.95,2.25],[6.95,0]], sw:[{c:'m12'}]},
+    {id:'room_above_parlor', name:'Bedroom 2', short:'Bed 2', floor:'second', height:1.1,
+      verts:[[5.35,0.2],[5.35,-1.5],[6.95,-1.5],[6.95,0.2]], sw:[{c:'m11'},{c:'m12'}]},
+    {id:'room_above_bedroom', name:'Bedroom 3', short:'Bed 3', floor:'second', height:1.1,
+      verts:[[5.35,0.95],[5.35,2.25],[6.95,2.25],[6.95,0.95]], sw:[{c:'m11'},{c:'m12'}]},
+    {id:'room_above_dining', name:'Office', short:'Office', floor:'second', height:1.1,
+      verts:[[3.1,0.2],[3.1,-1.5],[4.35,-1.5],[4.35,0.2]], sw:[{c:'m11'},{c:'m12'}]},
+    {id:'master_bedroom', name:'Primary Bedroom', short:'Primary', floor:'second', height:1.1,
+      verts:[[1.85,0],[1.85,2.25],[1.95,2.25],[2.15,2.4],[2.65,2.4],[2.85,2.25],[3.5,2.25],[3.5,0]], sw:[{c:'m11'},{c:'m12'}]},
+    {id:'master_bath_and_closet', name:'Primary Bath & Closet', short:'P. Bath', floor:'second', height:1.1,
+      verts:[[0.5,-1.5],[3.1,-1.5],[3.1,0],[1.85,0],[1.85,0.9],[0.5,0.9]], sw:[{c:'m11'},{c:'m12'}]},
+  ];
+
+  bulbs = [
+    {id:'l1',room:'Home Theater',fixture:'Wall sconces (×4, dimmable)',base:'E26',w:6,lm:450,k:2200,brand:'Philips',model:'Hue Filament',replaced:'2024-02',life:15,smart:true,st:'ok'},
+    {id:'l2',room:'Home Theater',fixture:'Step / platform LEDs',base:'Integrated',w:8,lm:300,k:2400,brand:'Govee',model:'LED Strip',replaced:'2021-08',life:8,smart:true,st:'overdue'},
+    {id:'l3',room:'Wine Cellar',fixture:'Display + accent',base:'GU10',w:5,lm:350,k:2700,brand:'Philips',model:'Hue GU10',replaced:'2023-09',life:15,smart:true,st:'ok'},
+    {id:'l4',room:'Bar Area',fixture:'Pendants (×2) + mirror',base:'E26',w:6,lm:500,k:2400,brand:'Edison Co',model:'Vintage',replaced:'2022-05',life:10,smart:false,st:'soon'},
+    {id:'l5',room:'Living Room',fixture:'Recessed cans (×8)',base:'BR30',w:10,lm:850,k:3000,brand:'Cree',model:'BR30',replaced:'2024-04',life:12,smart:false,st:'ok'},
+    {id:'l6',room:'Living Room',fixture:'Tray cove LED',base:'Integrated',w:14,lm:900,k:2700,brand:'Govee',model:'LED Strip Pro',replaced:'2023-03',life:12,smart:true,st:'ok'},
+    {id:'l7',room:'Living Area',fixture:'Ceiling flush (×2)',base:'E26',w:9,lm:800,k:2700,brand:'GE',model:'Relax HD',replaced:'2021-11',life:10,smart:false,st:'overdue'},
+    {id:'l8',room:'Workout Room',fixture:'Shop lights (×3)',base:'Integrated',w:38,lm:3800,k:5000,brand:'Hyperikon',model:'LED Shop',replaced:'2022-10',life:12,smart:false,st:'soon'},
+    {id:'l9',room:'Study',fixture:'Desk + ceiling',base:'E26',w:9,lm:800,k:4000,brand:'BenQ',model:'Task White',replaced:'2024-01',life:12,smart:false,st:'ok'},
+    {id:'l10',room:'Bathroom',fixture:'Vanity bar',base:'E26',w:8,lm:700,k:3000,brand:'Philips',model:'Soft White',replaced:'2023-06',life:10,smart:false,st:'ok'},
+    {id:'l11',room:'Stairs & Storage',fixture:'Stair lights',base:'GU10',w:5,lm:350,k:2700,brand:'Generic',model:'LED',replaced:'2022-02',life:8,smart:false,st:'soon'},
+    {id:'l12',room:'Kitchen',fixture:'Recessed + under-cab',base:'BR30',w:10,lm:850,k:3500,brand:'Cree',model:'BR30',replaced:'2023-07',life:12,smart:false,st:'ok'},
+    {id:'l13',room:'Great Room',fixture:'Chandelier (×8) + cans',base:'E12',w:5,lm:400,k:2700,brand:'Philips',model:'Vintage LED',replaced:'2021-09',life:8,smart:false,st:'overdue'},
+    {id:'l14',room:'Entry Foyer',fixture:'Pendant',base:'E26',w:11,lm:1100,k:3000,brand:'Philips',model:'Hue A21',replaced:'2024-05',life:15,smart:true,st:'ok'},
+    {id:'l15',room:'Garage',fixture:'Shop lights (×4)',base:'Integrated',w:40,lm:4000,k:5000,brand:'Hyperikon',model:'LED Shop',replaced:'2022-10',life:12,smart:false,st:'ok'},
+    {id:'l16',room:'Primary Bedroom',fixture:'Ceiling flush',base:'E26',w:9,lm:800,k:2700,brand:'Philips',model:'Hue White',replaced:'2024-03',life:15,smart:true,st:'ok'},
+    {id:'l17',room:'Bedroom 2',fixture:'Ceiling',base:'E26',w:9,lm:800,k:2700,brand:'GE',model:'Relax HD',replaced:'2023-02',life:10,smart:false,st:'ok'},
+    {id:'l18',room:'Rear Deck',fixture:'String lights',base:'S14',w:2,lm:60,k:2200,brand:'Brightech',model:'Ambience',replaced:'2022-07',life:8,smart:false,st:'soon'},
+  ];
+
+  networks = [
+    {id:'main',name:'Main / Trusted',ssid:'House-Main',band:'Wi-Fi 6E',color:'#3b6fb0'},
+    {id:'iot',name:'IoT',ssid:'House-IoT',band:'Wi-Fi 6',color:'#3f9a8c'},
+    {id:'guest',name:'Guest',ssid:'House-Guest',band:'Wi-Fi 6',color:'#c0892f'},
+  ];
+  nodes = [
+    {id:'n1',name:'Mesh Gateway',role:'Gateway + AP',room:'Study',model:'[ router model ]',backhaul:'Wired → ISP ONT',plug:'PoE switch · BS·18',nets:['main','iot','guest'],status:'ok'},
+    {id:'n2',name:'Node — Great Room',role:'Mesh AP',room:'Great Room',model:'[ mesh node ]',backhaul:'Wired (Cat6)',plug:'Wall outlet · MP·16',nets:['main','iot','guest'],status:'ok'},
+    {id:'n3',name:'Node — Home Theater',role:'Mesh AP',room:'Home Theater',model:'[ mesh node ]',backhaul:'Wired (Cat6)',plug:'AV rack · BS·4',nets:['main','iot'],status:'ok'},
+    {id:'n4',name:'Node — Second Floor',role:'Mesh AP',room:'Primary Bedroom',model:'[ mesh node ]',backhaul:'Wireless backhaul',plug:'Wall outlet · MP·24',nets:['main','iot'],status:'warn'},
+    {id:'n5',name:'Node — Living Room',role:'Mesh AP',room:'Living Room',model:'[ mesh node ]',backhaul:'Wireless backhaul',plug:'Wall outlet · BS·12',nets:['main','guest'],status:'ok'},
+    {id:'n6',name:'Node — Garage',role:'Mesh AP',room:'Garage',model:'[ mesh node ]',backhaul:'Wired (Cat6)',plug:'Wall outlet · MP·4',nets:['main','iot'],status:'ok'},
+  ];
+  servers = [
+    {id:'s1',name:'BGI Server',kind:'Compute / AI',room:'Study',node:'n1',power:'BS·18'},
+    {id:'s2',name:'Raspberry Pi 5 — #1',kind:'Media / services',room:'Great Room',node:'n2',power:'MP·16'},
+    {id:'s3',name:'Raspberry Pi 5 — #2',kind:'Media / services',room:'Great Room',node:'n2',power:'MP·16'},
+  ];
+
+  // Security cameras. pos = [x,y] in floor coords; facing = degrees (0=+x, 90=rear/+y, 270=front/-y); fov & range in plan units.
+  cameras = [
+    {id:'c1',name:'Front Doorbell',type:'Doorbell',room:'Entry Foyer',roomId:'foyer',floor:'main',
+      pos:[4.85,-1.55],facing:270,fov:135,range:1.7,res:'2K HDR',night:true,mic:true,rec:'Motion + ring',store:'Cloud + NVR',status:'online',power:'PoE · MP·18'},
+    {id:'c2',name:'Driveway',type:'Outdoor',room:'Garage',roomId:'garage',floor:'main',
+      pos:[1.3,-2.4],facing:270,fov:110,range:2.3,res:'4K',night:true,mic:false,rec:'24/7 + motion',store:'NVR',status:'online',power:'PoE · MP·2'},
+    {id:'c3',name:'Front Porch',type:'Outdoor',room:'Parlor',roomId:'parlor',floor:'main',
+      pos:[6.15,-1.7],facing:300,fov:120,range:2.0,res:'4K',night:true,mic:true,rec:'Motion',store:'NVR',status:'online',power:'PoE · MP·9'},
+    {id:'c4',name:'Backyard Flood',type:'Outdoor',room:'Great Room',roomId:'living_room',floor:'main',
+      pos:[4.45,3.25],facing:90,fov:120,range:2.5,res:'4K',night:true,mic:false,rec:'24/7 + motion',store:'NVR',status:'online',power:'PoE · MP·10'},
+    {id:'c5',name:'Rear Deck',type:'Outdoor',room:'Kitchen & Breakfast',roomId:'kitchen_breakfast_room',floor:'main',
+      pos:[2.35,2.6],facing:90,fov:110,range:1.9,res:'2K',night:true,mic:true,rec:'Motion',store:'NVR',status:'online',power:'PoE · MP·20'},
+    {id:'c6',name:'Side Gate',type:'Outdoor',room:'Primary Bath',roomId:'master_bath_and_closet',floor:'main',
+      pos:[0.3,-0.6],facing:180,fov:100,range:1.8,res:'2K',night:true,mic:false,rec:'Motion',store:'NVR',status:'offline',power:'PoE · MP·1'},
+    {id:'c7',name:'Great Room',type:'Indoor',room:'Great Room',roomId:'living_room',floor:'main',
+      pos:[5.3,2.9],facing:240,fov:100,range:2.4,res:'2K',night:false,mic:true,rec:'Away-armed only',store:'NVR',status:'online',power:'PoE · MP·16'},
+    {id:'c8',name:'Theater / Stairs',type:'Indoor',room:'Home Theater',roomId:'bsmt_home_theater',floor:'basement',
+      pos:[2.45,1.0],facing:90,fov:95,range:2.2,res:'2K',night:false,mic:false,rec:'Away-armed only',store:'NVR',status:'online',power:'PoE · BS·4'},
+  ];
+
+  // Temp / humidity sensors — mapped for the smart-home rollout but not yet connected.
+  sensors = [
+    {id:'ts1',name:'Primary Bedroom',roomId:'master_bedroom',mount:'Wall · interior',target:'Temp + RH',status:'planned'},
+    {id:'ts2',name:'Great Room',roomId:'living_room',mount:'Wall · by thermostat',target:'Temp + RH',status:'planned'},
+    {id:'ts3',name:'Kitchen',roomId:'kitchen_breakfast_room',mount:'Wall · pantry side',target:'Temp + RH',status:'planned'},
+    {id:'ts4',name:'Home Theater',roomId:'bsmt_home_theater',mount:'Wall · rack side',target:'Temp + RH',status:'planned'},
+    {id:'ts5',name:'Wine Cellar',roomId:'bsmt_wine_cellar',mount:'Wall · cellar',target:'Temp + RH (critical)',status:'planned'},
+    {id:'ts6',name:'Garage',roomId:'garage',mount:'Wall · by softener',target:'Temp + RH',status:'planned'},
+    {id:'ts7',name:'Office',roomId:'room_above_dining',mount:'Wall · desk',target:'Temp + RH',status:'planned'},
+  ];
+
+  // Consumable replacements — projector lamp, reverse-osmosis filter stages, softener salt.
+  upkeep = [
+    {id:'u1',kind:'Projector Lamp',device:'Home theater projector',roomId:'bsmt_home_theater',
+      metric:'hours',used:1860,life:2500,lastDone:'2023-11',part:'UHP 280 W lamp',status:'soon',note:'Brightness fades past ~80% of rated hours — order a spare lamp now.'},
+    {id:'u2',kind:'RO · Sediment Pre',device:'Reverse osmosis · under kitchen sink',roomId:'kitchen_breakfast_room',
+      metric:'months',used:4,life:6,lastDone:'2026-02',part:'5-micron sediment',status:'ok',note:'Stage 1 of 4 — protects later stages from grit.'},
+    {id:'u3',kind:'RO · Carbon Pre',device:'Reverse osmosis · under kitchen sink',roomId:'kitchen_breakfast_room',
+      metric:'months',used:4,life:6,lastDone:'2026-02',part:'GAC carbon block',status:'ok',note:'Stage 2 of 4 — removes chlorine before the membrane.'},
+    {id:'u4',kind:'RO Membrane',device:'Reverse osmosis · under kitchen sink',roomId:'kitchen_breakfast_room',
+      metric:'months',used:22,life:24,lastDone:'2024-08',part:'75 GPD TFC membrane',status:'soon',note:'Stage 3 — ~2-year life; watch for slower fill / worse taste.'},
+    {id:'u5',kind:'RO · Polish / Remin',device:'Reverse osmosis · under kitchen sink',roomId:'kitchen_breakfast_room',
+      metric:'months',used:14,life:12,lastDone:'2025-04',part:'Carbon + remineralizer',status:'overdue',note:'Stage 4 — post-tank polish; overdue, replace at next service.'},
+    {id:'u6',kind:'Softener Salt',device:'Water softener · garage',roomId:'garage',
+      metric:'level',used:62,life:100,lastDone:'2026-04',part:'Solar salt / K-pellets',status:'ok',note:'Top up the brine tank before it drops below ~25%.'},
+    {id:'u7',kind:'Sprinkler Service',device:'Irrigation system · garage controller',roomId:'garage',
+      metric:'months',used:8,life:12,lastDone:'2025-10',part:'Backflow test + head / zone check',status:'soon',note:'Spring start-up: backflow test, head & zone check, controller schedule. Fall blow-out before first freeze.'},
+  ];
+
+  floorLabels = { second:'Second Floor', main:'Main Floor', basement:'Basement' };
+  SOUND='#7b5cd6';
+  stColor(s){ return s==='ok'?'#5a9c6e':s==='soon'?'#c0892f':s==='overdue'?'#c0573b':s==='warn'?'#c0892f':'#8a94a0'; }
+  stLabel(s){ return s==='ok'?'OK':s==='soon'?'DUE SOON':s==='overdue'?'OVERDUE':s==='warn'?'WEAK':''; }
+  kColor(k){ return k<=2200?'#f2a44e':k<=2500?'#f6b65f':k<=2800?'#f8c87f':k<=3200?'#f4d9a6':k<=3700?'#eee3c4':k<=4300?'#e7ecdc':'#dfe9f0'; }
+  cMap(){ const m={}; this.circuits.forEach(c=>m[c.id]=c); return m; }
+  bMap(){ const m={}; this.boxes.forEach(b=>m[b.id]=b); return m; }
+  typeColor(t){ return t==='Lighting'?'#e0a043':t==='Outlets'?'#3b6fb0':t==='Appliance'?'#c0573b':'#3f9a8c'; }
+  circuitRooms(cid){ return this.rooms.filter(r=>r.sw&&r.sw.some(s=>s.c===cid)); }
+  hexA(hex,a){ const h=hex.replace('#',''); const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16); return `rgba(${r},${g},${b},${a})`; }
+  mix(h1,h2,t){ const p=h=>{h=h.replace('#','');return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}; const a=p(h1),b=p(h2); const c=a.map((v,i)=>Math.round(v+(b[i]-v)*t)); return `rgb(${c[0]},${c[1]},${c[2]})`; }
+
+  panelPos={ MP:{x:0.7,y:-1.6,floor:'main',room:'garage'}, BS:{x:4.85,y:-1.0,floor:'basement',room:'bsmt_living_north'} };
+  nodeRoomId={ 'Study':'bsmt_study','Great Room':'living_room','Home Theater':'bsmt_home_theater','Primary Bedroom':'master_bedroom','Living Room':'bsmt_living_north','Garage':'garage' };
+
+  drag=null;
+  onPointerDown=(e)=>{ const pan = e.shiftKey || e.button===1 || e.button===2;
+    const r=e.currentTarget.getBoundingClientRect();
+    this.drag={ active:true, mode:pan?'pan':'rotate', x:e.clientX, y:e.clientY, startX:e.clientX, startY:e.clientY, k:Math.max(960/r.width,600/r.height), captured:false }; };
+  onPointerMove=(e)=>{ const d=this.drag; if(!d||!d.active) return;
+    const dx=e.clientX-d.x, dy=e.clientY-d.y; d.x=e.clientX; d.y=e.clientY;
+    if(!d.captured){ const tdx=e.clientX-d.startX,tdy=e.clientY-d.startY; if(tdx*tdx+tdy*tdy<25) return; d.captured=true; try{ e.currentTarget.setPointerCapture(e.pointerId); }catch(_){} }
+    if(d.mode==='rotate'){ this.setState(s=>({ yaw:s.yaw+dx*0.55, pitch:Math.min(88,Math.max(12,s.pitch+dy*0.45)) })); }
+    else { this.setState(s=>({ panX:s.panX+dx*d.k, panY:s.panY+dy*d.k })); } };
+  onPointerUp=(e)=>{ if(this.drag) this.drag.active=false; try{ e.currentTarget.releasePointerCapture(e.pointerId); }catch(_){} };
+  onContextMenu=(e)=>{ e.preventDefault(); };
+  onWheelNative=(e)=>{ e.preventDefault(); this.setState(s=>({ zoom:Math.min(4,Math.max(0.4, s.zoom*(e.deltaY<0?1.12:0.89))) })); };
+  stageRef=(el)=>{ if(el && el!==this._stage){ this._stage=el; el.addEventListener('wheel', this.onWheelNative, {passive:false}); } };
+
+  toggleAuto=()=>{ const on=!this.state.autoRotate; this.setState({autoRotate:on}); if(on) this.startAuto(); else this.stopAuto(); };
+  startAuto=()=>{ if(this._autoRAF) return; let last=performance.now();
+    const loop=(now)=>{ const dt=Math.min(0.05,(now-last)/1000); last=now;
+      if(!this.state.autoRotate){ this._autoRAF=null; return; }
+      if(!(this.drag&&this.drag.active)) this.setState(s=>({ yaw:s.yaw+14*dt }));
+      this._autoRAF=requestAnimationFrame(loop); };
+    this._autoRAF=requestAnimationFrame(loop); };
+  stopAuto=()=>{ if(this._autoRAF){ cancelAnimationFrame(this._autoRAF); this._autoRAF=null; } };
+
+  bulbRoomId(name){
+    const m={
+      'Home Theater':'bsmt_home_theater','Wine Cellar':'bsmt_wine_cellar','Bar Area':'bsmt_living_north',
+      'Living Room':'bsmt_living_north','Living Area':'bsmt_living_north','Workout Room':'bsmt_workout_room',
+      'Study':'bsmt_study','Bathroom':'bsmt_bath_and_stairs','Stairs & Storage':'bsmt_hallway',
+      'Kitchen':'kitchen_breakfast_room','Great Room':'living_room','Entry Foyer':'foyer','Garage':'garage',
+      'Primary Bedroom':'master_bedroom','Bedroom 2':'room_above_parlor','Rear Deck':null,
+    };
+    return Object.prototype.hasOwnProperty.call(m,name)?m[name]:null;
+  }
+
+  // Shared 3D house renderer. opt.layer drives which system is painted onto the model.
+  scene3D(opt={}){
+    const S=this.state, B=this.bMap(), RE=React.createElement;
+    const layer = opt.layer || 'overview';
+    const showRoomLabels = opt.showRoomLabels !== false;
+    const isoFloor=S.isoFloor||'all', isoRooms=(S.isoRooms&&S.isoRooms.length)?new Set(S.isoRooms):null;
+    const vis=(r)=> isoRooms ? isoRooms.has(r.id) : (isoFloor==='all'||r.floor===isoFloor);
+    const visById=(id)=>{ const r=this.rooms.find(x=>x.id===id); return !!r&&vis(r); };
+    // continuous explode parameter (0=stacked, 1=floors, 2=exploded) drives smooth transitions
+    const eT = (typeof S.explodeT==='number') ? S.explodeT : (S.explode==='full'?2:(S.explode==='floors'?1:0));
+    const EXPL = eT<=1 ? eT*1.0 : 1.0 + (eT-1)*0.9;
+    const floorIdx = { basement:0, main:1, second:2 };
+    const baseElev = { basement:-0.9, main:0, second:1.1 };
+    const drawBase = (f)=> baseElev[f] + floorIdx[f]*EXPL;
+    let K=0; const k=()=>'k'+(K++);
+
+    let bx0=1e9,bx1=-1e9,by0=1e9,by1=-1e9,bz0=1e9,bz1=-1e9;
+    this.rooms.forEach(r=>{ if(!vis(r)) return; const zb=drawBase(r.floor), zt=zb+r.height;
+      r.verts.forEach(([vx,vy])=>{ if(vx<bx0)bx0=vx; if(vx>bx1)bx1=vx; if(vy<by0)by0=vy; if(vy>by1)by1=vy; });
+      if(zb<bz0)bz0=zb; if(zt>bz1)bz1=zt; });
+    const MC={ x:(bx0+bx1)/2, y:(by0+by1)/2, z:(bz0+bz1)/2 };
+    const diag=Math.sqrt((bx1-bx0)**2+(by1-by0)**2+(bz1-bz0)**2)||1;
+    const scale=(430/diag)*S.zoom;
+    const CX=480, CY=300;
+    const yaw=S.yaw*Math.PI/180, pitch=S.pitch*Math.PI/180;
+    const cyw=Math.cos(yaw), syw=Math.sin(yaw), cp=Math.cos(pitch), sp=Math.sin(pitch);
+    const project=(x,y,z)=>{ x-=MC.x; y-=MC.y; z-=MC.z;
+      const X1=x*cyw-y*syw, Y1=x*syw+y*cyw, Z1=z;
+      const X2=X1, Y2=Y1*cp-Z1*sp, Z2=Y1*sp+Z1*cp;
+      return { sx:X2*scale+CX+S.panX, sy:-Z2*scale+CY+S.panY, depth:Y2 }; };
+    const ptStr=(p)=>p.sx.toFixed(1)+','+p.sy.toFixed(1);
+    const polyD=(pts)=>'M'+pts.map(ptStr).join(' L')+' Z';
+    const cen2=(v)=>{ let cx=0,cy=0; for(const p of v){cx+=p[0];cy+=p[1];} return [cx/v.length, cy/v.length]; };
+    const darken=(hex,f)=>{ const h=hex.replace('#',''); const r=Math.round(parseInt(h.substr(0,2),16)*f), g=Math.round(parseInt(h.substr(2,2),16)*f), b=Math.round(parseInt(h.substr(4,2),16)*f); return `rgb(${r},${g},${b})`; };
+    // ---- exploded room layout: spread rooms radially in x/y away from each floor's center ----
+    const EXPL_XY = eT<=1 ? 0 : (eT-1)*0.34;
+    const floorCen={};
+    this.rooms.forEach(r=>{ if(!vis(r)) return; const [cx,cy]=cen2(r.verts); const fc=floorCen[r.floor]||(floorCen[r.floor]={sx:0,sy:0,n:0}); fc.sx+=cx; fc.sy+=cy; fc.n++; });
+    Object.values(floorCen).forEach(fc=>{ fc.x=fc.sx/fc.n; fc.y=fc.sy/fc.n; });
+    const roomOff={};
+    this.rooms.forEach(r=>{ const fc=floorCen[r.floor]; if(!fc) return; const [cx,cy]=cen2(r.verts); roomOff[r.id]={ ox:(cx-fc.x)*EXPL_XY, oy:(cy-fc.y)*EXPL_XY }; });
+    const offOf=(rid)=> roomOff[rid]||{ox:0,oy:0};
+    const projR=(rid,x,y,z)=>{ const o=offOf(rid); return project(x+o.ox, y+o.oy, z); };
+    const roomCeil=(rid)=>{ const r=this.rooms.find(x=>x.id===rid); if(!r||!vis(r)) return null; const [rx,ry]=cen2(r.verts); return {r,c:projR(rid,rx,ry,drawBase(r.floor)+r.height)}; };
+
+    const selC=opt.selC||null, locate=opt.locate||null;
+    const servedSet=selC?new Set(this.circuitRooms(selC.id).map(r=>r.id)):null;
+    const extraHi=opt.hiRooms?new Set(opt.hiRooms):null;
+    const hiColor=opt.hiColor || (selC?this.typeColor(selC.type):(locate?locate.color:'#3b6fb0'));
+    const isHi=(id)=> (servedSet&&servedSet.has(id)) || (locate&&locate.roomId===id) || (extraHi&&extraHi.has(id));
+    const hasFocus = !!(servedSet || (locate&&locate.roomId) || extraHi);
+    const floorTop={ basement:'#e7eef5', main:'#ecedf2', second:'#efedf4' };
+
+    // ---- room volumes ----
+    const faces=[];
+    this.rooms.forEach(r=>{ if(!vis(r)) return;
+      const zb=drawBase(r.floor), zt=zb+r.height, n=r.verts.length;
+      const sel=isHi(r.id);
+      const top=floorTop[r.floor];
+      // REVERSED transparency: highlighted rooms read SOLID; everything else fades back
+      const topFill=sel?this.mix(top,hiColor,0.5):top;
+      const topStroke=sel?hiColor:'#aab6c1';
+      const wallFill=sel?this.mix(top,hiColor,0.32):darken(top,0.9);
+      const faceOp = hasFocus ? (sel?1:0.16) : 1;
+      let area2=0; for(let i=0;i<n;i++){ const a=r.verts[i], b=r.verts[(i+1)%n]; area2+=a[0]*b[1]-b[0]*a[1]; }
+      const ccw=area2>0;
+      for(let i=0;i<n;i++){ const a=r.verts[i], b=r.verts[(i+1)%n];
+        const dx=b[0]-a[0], dy=b[1]-a[1];
+        let nx,ny; if(ccw){ nx=dy; ny=-dx; } else { nx=-dy; ny=dx; }
+        if(nx*syw+ny*cyw >= 0) continue;
+        const p1=projR(r.id,a[0],a[1],zb), p2=projR(r.id,b[0],b[1],zb), p3=projR(r.id,b[0],b[1],zt), p4=projR(r.id,a[0],a[1],zt);
+        faces.push({ d:polyD([p1,p2,p3,p4]), fill:wallFill, stroke:sel?topStroke:'#aab6c1', sw:0.6, depth:(p1.depth+p2.depth+p3.depth+p4.depth)/4, op:faceOp, rid:r.id });
+      }
+      const tp=r.verts.map(v=>projR(r.id,v[0],v[1],zt));
+      faces.push({ d:polyD(tp), fill:topFill, stroke:topStroke, sw:sel?1.6:0.9, depth:tp.reduce((s,p)=>s+p.depth,0)/tp.length, op:faceOp, rid:r.id, isTop:true });
+    });
+    faces.sort((a,b)=>b.depth-a.depth);
+
+    const els=[];
+    faces.forEach((f)=>{ const rProps=opt.onRoomClick&&f.rid?{onClick:()=>opt.onRoomClick(f.rid),style:{cursor:'pointer'}}:{}; els.push(RE('path',{key:k(),d:f.d,fill:f.fill,stroke:f.stroke,strokeWidth:f.sw,strokeLinejoin:'round',opacity:f.op,...rProps})); });
+
+    // ---- breaker panels (electrical infra) ----
+    if(layer==='overview'||layer==='electrical'){
+      Object.keys(this.panelPos).forEach((bid)=>{ const pp=this.panelPos[bid]; if(!visById(pp.room)) return; const po=offOf(pp.room); const p=project(pp.x+po.ox,pp.y+po.oy,drawBase(pp.floor)+0.55);
+        const active=selC&&selC.box===bid; const bx=B[bid];
+        const panelCk=opt.onPanelClick?{onClick:(e)=>{e.stopPropagation();opt.onPanelClick(bid);},onPointerDown:(e)=>e.stopPropagation(),style:{cursor:'pointer'}}:{};
+        els.push(RE('rect',{key:k(),x:(p.sx-15).toFixed(1),y:(p.sy-24).toFixed(1),width:30,height:22,rx:3,fill:active?'#e0a043':'#e8edf2',stroke:active?'#d9a24e':'#9aa4ad',strokeWidth:1.4,...panelCk}));
+        els.push(RE('text',{key:k(),x:p.sx.toFixed(1),y:(p.sy-10).toFixed(1),textAnchor:'middle',style:{font:"600 10px 'IBM Plex Mono',monospace",fill:active?'#3a2a08':'#5a6b7a',cursor:opt.onPanelClick?'pointer':'default'},...panelCk},bx.short));
+      });
+    }
+
+    // ---- electrical wiring ----
+    if(selC){
+      const pp=this.panelPos[selC.box]; const pz=drawBase(pp.floor)+0.45; const po=offOf(pp.room); const ppx=pp.x+po.ox, ppy=pp.y+po.oy;
+      const rooms=this.circuitRooms(selC.id).filter(r=>vis(r));
+      const glow={ filter:`drop-shadow(0 0 2px ${hiColor}) drop-shadow(0 0 5px ${hiColor})` };
+      rooms.forEach((r)=>{ const zt=drawBase(r.floor)+r.height+0.05; const o=offOf(r.id); const c0=cen2(r.verts); const rx=c0[0]+o.ox, ry=c0[1]+o.oy;
+        const P0=project(ppx,ppy,pz), A=project(ppx,ppy,zt), Bp=project(rx,ppy,zt), Cc=project(rx,ry,zt);
+        const d=`M${ptStr(P0)} L${ptStr(A)} L${ptStr(Bp)} L${ptStr(Cc)}`;
+        els.push(RE('path',{key:k(),d,fill:'none',stroke:hiColor,strokeWidth:2.4,strokeOpacity:0.5,strokeLinejoin:'round',strokeLinecap:'round',style:glow}));
+        els.push(RE('path',{key:k(),d,fill:'none',stroke:hiColor,strokeWidth:1.5,strokeDasharray:'5 9',strokeLinecap:'round',style:{...glow,animation:'wireFlow 0.85s linear infinite'}}));
+      });
+      rooms.forEach((r)=>{ const zt=drawBase(r.floor)+r.height+0.05; const [rx,ry]=cen2(r.verts); const c=projR(r.id,rx,ry,zt);
+        els.push(RE('circle',{key:k(),cx:c.sx.toFixed(1),cy:c.sy.toFixed(1),r:8,fill:hiColor,style:{animation:'nodePulse 1.7s ease-in-out infinite'}}));
+        els.push(RE('circle',{key:k(),cx:c.sx.toFixed(1),cy:c.sy.toFixed(1),r:3.6,fill:hiColor,stroke:'#fff',strokeWidth:1.3}));
+      });
+    }
+
+    // ---- room labels ----
+    if(showRoomLabels){ this.rooms.forEach((r)=>{ if(!vis(r)) return; const [rx,ry]=cen2(r.verts); const c=projR(r.id,rx,ry,drawBase(r.floor)+r.height); const sel=isHi(r.id);
+      els.push(RE('text',{key:k(),x:c.sx.toFixed(1),y:c.sy.toFixed(1),textAnchor:'middle',style:{font:`600 9px 'IBM Plex Sans'`,fill:sel?'#11202c':'#3c4a54',paintOrder:'stroke',stroke:'#ffffffea',strokeWidth:sel?3.6:3,strokeLinejoin:'round',opacity:(hasFocus&&!sel)?0.5:1,pointerEvents:'none'}},r.short)); }); }
+
+    // ---- floor labels ----
+    // ---- floor labels: dynamically placed at leftmost projected vertex to avoid overlapping rooms ----
+    ['second','main','basement'].forEach((f)=>{
+      const fRooms=this.rooms.filter(r=>r.floor===f&&vis(r));
+      if(!fRooms.length) return;
+      let minSx=1e9,minSy=300;
+      fRooms.forEach(r=>{
+        const zb=drawBase(r.floor),zt=zb+r.height,o=offOf(r.id);
+        r.verts.forEach(([vx,vy])=>{
+          const pb=project(vx+o.ox,vy+o.oy,zb),pt=project(vx+o.ox,vy+o.oy,zt);
+          if(pb.sx<minSx){minSx=pb.sx;minSy=pb.sy;}
+          if(pt.sx<minSx){minSx=pt.sx;minSy=pt.sy;}
+        });
+      });
+      if(minSx===1e9) return;
+      const lx=Math.max(22,minSx-18),ly=minSy;
+      const flCk=opt.onFloorClick?{onClick:(e)=>{e.stopPropagation();opt.onFloorClick(f);},onPointerDown:(e)=>e.stopPropagation()}:{};
+      els.push(RE('text',{key:k(),x:lx.toFixed(1),y:ly.toFixed(1),textAnchor:'end',style:{font:"600 10px 'IBM Plex Mono',monospace",fill:opt.onFloorClick?'#c8d8ea':'#aeb9c4',letterSpacing:'0.05em',cursor:opt.onFloorClick?'pointer':'default'},...flCk},this.floorLabels[f]));
+    });
+
+    // helpers for overlay markers
+    const pushGlowDot=(cx,cy,col,r0,sel)=>{
+      els.push(RE('circle',{key:k(),cx:cx.toFixed(1),cy:cy.toFixed(1),r:r0+5,fill:col,opacity:sel?0.3:0.18,style:{animation:'nodePulse 1.7s ease-in-out infinite'}}));
+      els.push(RE('circle',{key:k(),cx:cx.toFixed(1),cy:cy.toFixed(1),r:r0,fill:col,stroke:'#fff',strokeWidth:sel?2:1.3}));
+    };
+
+    // ---- OVERVIEW: flagged bulbs + mesh nodes ----
+    if(layer==='overview'){
+      const byRoom={};
+      this.bulbs.filter(b=>b.st!=='ok').forEach(b=>{ const rid=this.bulbRoomId(b.room); if(!rid) return; (byRoom[rid]=byRoom[rid]||[]).push(b); });
+      Object.keys(byRoom).forEach(rid=>{ const arr=byRoom[rid]; const base=roomCeil(rid); if(!base) return;
+        arr.forEach((b,i)=>{ const ox=(i-(arr.length-1)/2)*9; const bcx=base.c.sx+ox, bcy=base.c.sy+13; pushGlowDot(bcx, bcy, this.stColor(b.st), 4, false);
+          if(opt.onBulbClick) els.push(RE('circle',{key:k(),cx:bcx.toFixed(1),cy:bcy.toFixed(1),r:12,fill:'transparent',onClick:(e)=>{e.stopPropagation();opt.onBulbClick(b.id);},onPointerDown:(e)=>e.stopPropagation(),style:{cursor:'pointer'}})); }); });
+      this.nodes.forEach(n=>{ const rid=this.nodeRoomId[n.room]; const base=rid?roomCeil(rid):null; if(!base) return; const cx=base.c.sx, cy=base.c.sy-13;
+        const nOvCk=opt.onNodeClick?{onClick:(e)=>{e.stopPropagation();opt.onNodeClick(n.id);},onPointerDown:(e)=>e.stopPropagation(),style:{cursor:'pointer'}}:{};
+        els.push(RE('rect',{key:k(),x:(cx-5).toFixed(1),y:(cy-5).toFixed(1),width:10,height:10,rx:2.5,fill:'#3b6fb0',opacity:0.7,stroke:'#fff',strokeWidth:1,...nOvCk}));
+        if(opt.onNodeClick) els.push(RE('rect',{key:k(),x:(cx-11).toFixed(1),y:(cy-11).toFixed(1),width:22,height:22,rx:5,fill:'transparent',...nOvCk})); });
+    }
+
+    // ---- LIGHTING: bulb dots ----
+    if(layer==='lighting'){
+      const list = opt.bulbs || this.bulbs;
+      const byRoom={};
+      list.forEach(b=>{ const rid=this.bulbRoomId(b.room); if(!rid) return; (byRoom[rid]=byRoom[rid]||[]).push(b); });
+      Object.keys(byRoom).forEach(rid=>{ const arr=byRoom[rid]; const base=roomCeil(rid); if(!base) return;
+        arr.forEach((b,i)=>{ const ox=(i-(arr.length-1)/2)*10; const sel=opt.selBulb===b.id;
+          if(sel) return; // selected handled by locate pin
+          const bcx=base.c.sx+ox, bcy=base.c.sy;
+          pushGlowDot(bcx, bcy, this.stColor(b.st), 4, false);
+          if(opt.onBulbClick) els.push(RE('circle',{key:k(),cx:bcx.toFixed(1),cy:bcy.toFixed(1),r:12,fill:'transparent',onClick:(e)=>{e.stopPropagation();opt.onBulbClick(b.id);},onPointerDown:(e)=>e.stopPropagation(),style:{cursor:'pointer'}})); }); });
+    }
+
+    // ---- NETWORK: mesh links + node markers ----
+    if(layer==='network'){
+      const pos={};
+      this.nodes.forEach(n=>{ const rid=this.nodeRoomId[n.room]; const base=rid?roomCeil(rid):null; if(base) pos[n.id]={x:base.c.sx,y:base.c.sy-12}; });
+      const gw=this.nodes[0];
+      this.nodes.forEach(n=>{ if(n.id===gw.id) return; if(!pos[n.id]||!pos[gw.id]) return;
+        const wired=/Wired/i.test(n.backhaul); const active=opt.selNode===n.id || opt.selNode===gw.id;
+        const col=active?'#3b6fb0':'#7d93ad';
+        els.push(RE('line',{key:k(),x1:pos[gw.id].x.toFixed(1),y1:pos[gw.id].y.toFixed(1),x2:pos[n.id].x.toFixed(1),y2:pos[n.id].y.toFixed(1),
+          stroke:col,strokeWidth:active?2:1.3,strokeOpacity:active?0.85:0.5,strokeDasharray:wired?'':'4 5',strokeLinecap:'round',
+          style:active?{filter:'drop-shadow(0 0 3px #3b6fb0)'}:{}}));
+      });
+      this.nodes.forEach(n=>{ const p=pos[n.id]; if(!p) return; const sel=opt.selNode===n.id; const isGw=n.id===gw.id;
+        const col=n.status==='ok'?(isGw?'#3b6fb0':'#46739f'):'#c0892f'; const s=isGw?14:11;
+        const nCk=opt.onNodeClick?{onClick:(e)=>{e.stopPropagation();opt.onNodeClick(n.id);},onPointerDown:(e)=>e.stopPropagation(),style:{cursor:'pointer'}}:{};
+        els.push(RE('rect',{key:k(),x:(p.x-s/2-4).toFixed(1),y:(p.y-s/2-4).toFixed(1),width:s+8,height:s+8,rx:4,fill:col,opacity:sel?0.32:0.16,style:{animation:'nodePulse 1.7s ease-in-out infinite'}}));
+        els.push(RE('rect',{key:k(),x:(p.x-s/2).toFixed(1),y:(p.y-s/2).toFixed(1),width:s,height:s,rx:3,fill:col,stroke:'#fff',strokeWidth:sel?2.2:1.4,transform:isGw?`rotate(45 ${p.x.toFixed(1)} ${p.y.toFixed(1)})`:'',...nCk}));
+        if(opt.onNodeClick) els.push(RE('rect',{key:k(),x:(p.x-s/2-6).toFixed(1),y:(p.y-s/2-6).toFixed(1),width:s+12,height:s+12,rx:5,fill:'transparent',...nCk}));
+      });
+    }
+
+    // ---- SOUND: speaker clusters ----
+    if(layer==='sound' && opt.soundRoom){
+      const base=roomCeil(opt.soundRoom);
+      if(base){ const cx=base.c.sx, cy=base.c.sy; const offs=[[-22,-12],[0,-16],[22,-12],[-26,6],[26,6],[-14,18],[14,18]];
+        offs.forEach(([ox,oy])=>{ els.push(RE('rect',{key:k(),x:(cx+ox-3.5).toFixed(1),y:(cy+oy-3.5).toFixed(1),width:7,height:7,rx:1.4,fill:this.SOUND,stroke:'#fff',strokeWidth:0.8})); });
+      }
+    }
+
+    // ---- SECURITY: cameras + FOV coverage cones ----
+    if(layer==='security'){
+      const cams = opt.cameras || this.cameras;
+      cams.forEach(cam=>{ if(!visById(cam.roomId)) return;
+        const zb=drawBase(cam.floor), zt=zb+1.0;
+        const apex=projR(cam.roomId,cam.pos[0],cam.pos[1],zt);
+        const facing=cam.facing*Math.PI/180, half=(cam.fov/2)*Math.PI/180, range=cam.range;
+        const steps=16, arc=[];
+        for(let i=0;i<=steps;i++){ const a=facing-half+(2*half)*(i/steps);
+          arc.push(projR(cam.roomId,cam.pos[0]+Math.cos(a)*range, cam.pos[1]+Math.sin(a)*range, zb)); }
+        const sel=opt.selCam===cam.id, off=cam.status!=='online';
+        const col=off?'#8a94a0':(sel?'#d2604f':'#c0573b');
+        const camHit=opt.onCamClick?{onClick:()=>opt.onCamClick(cam.id),onPointerDown:(e)=>e.stopPropagation(),style:{cursor:'pointer'}}:{};
+        els.push(RE('path',{key:k(),d:polyD([apex,...arc]),fill:this.hexA(col,sel?0.24:0.12),stroke:col,strokeWidth:sel?1.3:0.8,strokeOpacity:sel?0.85:0.45,strokeLinejoin:'round',strokeDasharray:off?'4 4':'',...camHit}));
+        els.push(RE('circle',{key:k(),cx:apex.sx.toFixed(1),cy:apex.sy.toFixed(1),r:sel?9:6,fill:col,opacity:sel?0.3:0.16,style:{animation:'nodePulse 1.7s ease-in-out infinite'}}));
+        els.push(RE('circle',{key:k(),cx:apex.sx.toFixed(1),cy:apex.sy.toFixed(1),r:11,fill:'transparent',...camHit}));
+        els.push(RE('rect',{key:k(),x:(apex.sx-4).toFixed(1),y:(apex.sy-4).toFixed(1),width:8,height:8,rx:2,fill:col,stroke:'#fff',strokeWidth:sel?1.9:1.2,...camHit}));
+      });
+    }
+
+    // ---- CLIMATE: temp/humidity sensors (planned / disconnected) ----
+    if(layer==='climate'){
+      const list=opt.sensors||this.sensors;
+      list.forEach(sn=>{ const base=roomCeil(sn.roomId); if(!base) return; const sel=opt.selSensor===sn.id;
+        const on=sn.status==='online'; const col=on?'#3f9a8c':'#8a94a0'; const cx=base.c.sx, cy=base.c.sy;
+        const snCk=opt.onSensorClick?{onClick:(e)=>{e.stopPropagation();opt.onSensorClick(sn.id);},onPointerDown:(e)=>e.stopPropagation(),style:{cursor:'pointer'}}:{};
+        if(sel) els.push(RE('circle',{key:k(),cx:cx.toFixed(1),cy:cy.toFixed(1),r:12,fill:col,opacity:0.22,style:{animation:'nodePulse 1.7s ease-in-out infinite'}}));
+        els.push(RE('rect',{key:k(),x:(cx-5).toFixed(1),y:(cy-5).toFixed(1),width:10,height:10,fill:this.hexA(col,sel?0.4:0.16),stroke:col,strokeWidth:sel?2:1.2,strokeDasharray:on?'':'3 2.5',transform:`rotate(45 ${cx.toFixed(1)} ${cy.toFixed(1)})`,...snCk}));
+        if(opt.onSensorClick) els.push(RE('circle',{key:k(),cx:cx.toFixed(1),cy:cy.toFixed(1),r:14,fill:'transparent',...snCk}));
+      });
+    }
+
+    // ---- UPKEEP: consumable device locations ----
+    if(layer==='upkeep'){
+      const items=opt.upkeep||this.upkeep; const seen={};
+      items.forEach(it=>{ const base=roomCeil(it.roomId); if(!base) return; if(opt.selUp===it.id) return;
+        if(seen[it.roomId]) return; seen[it.roomId]=1;
+        const ucx=base.c.sx, ucy=base.c.sy;
+        pushGlowDot(ucx, ucy, this.stColor(it.status), 4, false);
+        if(opt.onUpkeepClick) els.push(RE('circle',{key:k(),cx:ucx.toFixed(1),cy:ucy.toFixed(1),r:12,fill:'transparent',onClick:(e)=>{e.stopPropagation();opt.onUpkeepClick(it.id);},onPointerDown:(e)=>e.stopPropagation(),style:{cursor:'pointer'}})); });
+    }
+
+    // ---- locate / selection pin (drawn last) ----
+    if(locate && locate.roomId && visById(locate.roomId)){ const r=this.rooms.find(x=>x.id===locate.roomId);
+      if(r){ const zt=drawBase(r.floor)+r.height; const [rx,ry]=cen2(r.verts);
+        const foot=projR(locate.roomId,rx,ry,zt), head=projR(locate.roomId,rx,ry,zt+0.62);
+        els.push(RE('line',{key:k(),x1:foot.sx.toFixed(1),y1:foot.sy.toFixed(1),x2:head.sx.toFixed(1),y2:head.sy.toFixed(1),stroke:locate.color,strokeWidth:1.6}));
+        els.push(RE('circle',{key:k(),cx:head.sx.toFixed(1),cy:head.sy.toFixed(1),r:12,fill:locate.color,opacity:0.22,style:{animation:'nodePulse 1.7s ease-in-out infinite'}}));
+        els.push(RE('circle',{key:k(),cx:head.sx.toFixed(1),cy:head.sy.toFixed(1),r:6.5,fill:locate.color,stroke:'#fff',strokeWidth:1.8}));
+        els.push(RE('circle',{key:k(),cx:head.sx.toFixed(1),cy:head.sy.toFixed(1),r:2.2,fill:'#fff'}));
+        els.push(RE('circle',{key:k(),cx:foot.sx.toFixed(1),cy:foot.sy.toFixed(1),r:2.4,fill:locate.color}));
+      }
+    }
+    return els;
+  }
+
+  spkLayout(){
+    return [
+      {l:'FL',x:18,y:16,t:'main'},{l:'C',x:50,y:11,t:'main'},{l:'FR',x:82,y:16,t:'main'},
+      {l:'SL',x:9,y:50,t:'main'},{l:'SR',x:91,y:50,t:'main'},
+      {l:'RL',x:24,y:86,t:'main'},{l:'RR',x:76,y:86,t:'main'},
+      {l:'H',x:33,y:30,t:'height'},{l:'H',x:67,y:30,t:'height'},{l:'H',x:33,y:66,t:'height'},{l:'H',x:67,y:66,t:'height'},
+      {l:'S',x:38,y:90,t:'sub'},{l:'S',x:62,y:90,t:'sub'},{l:'',x:50,y:54,t:'seat'},
+    ];
+  }
+  spk(arr){ return arr.map(p=>{ const col=p.t==='sub'?'#c0573b':p.t==='height'?'#3f9a8c':p.t==='seat'?'#8a94a0':'#3b6fb0';
+    const sz=p.t==='seat'?16:13;
+    return {label:p.t==='seat'?'':p.l,
+      style:`position:absolute;left:${p.x}%;top:${p.y}%;transform:translate(-50%,-50%);width:${sz}px;height:${sz}px;border-radius:${p.t==='seat'?'50%':'2px'};background:${p.t==='seat'?'transparent':col};border:${p.t==='seat'?'1.5px solid #8a94a0':'none'};display:flex;align-items:center;justify-content:center;font:600 7px 'IBM Plex Mono',monospace;color:#fff;`}; }); }
+
+  componentDidMount(){ this._tick=setInterval(()=>{ if(this.state.mode==='security') this.forceUpdate(); },1000);
+    this._ro=()=>{ const w=window.innerWidth||1280; if(w!==this.state.vw) this.setState({vw:w}); };
+    window.addEventListener('resize',this._ro); this._ro(); }
+  componentWillUnmount(){ if(this._tick) clearInterval(this._tick); if(this._ro) window.removeEventListener('resize',this._ro); if(this._explRAF) cancelAnimationFrame(this._explRAF); if(this._autoRAF) cancelAnimationFrame(this._autoRAF); }
+
+  // smoothly ease the continuous explode parameter toward a target stop (0/1/2)
+  animateExplode(target){
+    if(this._explRAF){ cancelAnimationFrame(this._explRAF); this._explRAF=null; }
+    const start=(typeof this.state.explodeT==='number')?this.state.explodeT:target;
+    if(Math.abs(target-start)<0.001){ this.setState({explodeT:target}); return; }
+    const t0=(typeof performance!=='undefined'?performance.now():Date.now());
+    const dur=620;
+    const ease=(x)=> x<0.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2; // easeInOutCubic
+    const step=(now)=>{ const p=Math.min(1,(now-t0)/dur); const e=ease(p);
+      this.setState({explodeT:start+(target-start)*e});
+      if(p<1){ this._explRAF=requestAnimationFrame(step); } else { this._explRAF=null; } };
+    this._explRAF=requestAnimationFrame(step);
+  }
+  camHistoryFor(cam){
+    const seed=[...cam.id].reduce((a,c)=>a+c.charCodeAt(0),0);
+    const rng=(n)=>{ const x=Math.sin((seed*9301+n*49297))*233280; return x-Math.floor(x); };
+    const types=cam.type==='Doorbell'?['Ring','Person','Package','Motion']:cam.type==='Indoor'?['Motion','Person']:['Motion','Person','Vehicle','Package'];
+    const tcol={Motion:'#c0892f',Person:'#c0573b',Vehicle:'#3b6fb0',Ring:'#7b5cd6',Package:'#3f9a8c'};
+    const out=[]; let h=14,m=48;
+    for(let i=0;i<8;i++){ const t=types[Math.floor(rng(i)*types.length)];
+      m-=Math.floor(7+rng(i+30)*54); while(m<0){m+=60;h-=1;}
+      const day=h<0?'Yest.':'Today'; const hh=((h%24)+24)%24;
+      out.push({ idx:i, type:t, color:tcol[t]||'#8a94a0',
+        time:`${String(hh).padStart(2,'0')}:${String(m).padStart(2,'0')}`,
+        day, dur:`${Math.floor(4+rng(i+7)*38)}s` }); }
+    return out;
+  }
+  compass(deg){ const a=((deg%360)+360)%360;
+    const names=[[0,'E'],[45,'SE'],[90,'S'],[135,'SW'],[180,'W'],[225,'NW'],[270,'N'],[315,'NE']];
+    let best=names[6],bd=999; names.forEach(([d,n])=>{ let diff=Math.abs(a-d); diff=Math.min(diff,360-diff); if(diff<bd){bd=diff;best=[d,n];} }); return best[1]; }
+
+  renderVals(){
+    const S=this.state, C=this.cMap(), B=this.bMap();
+    const set=(o)=>this.setState(o);
+    const tone = this.props.stageTone ?? 'slate';
+    const stageGrad = tone==='ink'
+      ? 'radial-gradient(125% 120% at 50% 0%,#2a2f36 0%,#1d2126 55%,#15181c 100%)'
+      : tone==='navy'
+      ? 'radial-gradient(125% 120% at 50% 0%,#26384c 0%,#1a293a 55%,#132030 100%)'
+      : 'radial-gradient(125% 120% at 50% 0%,#33414f 0%,#232e38 55%,#1a232c 100%)';
+
+    // MODES
+    const modeDef=[['overview','Overview'],['electrical','Electrical'],['lighting','Lighting'],['network','Network'],['sound','Sound'],['security','Security'],['climate','Climate'],['upkeep','Upkeep']];
+    const modeAccent={overview:'#3b6fb0',electrical:'#3b6fb0',lighting:'#e0a043',network:'#3f9a8c',sound:this.SOUND,security:'#c0573b',climate:'#3f9a8c',upkeep:'#b07b3b'};
+    const modes=modeDef.map(([key,label])=>({key,label,onClick:()=>set({mode:key}),
+      style:`padding:6px 12px;border-radius:7px;cursor:pointer;font:500 11.5px 'IBM Plex Sans';transition:background .15s;white-space:nowrap;`+(S.mode===key?`background:${modeAccent[key]};color:#fff;`:`background:transparent;color:#aab6c1;`)}));
+    const isOverview=S.mode==='overview', isElectrical=S.mode==='electrical', isLighting=S.mode==='lighting', isNetwork=S.mode==='network', isSound=S.mode==='sound', isSecurity=S.mode==='security', isClimate=S.mode==='climate', isUpkeep=S.mode==='upkeep';
+
+    // ===================== NEW SHELL: responsive + nav rail + search =====================
+    const narrow = (S.vw||1280) < 900;
+
+    // --- nav rail (vertical list of the 8 systems) ---
+    const nav={};
+    modeDef.forEach(([key])=>{ const on=S.mode===key, ac=modeAccent[key];
+      nav[key]={ onClick:()=>set({mode:key}),
+        style: narrow
+          ? `display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:9px;cursor:pointer;user-select:none;flex-shrink:0;white-space:nowrap;transition:background .15s,color .15s;`+(on?`background:${this.hexA(ac,0.18)};color:${ac};`:`background:transparent;color:#7f8d9a;`)
+          : `display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 3px;border-radius:11px;cursor:pointer;user-select:none;transition:background .15s,color .15s;`+(on?`background:${this.hexA(ac,0.18)};color:${ac};`:`background:transparent;color:#7f8d9a;`) };
+    });
+    const navLabelStyle = narrow ? `font:600 12px 'IBM Plex Sans'` : `font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.02em`;
+
+    // --- global search across every documented thing ---
+    const q=(S.q||''); const ql=q.trim().toLowerCase();
+    const toks=ql.split(/\s+/).filter(Boolean);
+    const hay=(...p)=>p.filter(Boolean).join(' ').toLowerCase();
+    const matchH=(h)=>toks.every(t=>h.includes(t));
+    const idx=[];
+    this.rooms.forEach(r=> idx.push({cat:'Room',accent:'#6b7a88',label:r.name,sub:this.floorLabels[r.floor],h:hay(r.name,r.short,this.floorLabels[r.floor],'room'),patch:{mode:'overview',isoRooms:[r.id],isoFloor:'all',isoPanel:true}}));
+    this.circuits.forEach(c=>{ const bx=B[c.box]; const rms=this.circuitRooms(c.id).map(r=>r.name).join(' ');
+      idx.push({cat:'Circuit',accent:this.typeColor(c.type),label:c.label,sub:`${bx.short}·${c.no} · ${c.amp}A · ${c.type}`,h:hay(c.label,bx.short+c.no,bx.short+'·'+c.no,bx.name,c.type,rms,'breaker circuit fuse'),patch:{mode:'electrical',selCirc:c.id,etype:'all'}}); });
+    this.boxes.forEach(bx=> idx.push({cat:'Panel',accent:'#3b6fb0',label:bx.name,sub:bx.loc,h:hay(bx.name,bx.short,bx.loc,'breaker panel box'),patch:{mode:'electrical',selCirc:null,etype:'all'}}));
+    this.bulbs.forEach(b=> idx.push({cat:'Light',accent:'#e0a043',label:`${b.room} — ${b.fixture}`,sub:`${b.brand} ${b.model} · ${this.stLabel(b.st)||'OK'}`,h:hay(b.room,b.fixture,b.brand,b.model,b.base,b.smart?'smart':'',this.stLabel(b.st),'bulb light lamp'),patch:{mode:'lighting',bulb:b.id,lf:'all',lroom:'all'}}));
+    this.nodes.forEach(n=> idx.push({cat:'Network',accent:'#3f9a8c',label:n.name,sub:`${n.role} · ${n.room}`,h:hay(n.name,n.role,n.room,n.plug,n.backhaul,'router wifi network node mesh access point gateway'),patch:{mode:'network',selNode:n.id}}));
+    this.servers.forEach(s=> idx.push({cat:'Server',accent:'#3f9a8c',label:s.name,sub:`${s.kind} · ${s.room}`,h:hay(s.name,s.kind,s.room,'server compute pi raspberry'),patch:{mode:'network',selNode:s.node}}));
+    this.cameras.forEach(c=> idx.push({cat:'Camera',accent:'#c0573b',label:c.name,sub:`${c.type} · ${c.room} · ${c.status}`,h:hay(c.name,c.type,c.room,c.status,'camera security cctv feed'),patch:{mode:'security',selCam:c.id,feedGrid:false,camFilter:'all'}}));
+    this.sensors.forEach(s=> idx.push({cat:'Climate',accent:'#3f9a8c',label:`${s.name} sensor`,sub:`${s.target} · planned`,h:hay(s.name,s.mount,s.target,'climate temperature humidity sensor thermostat'),patch:{mode:'climate',selSensor:s.id}}));
+    this.upkeep.forEach(u=> idx.push({cat:'Upkeep',accent:'#b07b3b',label:u.kind,sub:`${u.device} · ${this.stLabel(u.status)||'OK'}`,h:hay(u.kind,u.device,u.part,this.stLabel(u.status),'replacement filter lamp salt maintenance consumable'),patch:{mode:'upkeep',selUp:u.id}}));
+    const allMatches = toks.length ? idx.filter(it=>matchH(it.h)) : [];
+    const searchCount = allMatches.length;
+    const searchResults = allMatches.slice(0,16).map(it=>({label:it.label,sub:it.sub,cat:it.cat,
+      swatch:`width:9px;height:9px;border-radius:2px;background:${it.accent};flex-shrink:0`,
+      chipStyle:`font:600 8.5px 'IBM Plex Mono',monospace;color:${it.accent};background:${this.hexA(it.accent,0.12)};border:1px solid ${this.hexA(it.accent,0.3)};padding:2px 7px;border-radius:5px;flex-shrink:0;letter-spacing:0.04em`,
+      onClick:()=>set(Object.assign({},it.patch,{q:'',searchFocus:false}))}));
+    const onSearch=(e)=>set({q:e.target.value});
+    const onSearchFocus=()=>set({searchFocus:true});
+    const onSearchBlur=()=>setTimeout(()=>{ this.setState({searchFocus:false}); },170);
+    const clearSearch=()=>set({q:'',searchFocus:false});
+    const hasQ=ql.length>0;
+    const showResults = S.searchFocus && hasQ;
+    const noResults = showResults && searchResults.length===0;
+    const showSuggest = S.searchFocus && !hasQ;
+    const searchCountLabel = searchCount===1 ? '1 match' : `${searchCount} matches`;
+    const suggestDefs=[
+      ['Garage outlets',{mode:'electrical',selCirc:'m02',etype:'all'}],
+      ['Mesh Gateway',{mode:'network',selNode:'n1'}],
+      ['Overdue bulbs',{mode:'lighting',lf:'overdue',bulb:null,lroom:'all'}],
+      ['Projector lamp',{mode:'upkeep',selUp:'u1'}],
+      ['Front Doorbell',{mode:'security',selCam:'c1',feedGrid:false}],
+      ['Wine Cellar',{mode:'overview',isoRooms:['bsmt_wine_cellar'],isoFloor:'all',isoPanel:true}],
+    ];
+    const searchSuggest=suggestDefs.map(([label,patch])=>({label,onClick:()=>set(Object.assign({},patch,{q:'',searchFocus:false}))}));
+
+    // --- responsive layout style strings (one template, JS-driven layout) ---
+    const topbarStyle=`position:absolute;top:0;left:0;right:0;height:56px;z-index:34;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:0 14px;background:rgba(17,24,31,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.08)`;
+    const railStyle = narrow
+      ? `position:absolute;top:56px;left:0;right:0;height:52px;z-index:26;display:flex;flex-direction:row;align-items:center;gap:3px;padding:0 8px;overflow-x:auto;overflow-y:hidden;background:rgba(13,19,25,0.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.06)`
+      : `position:absolute;top:56px;left:0;bottom:0;width:76px;z-index:26;display:flex;flex-direction:column;gap:3px;padding:11px 9px;overflow-y:auto;background:rgba(13,19,25,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-right:1px solid rgba(255,255,255,0.06)`;
+    const listPanelStyle = (narrow
+      ? `position:absolute;left:8px;right:8px;top:118px;height:42vh;z-index:18;display:flex;flex-direction:column;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:hidden`
+      : `position:absolute;left:88px;top:68px;bottom:14px;width:316px;z-index:18;display:flex;flex-direction:column;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:hidden`)+(narrow?(S.leftHidden?';transform:translateY(calc(-100% - 120px))':'')+';transition:transform .28s cubic-bezier(0.4,0,0.2,1)':(S.leftHidden?';transform:translateX(-100%)':'')+';transition:transform .28s cubic-bezier(0.4,0,0.2,1)');
+    const detailPanelStyle = (narrow
+      ? `position:absolute;left:8px;right:8px;bottom:8px;max-height:40vh;z-index:19;display:flex;flex-direction:column;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:auto`
+      : `position:absolute;right:14px;top:68px;bottom:14px;width:340px;z-index:18;display:flex;flex-direction:column;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:auto`)+(narrow?(S.rightHidden?';transform:translateY(calc(100% + 20px))':'')+';transition:transform .28s cubic-bezier(0.4,0,0.2,1)':(S.rightHidden?';transform:translateX(calc(100% + 16px))':'')+';transition:transform .28s cubic-bezier(0.4,0,0.2,1)');
+    const idBoxStyle=`display:flex;align-items:center;gap:10px;min-width:0`;
+    const idSubStyle=`font:400 9.5px 'IBM Plex Mono',monospace;color:#8a98a6;margin-top:2px;${narrow?'display:none':''}`;
+    const searchWrapStyle=`position:relative;width:100%;max-width:${narrow?'100%':'560px'};margin:0 auto;display:flex;align-items:center;gap:9px;height:38px;padding:0 11px;background:${S.searchFocus?'rgba(255,255,255,0.10)':'rgba(255,255,255,0.06)'};border:1px solid ${S.searchFocus?'rgba(140,180,230,0.5)':'rgba(255,255,255,0.13)'};border-radius:10px;transition:background .15s,border-color .15s`;
+    const searchInputStyle=`flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;color:#e8edf2;font:500 13px 'IBM Plex Sans'`;
+    const searchPlaceholder = narrow ? 'Search the house…' : 'Search the house — a breaker, room, light, router, camera…';
+    const resultsStyle = narrow
+      ? `position:absolute;top:50px;left:0;right:0;max-height:58vh;overflow:auto;z-index:42;background:rgba(18,24,30,0.985);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 26px 60px -14px rgba(0,0,0,0.62);color:#e8edf2;padding:7px`
+      : `position:absolute;top:50px;left:0;right:0;max-height:64vh;overflow:auto;z-index:42;background:rgba(18,24,30,0.985);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 26px 60px -14px rgba(0,0,0,0.62);color:#e8edf2;padding:7px`;
+    const controlsWrapStyle=`display:flex;align-items:center;gap:7px;justify-self:end;${narrow?'overflow-x:auto;max-width:38vw':''}`;
+
+    // ---- shared dashboard data ----
+    const due=this.bulbs.filter(b=>b.st!=='ok');
+    const alertText=`${due.length} bulbs need attention — ${this.bulbs.filter(b=>b.st==='overdue').length} overdue, ${this.bulbs.filter(b=>b.st==='soon').length} due soon`;
+    const overviewStats=[
+      {label:'ELECTRICAL',stat:String(this.circuits.length),sub:'circuits · 2 panels',accent:'#3b6fb0',onClick:()=>set({mode:'electrical'})},
+      {label:'LIGHTING',stat:String(this.bulbs.length),sub:`bulbs · ${due.length} flagged`,accent:'#e0a043',onClick:()=>set({mode:'lighting'})},
+      {label:'NETWORK',stat:String(this.nodes.length),sub:'nodes · 3 nets',accent:'#3f9a8c',onClick:()=>set({mode:'network'})},
+      {label:'SOUND',stat:'2',sub:'surround zones',accent:this.SOUND,onClick:()=>set({mode:'sound'})},
+      {label:'SECURITY',stat:String(this.cameras.length),sub:`${this.cameras.filter(c=>c.status==='online').length} cameras online`,accent:'#c0573b',onClick:()=>set({mode:'security'})},
+      {label:'UPKEEP',stat:String(this.upkeep.filter(u=>u.status!=='ok').length),sub:'replacements due',accent:'#b07b3b',onClick:()=>set({mode:'upkeep'})},
+    ];
+    const needs=due.map(b=>({room:b.room,fixture:b.fixture,statusLabel:this.stLabel(b.st),color:this.stColor(b.st),
+      dotStyle:`width:8px;height:8px;border-radius:50%;flex-shrink:0;background:${this.stColor(b.st)}`,
+      onClick:()=>set({mode:'lighting',bulb:b.id,lf:'all',lroom:'all'})}));
+    const quickFacts=[
+      {label:'Address',val:'8502 Forrest Street'},
+      {label:'Plat',val:'Lot 11 · Filing 100-H'},
+      {label:'Model',val:'April 147'},
+      {label:'Levels',val:'Second · Main · Basement'},
+      {label:'Breaker panels',val:'Main + Basement sub'},
+      {label:'Finished basement',val:'~1,940 sq ft'},
+    ];
+
+    // ---- ELECTRICAL ----
+    const etype=S.etype;
+    const eTypeDef=[['all','All'],['Lighting','Lighting'],['Outlets','Outlets'],['Appliance','Appliance'],['Mixed','Mixed']];
+    const typeFilters=eTypeDef.map(([key,label])=>({key,label,onClick:()=>set({etype:key}),
+      style:`padding:5px 11px;border-radius:6px;cursor:pointer;font:500 11px 'IBM Plex Sans';`+(etype===key?`background:#28323b;color:#fff;`:`background:rgba(255,255,255,0.05);color:#aab6c1;border:1px solid rgba(255,255,255,0.12);`)}));
+    const matches=c=>etype==='all'||c.type===etype;
+    const circGroups=this.boxes.map(bx=>({
+      boxName:bx.name, boxShort:bx.short, size:bx.size,
+      items:this.circuits.filter(c=>c.box===bx.id&&matches(c)).map(c=>{ const isSel=S.selCirc===c.id;
+        return { id:c.id, tag:`${bx.short}·${c.no}`, label:c.label, amp:`${c.amp}A`, typeLabel:c.type,
+          onClick:()=>set({selCirc:(isSel?null:c.id)}),
+          rowStyle:`display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:2px;`+(isSel?`background:#28323b;`:`background:transparent;`),
+          dotStyle:`width:9px;height:9px;border-radius:2px;flex-shrink:0;background:${this.typeColor(c.type)};${isSel?'box-shadow:0 0 0 2px rgba(255,255,255,.25);':''}`,
+          tagStyle:`font:600 10px 'IBM Plex Mono',monospace;width:42px;flex-shrink:0;color:${isSel?'#e8edf2':'#9aa8b4'}`,
+          labelStyle:`font:500 11.5px 'IBM Plex Sans';flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${isSel?'#fff':'#cfd8e0'}`,
+          ampStyle:`font:500 10px 'IBM Plex Mono',monospace;flex-shrink:0;color:${isSel?'#9aa8b4':'#8a94a0'}` }; })
+    })).filter(g=>g.items.length>0);
+    const ecount=this.circuits.filter(matches).length;
+    const selC=S.selCirc?this.circuits.find(c=>c.id===S.selCirc):null;
+    let circDet=null;
+    if(selC){
+      const bx=B[selC.box]; const rooms=this.circuitRooms(selC.id);
+      const floorsHit=[...new Set(rooms.map(r=>r.floor))];
+      const order={second:0,main:1,basement:2};
+      const fl=floorsHit.sort((a,b)=>order[a]-order[b]).map(f=>this.floorLabels[f]);
+      const spansText=floorsHit.length>1?`Spans ${floorsHit.length} levels — ${fl.join(' · ')}`:`${fl[0]} only`;
+      circDet={ tag:`${bx.short}·${selC.no}`, typeLabel:selC.type, typeColor:this.typeColor(selC.type), amp:`${selC.amp}A`, label:selC.label,
+        boxName:bx.name, boxLoc:bx.loc, spansText, loadCount:rooms.length,
+        rooms:rooms.map(r=>({ name:r.name, floorLabel:this.floorLabels[r.floor],
+          fdot:`width:6px;height:6px;border-radius:50%;flex-shrink:0;background:${r.floor==='second'?'#3b6fb0':r.floor==='main'?'#3f9a8c':'#b07b3b'}` })) };
+    }
+
+    // ---- LIGHTING ----
+    const lsum=[
+      {label:'TOTAL',val:String(this.bulbs.length),color:'#28323b'},
+      {label:'OK',val:String(this.bulbs.filter(b=>b.st==='ok').length),color:'#5a9c6e'},
+      {label:'SOON',val:String(this.bulbs.filter(b=>b.st==='soon').length),color:'#c0892f'},
+      {label:'OVERDUE',val:String(this.bulbs.filter(b=>b.st==='overdue').length),color:'#c0573b'},
+    ];
+    const lfDef=[['all','All'],['soon','Soon'],['overdue','Overdue'],['smart','Smart']];
+    const lfilters=lfDef.map(([key,label])=>({key,label,onClick:()=>set({lf:key}),
+      style:`padding:5px 10px;border-radius:6px;cursor:pointer;font:500 11px 'IBM Plex Sans';`+(S.lf===key?`background:#e0a043;color:#fff;`:`background:rgba(255,255,255,0.05);color:#aab6c1;border:1px solid rgba(255,255,255,0.12);`)}));
+    const allRooms=[...new Set(this.bulbs.map(b=>b.room))];
+    const lroomOpts=[{val:'all',label:'All rooms'},...allRooms.map(r=>({val:r,label:r}))];
+    const setLroom=(e)=>set({lroom:e.target.value,bulb:null});
+    let filtered=this.bulbs.filter(b=>{
+      if(S.lf==='smart'&&!b.smart) return false;
+      if((S.lf==='soon'||S.lf==='overdue')&&b.st!==S.lf) return false;
+      if(S.lroom!=='all'&&b.room!==S.lroom) return false;
+      return true; });
+    const bulbRows=filtered.map(b=>({id:b.id,room:b.room,fixture:b.fixture,replaced:b.replaced,
+      spec:`${b.w}W·${b.lm||'—'}lm·${b.k}K`,color:this.stColor(b.st),kColor:this.kColor(b.k),
+      rowStyle:`display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:7px;cursor:pointer;margin-bottom:3px;`+(S.bulb===b.id?'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px #e0a043;':'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);'),
+      onClick:()=>set({bulb:b.id})}));
+    const lcount=`${filtered.length} of ${this.bulbs.length}`;
+    const sb=S.bulb?this.bulbs.find(b=>b.id===S.bulb):null;
+    let bd=null;
+    if(sb){ bd={room:sb.room,fixture:sb.fixture,kColor:this.kColor(sb.k),glow:this.hexA(this.kColor(sb.k),0.7),color:this.stColor(sb.st),
+      statusFull:`${this.stLabel(sb.st)} · replaced ${sb.replaced} · ~${sb.life} yr life`,
+      statusBg:sb.st==='ok'?'rgba(90,156,110,0.16)':sb.st==='soon'?'rgba(192,137,47,0.16)':'rgba(192,87,59,0.16)',
+      statusBd:sb.st==='ok'?'rgba(90,156,110,0.34)':sb.st==='soon'?'rgba(192,137,47,0.34)':'rgba(192,87,59,0.34)',
+      specs:[
+        {k:'Wattage',v:`${sb.w} W`},
+        {k:'Brightness',v:sb.lm?`${sb.lm} lm`:'—'},
+        {k:'Color temp',v:`${sb.k}K ${sb.k<=2700?'(warm)':sb.k<=3500?'(soft)':sb.k<=4200?'(neutral)':'(daylight)'}`},
+        {k:'Base / type',v:sb.base},
+        {k:'Brand / model',v:`${sb.brand} ${sb.model}`},
+        {k:'Smart',v:sb.smart?'Yes — app controlled':'No'},
+        {k:'Last replaced',v:sb.replaced},
+      ]}; }
+    let locate=null;
+    if(sb){ const rid=this.bulbRoomId(sb.room); const col=this.stColor(sb.st);
+      const room=rid?this.rooms.find(r=>r.id===rid):null;
+      locate={ onPlan:!!room, color:col, roomId:rid,
+        floorLabel: room?this.floorLabels[room.floor]:'Exterior',
+        pinNote: room?'pinned in model':'not on plan' };
+    }
+
+    // ---- NETWORK ----
+    const netColor={}; this.networks.forEach(n=>netColor[n.id]=n.color);
+    const gw=this.nodes[0];
+    const gateway={name:gw.name,role:gw.role,room:gw.room,backhaul:gw.backhaul,plug:gw.plug};
+    const nodeList=this.nodes.map(nd=>{ const isSel=S.selNode===nd.id;
+      return {id:nd.id,name:nd.name,role:nd.role,room:nd.room,statusColor:this.stColor(nd.status),
+        netDots:nd.nets.map(x=>({color:netColor[x]})),
+        onClick:()=>set({selNode:nd.id}),
+        rowStyle:`display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:7px;cursor:pointer;margin-bottom:3px;`+(isSel?'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px #3b6fb0;':'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);')}; });
+    const snd=this.nodes.find(n=>n.id===S.selNode)||gw;
+    const sndServers=this.servers.filter(s=>s.node===snd.id);
+    const nodeDet={ show:true, name:snd.name, role:snd.role, room:snd.room, model:snd.model, backhaul:snd.backhaul, plug:snd.plug,
+      statusColor:this.stColor(snd.status), netDots:snd.nets.map(x=>({color:netColor[x]})),
+      hasServers:sndServers.length>0, servers:sndServers.map(s=>({name:s.name,kind:s.kind,power:`⚡ ${s.power}`})) };
+
+    // ---- SOUND ----
+    const zoneData=[
+      {id:'zoneA',name:'Home Theater',roomId:'bsmt_home_theater',room:'Basement · 262 sq ft · tiered platforms',config:'7.2.4',power:'AV rack on BS·4',source:'AV rack · theater mesh node',
+        gear:[{l:'AV Processor',d:'[ model ] + amp'},{l:'Projector + screen',d:'4K · 120" screen'},{l:'Front L / C / R',d:'3 × behind screen'},{l:'Surround L / R',d:'2 × in-wall'},{l:'Rear L / R',d:'2 × in-wall'},{l:'Height',d:'4 × in-ceiling'},{l:'Subwoofer',d:'2 × ported'}]},
+      {id:'zoneB',name:'Great Room',roomId:'living_room',room:'Main floor · vaulted living',config:'7.2.4 Atmos',power:'AV on MP·16 · room MP·14',source:'Fed by Pi-5 media servers',
+        gear:[{l:'AV Receiver',d:'11-channel · [ model ]'},{l:'Front L / C / R',d:'3 × floorstanding'},{l:'Surround L / R',d:'2 × in-wall'},{l:'Rear L / R',d:'2 × in-wall'},{l:'Height (Atmos)',d:'4 × in-ceiling'},{l:'Subwoofer',d:'2 × sealed'}]},
+    ];
+    const zoneList=zoneData.map(z=>{ const isSel=S.selZone===z.id;
+      return {id:z.id,name:z.name,room:z.room,config:z.config,power:z.power,
+        onClick:()=>set({selZone:z.id}),
+        cardStyle:`padding:13px 14px;border-radius:8px;cursor:pointer;margin-bottom:9px;`+(isSel?'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px '+this.SOUND+';':'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);')}; });
+    const sz=zoneData.find(z=>z.id===S.selZone)||zoneData[0];
+    const zoneDet={ name:sz.name, room:sz.room, config:sz.config, power:sz.power, source:sz.source,
+      spk:this.spk(this.spkLayout()), gear:sz.gear };
+
+    // ---- SECURITY (cameras + live feeds) ----
+    const camStatusCol=(s)=>s==='online'?'#5a9c6e':'#8a94a0';
+    const camFilter=S.camFilter||'all';
+    const camFilterDef=[['all','All'],['indoor','Indoor'],['outdoor','Outdoor'],['offline','Offline']];
+    const camFilters=camFilterDef.map(([key,label])=>({key,label,onClick:()=>set({camFilter:key}),
+      style:`padding:5px 10px;border-radius:6px;cursor:pointer;font:500 11px 'IBM Plex Sans';`+(camFilter===key?`background:#c0573b;color:#fff;`:`background:rgba(255,255,255,0.05);color:#aab6c1;border:1px solid rgba(255,255,255,0.12);`)}));
+    const camMatch=(c)=> camFilter==='all' || (camFilter==='indoor'&&c.type==='Indoor') || (camFilter==='outdoor'&&c.type!=='Indoor') || (camFilter==='offline'&&c.status!=='online');
+    const camsF=this.cameras.filter(camMatch);
+    const camList=camsF.map(c=>({id:c.id,name:c.name,sub:`${c.type} · ${c.room}`,res:c.res,statusColor:camStatusCol(c.status),
+      onClick:()=>set({selCam:c.id,feedGrid:false}),
+      rowStyle:`display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:7px;cursor:pointer;margin-bottom:3px;`+(S.selCam===c.id?'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px #c0573b;':'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);')}));
+    const camOnline=this.cameras.filter(c=>c.status==='online').length;
+    const camTotal=this.cameras.length;
+    const now=new Date();
+    const feedTime=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})+'  '+now.toLocaleDateString('en-US',{month:'short',day:'2-digit'});
+    const sc=this.cameras.find(c=>c.id===S.selCam)||this.cameras[0];
+    const scOnline=sc.status==='online';
+    const camDet={ name:sc.name, room:sc.room, type:sc.type, statusColor:camStatusCol(sc.status),
+      offline:!scOnline, liveColor:scOnline?'#e5544a':'#8a94a0', liveLabel:scOnline?'LIVE':'OFFLINE', res:sc.res, time:feedTime,
+      watermark:sc.room.toUpperCase(), coverage:`${sc.fov}° · faces ${this.compass(sc.facing)}`,
+      specs:[
+        {k:'Resolution',v:sc.res},{k:'Coverage',v:`${sc.fov}° · faces ${this.compass(sc.facing)}`},
+        {k:'Night vision',v:sc.night?'Yes — IR':'No'},{k:'Microphone',v:sc.mic?'Yes':'No'},
+        {k:'Recording',v:sc.rec},{k:'Storage',v:sc.store},{k:'Power / port',v:sc.power},
+        {k:'Status',v:scOnline?'Online':'Offline — check PoE'},
+      ]};
+    const feedTiles=this.cameras.map(c=>{ const on=c.status==='online';
+      return {id:c.id,name:c.name,sub:`${c.type} · ${c.room}`,offline:!on,liveColor:on?'#e5544a':'#8a94a0',liveLabel:on?'LIVE':'OFFLINE',res:c.res,time:feedTime,
+        watermark:c.room.toUpperCase(), onClick:()=>set({selCam:c.id,feedGrid:false}),
+        wrapStyle:`cursor:pointer;border-radius:9px;overflow:hidden;border:2px solid ${c.id===S.selCam?'#c0573b':'transparent'}`}; });
+    const openGrid=()=>set({feedGrid:true});
+    const closeGrid=()=>set({feedGrid:false});
+    const showGrid=!!S.feedGrid;
+    const feedGridSub=`${camOnline} of ${camTotal} cameras online · ${feedTime}`;
+
+    // ---- expanded camera + history review ----
+    const openExpand=()=>set({camExpanded:true,histIdx:0});
+    const closeExpand=()=>set({camExpanded:false});
+    const showCamExpanded=!!S.camExpanded;
+    const camHist=this.camHistoryFor(sc);
+    const histSel=S.histIdx||0;
+    const histActive=histSel>0?camHist[histSel-1]:null;
+    const selectHist=(i)=>set({histIdx:i});
+    const bigFeed={ name:sc.name, room:sc.room, res:sc.res, watermark:sc.room.toUpperCase(),
+      liveColor: histSel===0?(scOnline?'#e5544a':'#8a94a0'):'#e0b46b',
+      liveLabel: histSel===0?(scOnline?'LIVE':'OFFLINE'):'REVIEW',
+      time: histActive?`${histActive.day} ${histActive.time}`:feedTime,
+      eventLabel: histActive?`${histActive.type} · ${histActive.dur}`:(scOnline?'Live view':'No signal'),
+      showOffline: !scOnline && histSel===0 };
+    const expandSub=`${sc.name} · ${camHist.length} recent events`;
+    const histTiles=[{idx:0,label:'Live view',sub:scOnline?'streaming now':'offline',color:scOnline?'#e5544a':'#8a94a0',time:scOnline?'LIVE':'OFF',watermark:sc.room.toUpperCase(),
+        onClick:()=>selectHist(0),
+        dotStyle:`position:absolute;top:50%;transform:translate(-50%,-50%);width:${histSel===0?12:9}px;height:${histSel===0?12:9}px;border-radius:50%;background:${scOnline?'#e5544a':'#8a94a0'};border:1.5px solid #0b1015;cursor:pointer;left:4%`,
+        wrapStyle:`cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid ${histSel===0?'#c0573b':'rgba(255,255,255,0.06)'};flex-shrink:0`},
+      ...camHist.map((hv,i)=>({idx:i+1,label:hv.type,sub:`${hv.day} · ${hv.dur}`,color:hv.color,time:hv.time,watermark:sc.room.toUpperCase(),
+        onClick:()=>selectHist(i+1),
+        dotStyle:`position:absolute;top:50%;transform:translate(-50%,-50%);width:${histSel===i+1?12:9}px;height:${histSel===i+1?12:9}px;border-radius:50%;background:${hv.color};border:1.5px solid #0b1015;cursor:pointer;left:${12+i*11}%`,
+        wrapStyle:`cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid ${histSel===i+1?'#c0573b':'rgba(255,255,255,0.06)'};flex-shrink:0`}))];
+
+    // ---- CLIMATE (temp/humidity sensors — planned) ----
+    const sensorsPlanned=this.sensors.filter(s=>s.status!=='online').length;
+    const sensorList=this.sensors.map(s=>({id:s.id,name:s.name,mount:s.mount,
+      dot:s.status==='online'?'#3f9a8c':'#8a94a0', badge:s.status==='online'?'LIVE':'PLANNED',
+      onClick:()=>set({selSensor:s.id}),
+      rowStyle:`display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:7px;cursor:pointer;margin-bottom:3px;`+(S.selSensor===s.id?'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px #3f9a8c;':'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);')}));
+    const ssn=this.sensors.find(x=>x.id===S.selSensor)||this.sensors[0];
+    const ssnRoom=this.rooms.find(r=>r.id===ssn.roomId);
+    const sensorDet={ name:ssn.name, mount:ssn.mount, target:ssn.target, online:ssn.status==='online',
+      floorLabel: ssnRoom?this.floorLabels[ssnRoom.floor]:'—' };
+    const climateBannerText=`${sensorsPlanned} climate sensors mapped · disconnected`;
+
+    // ---- UPKEEP (consumable replacements) ----
+    const upPct=(u)=> u.metric==='level'? u.used : Math.min(100, Math.round(u.used/u.life*100));
+    const upDueLabel=(u)=> u.metric==='hours'?`${u.used}/${u.life}h` : u.metric==='months'?`${u.used}/${u.life}mo` : `${u.used}%`;
+    const upList=this.upkeep.map(u=>({id:u.id,kind:u.kind,device:u.device,statusColor:this.stColor(u.status),
+      dueLabel:upDueLabel(u), barPct:upPct(u), barColor:this.stColor(u.status),
+      onClick:()=>set({selUp:u.id}),
+      rowStyle:`padding:10px 11px;border-radius:7px;cursor:pointer;margin-bottom:4px;`+(S.selUp===u.id?'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px #b07b3b;':'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);')}));
+    const upSummary=[
+      {label:'OVERDUE',val:String(this.upkeep.filter(u=>u.status==='overdue').length),color:'#c0573b'},
+      {label:'DUE SOON',val:String(this.upkeep.filter(u=>u.status==='soon').length),color:'#c0892f'},
+      {label:'OK',val:String(this.upkeep.filter(u=>u.status==='ok').length),color:'#5a9c6e'},
+    ];
+    const upTotal=this.upkeep.length;
+    const su=this.upkeep.find(x=>x.id===S.selUp)||this.upkeep[0];
+    const suRoom=this.rooms.find(r=>r.id===su.roomId);
+    const upDet={ kind:su.kind, device:su.device, statusColor:this.stColor(su.status), statusLabel:this.stLabel(su.status),
+      statusBg: su.status==='ok'?'rgba(90,156,110,0.16)':su.status==='soon'?'rgba(192,137,47,0.16)':'rgba(192,87,59,0.16)',
+      statusBd: su.status==='ok'?'rgba(90,156,110,0.34)':su.status==='soon'?'rgba(192,137,47,0.34)':'rgba(192,87,59,0.34)',
+      barPct:upPct(su), barColor:this.stColor(su.status),
+      metricLabel: su.metric==='level'?'Salt / pellet level':su.metric==='hours'?'Lamp hours used':'Time in service',
+      metricVal: su.metric==='level'?`${su.used}% full`:su.metric==='hours'?`${su.used} of ${su.life} hr`:`${su.used} of ${su.life} mo`,
+      note:su.note, floorLabel: suRoom?this.floorLabels[suRoom.floor]:'—',
+      specs:[
+        {k:'Part / type',v:su.part},{k:'Device',v:su.device},{k:'Last replaced',v:su.lastDone},
+        {k:'Interval',v: su.metric==='hours'?`~${su.life} hr lamp`:su.metric==='months'?`every ${su.life} mo`:'refill on level'},
+      ]};
+    const upDue=this.upkeep.filter(u=>u.status!=='ok').length;
+    const upOverdue=this.upkeep.filter(u=>u.status==='overdue').length;
+    const upSoon=this.upkeep.filter(u=>u.status==='soon').length;
+    const upAlertText=`${upDue} replacements due — ${upOverdue} overdue, ${upSoon} due soon`;
+    const goClimate=()=>set({mode:'climate'});
+    const goUpkeep=()=>set({mode:'upkeep'});
+
+    // ---- 3D scene per layer ----
+    // reverse map: roomId → bulb display-room name (for lighting room click)
+    const ridToLroom={};
+    this.bulbs.forEach(b=>{ const r=this.bulbRoomId(b.room); if(r&&!ridToLroom[r]) ridToLroom[r]=b.room; });
+
+    // universal room-click — behaviour adapts to whichever mode is active
+    const onRoomClick=(rid)=>{
+      if(isOverview){ set(s=>{ const cur=new Set(s.isoRooms||[]); cur.has(rid)?cur.delete(rid):cur.add(rid); return {isoRooms:[...cur],isoFloor:'all'}; }); }
+      else if(isElectrical){ const room=this.rooms.find(r=>r.id===rid); if(room&&room.sw&&room.sw.length>0) set({selCirc:room.sw[0].c}); }
+      else if(isLighting){ const ln=ridToLroom[rid]; if(ln) set({lroom:ln,bulb:null}); }
+      else if(isNetwork){ const entry=Object.entries(this.nodeRoomId).find(([,rId])=>rId===rid); if(entry){ const nd=this.nodes.find(n=>n.room===entry[0]); if(nd) set({selNode:nd.id}); } }
+      else if(isSound){ const zone=zoneData.find(z=>z.roomId===rid); if(zone) set({selZone:zone.id}); }
+      else if(isSecurity){ const cam=this.cameras.find(c=>c.roomId===rid); if(cam) set({selCam:cam.id,feedGrid:false}); }
+      else if(isClimate){ const sn=this.sensors.find(s=>s.roomId===rid); if(sn) set({selSensor:sn.id}); }
+      else if(isUpkeep){ const it=this.upkeep.find(u=>u.roomId===rid); if(it) set({selUp:it.id}); }
+    };
+    const onFloorClick=(floor)=>set({isoFloor:floor,isoRooms:[]});
+
+    let sceneOpt={ layer:S.mode, onRoomClick, onFloorClick,
+      onPanelClick:()=>set({mode:'electrical',selCirc:null}), showRoomLabels:S.showRoomLabels!==false };
+    if(isElectrical){ sceneOpt.selC=selC; }
+    if(isLighting){ sceneOpt.bulbs=filtered; sceneOpt.selBulb=S.bulb; sceneOpt.hiColor='#e0a043';
+      sceneOpt.onBulbClick=(id)=>set({bulb:id});
+      if(sb && this.bulbRoomId(sb.room)) sceneOpt.locate={roomId:this.bulbRoomId(sb.room),color:this.stColor(sb.st)}; }
+    if(isNetwork){ sceneOpt.selNode=S.selNode; sceneOpt.hiColor='#3b6fb0';
+      sceneOpt.onNodeClick=(id)=>set({selNode:id});
+      const rid=this.nodeRoomId[snd.room]; if(rid) sceneOpt.hiRooms=[rid]; }
+    if(isSound){ sceneOpt.hiColor=this.SOUND; sceneOpt.hiRooms=zoneData.map(z=>z.roomId);
+      sceneOpt.soundRoom=sz.roomId; sceneOpt.locate={roomId:sz.roomId,color:this.SOUND}; }
+    if(isSecurity){ sceneOpt.cameras=this.cameras; sceneOpt.selCam=S.selCam; sceneOpt.hiColor='#c0573b';
+      sceneOpt.onCamClick=(id)=>set({selCam:id,feedGrid:false});
+      if(sc&&sc.roomId&&sc.type==='Indoor') sceneOpt.hiRooms=[sc.roomId]; }
+    if(isClimate){ sceneOpt.sensors=this.sensors; sceneOpt.selSensor=S.selSensor; sceneOpt.hiColor='#3f9a8c';
+      sceneOpt.onSensorClick=(id)=>set({selSensor:id});
+      if(ssn&&ssn.roomId) sceneOpt.hiRooms=[ssn.roomId]; }
+    if(isUpkeep){ sceneOpt.upkeep=this.upkeep; sceneOpt.selUp=S.selUp; sceneOpt.hiColor='#b07b3b';
+      sceneOpt.onUpkeepClick=(id)=>set({selUp:id});
+      if(su&&su.roomId){ sceneOpt.hiRooms=[su.roomId]; sceneOpt.locate={roomId:su.roomId,color:this.stColor(su.status)}; } }
+    if(isOverview){ sceneOpt.onNodeClick=(id)=>set({mode:'network',selNode:id});
+      sceneOpt.onBulbClick=(id)=>set({mode:'lighting',bulb:id}); }
+    const svgEls=this.scene3D(sceneOpt);
+
+    // ---- prompt / legend / hint ----
+    const showPrompt = (isElectrical&&!selC) || (isLighting&&!sb);
+    const promptText = isElectrical?'Click a circuit in the list — or click a room in the model'
+      : isLighting?'Click a bulb in the list — or click a room to filter it' : '';
+    let legendTitle='SYSTEMS', legendItems=[];
+    const sw=(c,sq)=>`width:10px;height:10px;border-radius:${sq?'2px':'50%'};background:${c};flex-shrink:0`;
+    if(isOverview){ legendTitle='OVERVIEW'; legendItems=[
+      {label:'Breaker panel',swatch:`width:14px;height:10px;border-radius:2px;background:#e8edf2;border:1px solid #9aa4ad;flex-shrink:0`},
+      {label:'Flagged bulb',swatch:sw('#c0892f')},{label:'Mesh node',swatch:sw('#3b6fb0',true)} ]; }
+    else if(isElectrical){ legendTitle='CIRCUIT TYPE'; legendItems=[
+      {label:'Lighting',swatch:sw('#e0a043',true)},{label:'Outlets',swatch:sw('#3b6fb0',true)},
+      {label:'Appliance',swatch:sw('#c0573b',true)},{label:'Mixed',swatch:sw('#3f9a8c',true)} ]; }
+    else if(isLighting){ legendTitle='BULB STATUS'; legendItems=[
+      {label:'OK',swatch:sw('#5a9c6e')},{label:'Due soon',swatch:sw('#c0892f')},{label:'Overdue',swatch:sw('#c0573b')} ]; }
+    else if(isNetwork){ legendTitle='NETWORKS'; legendItems=[
+      {label:'Main / Trusted',swatch:sw('#3b6fb0',true)},{label:'IoT',swatch:sw('#3f9a8c',true)},
+      {label:'Guest',swatch:sw('#c0892f',true)},{label:'◇ Gateway',swatch:sw('#3b6fb0',true)} ]; }
+    else if(isSound){ legendTitle='SOUND'; legendItems=[
+      {label:'Surround zone',swatch:sw(this.SOUND)},{label:'Speaker',swatch:sw(this.SOUND,true)} ]; }
+    else if(isSecurity){ legendTitle='SECURITY'; legendItems=[
+      {label:'Camera + coverage',swatch:sw('#c0573b',true)},{label:'Offline camera',swatch:sw('#8a94a0',true)} ]; }
+    else if(isClimate){ legendTitle='CLIMATE'; legendItems=[
+      {label:'Sensor (planned)',swatch:`width:10px;height:10px;background:#8a94a022;border:1px dashed #8a94a0;transform:rotate(45deg);flex-shrink:0`},
+      {label:'Disconnected',swatch:sw('#8a94a0',true)} ]; }
+    else if(isUpkeep){ legendTitle='REPLACEMENTS'; legendItems=[
+      {label:'OK',swatch:sw('#5a9c6e')},{label:'Due soon',swatch:sw('#c0892f')},{label:'Overdue',swatch:sw('#c0573b')} ]; }
+
+    // explode as a 3-stop slider
+    const explodeOrder=['stacked','floors','full'];
+    const explodeNames={stacked:'STACKED',floors:'FLOORS',full:'EXPLODED'};
+    const explodeIdx=Math.max(0,explodeOrder.indexOf(S.explode));
+    const explodeLabel=explodeNames[S.explode]||'EXPLODED';
+    const onExplodeSlide=(e)=>{ const idx=Math.max(0,Math.min(2,+e.target.value)); set({explode:explodeOrder[idx]||'stacked'}); this.animateExplode(idx); };
+    const onSliderDown=(e)=>{ e.stopPropagation(); this.setState({sliderFocused:true}); };
+    const onSliderUp=()=>this.setState({sliderFocused:false});
+    const sliderFocused=!!S.sliderFocused;
+    const _db='position:absolute;left:50%;transform:translateX(-50%);border-radius:50%;pointer-events:none;z-index:1;width:5px;height:5px;transition:background .15s';
+    const sliderDot2Style=`${_db};top:4px;background:${explodeIdx===2?'#e0a043':'rgba(255,255,255,0.22)'}`;
+    const sliderDot1Style=`${_db};top:37px;background:${explodeIdx===1?'#e0a043':'rgba(255,255,255,0.22)'}`;
+    const sliderDot0Style=`${_db};bottom:4px;background:${explodeIdx===0?'#e0a043':'rgba(255,255,255,0.22)'}`;
+    const sliderPopupStyle='position:absolute;right:38px;top:50%;transform:translateY(-50%);z-index:30;display:flex;flex-direction:column;gap:1px;padding:7px 10px;background:rgba(13,19,26,0.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.13);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.55);animation:floatIn .18s ease both;pointer-events:none;white-space:nowrap';
+    const sliderStops=[
+      {label:'EXPLODED',style:`font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.07em;color:${explodeIdx===2?'#e0a043':'#5a6877'};padding:2px 0`},
+      {label:'FLOORS',  style:`font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.07em;color:${explodeIdx===1?'#e0a043':'#5a6877'};padding:2px 0`},
+      {label:'STACKED', style:`font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.07em;color:${explodeIdx===0?'#e0a043':'#5a6877'};padding:2px 0`},
+    ];
+    const leftHidden=!!S.leftHidden;
+    const rightHidden=!!S.rightHidden;
+    const toggleLeft=()=>this.setState(s=>{ const sh=Math.round(158*960/(s.vw||1280)); return {leftHidden:!s.leftHidden,panX:(s.panX||0)+(s.leftHidden?sh:-sh)}; });
+    const toggleRight=()=>this.setState(s=>{ const sh=Math.round(170*960/(s.vw||1280)); return {rightHidden:!s.rightHidden,panX:(s.panX||0)+(s.rightHidden?-sh:sh)}; });
+    const mapRight = rightHidden ? 20 : 370;
+    const clusterRight = mapRight + 16;
+    const isoPanelStyle=`position:absolute;top:64px;right:${mapRight}px;z-index:21;width:236px;max-height:calc(100vh - 84px);display:flex;flex-direction:column;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-radius:10px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:hidden;animation:floatIn .25s ease both;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
+    const legendPanelStyle=`position:absolute;right:${clusterRight+185}px;bottom:18px;z-index:16;display:flex;flex-direction:column;gap:6px;padding:10px 13px;background:rgba(13,19,26,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.10);border-radius:9px;animation:floatIn .3s ease both;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
+    const labelsOn = S.showRoomLabels !== false;
+    const toggleLabels=()=>set(s=>({showRoomLabels:!s.showRoomLabels}));
+    const resetView=()=>set({yaw:35,pitch:58,zoom:1,panX:0,panY:0});
+    const autoRotate=!!S.autoRotate;
+    const autoBtnLabel=autoRotate?'Spinning':'Auto-spin';
+    const autoOrbitColor=autoRotate?'#f0c060':'#6a7a8a';
+    const toggleLegend=()=>set(s=>({legend:!s.legend}));
+    const zoomIn=()=>set(s=>({zoom:Math.min(4,s.zoom*1.15)}));
+    const zoomOut=()=>set(s=>({zoom:Math.max(0.4,s.zoom*0.87)}));
+    // view options drawer
+    const viewOptsOpen=!!S.viewOptsOpen;
+    const toggleViewOpts=()=>set(s=>({viewOptsOpen:!s.viewOptsOpen}));
+    const zoomPct=Math.round(S.zoom*100)+'%';
+    const setExplode0=()=>{ set({explode:'stacked'}); this.animateExplode(0); };
+    const setExplode1=()=>{ set({explode:'floors'}); this.animateExplode(1); };
+    const setExplode2=()=>{ set({explode:'full'}); this.animateExplode(2); };
+    const _exBase="flex:1;text-align:center;padding:5px 4px;border-radius:6px;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:0.06em;cursor:pointer;user-select:none;border:1px solid;transition:background .12s,color .12s";
+    const explodeBtn0Style=`${_exBase};${explodeIdx===0?'border-color:rgba(224,160,67,.55);background:rgba(224,160,67,.15);color:#e0a043':'border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#6e7e8c'}`;
+    const explodeBtn1Style=`${_exBase};${explodeIdx===1?'border-color:rgba(224,160,67,.55);background:rgba(224,160,67,.15);color:#e0a043':'border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#6e7e8c'}`;
+    const explodeBtn2Style=`${_exBase};${explodeIdx===2?'border-color:rgba(224,160,67,.55);background:rgba(224,160,67,.15);color:#e0a043':'border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#6e7e8c'}`;
+    const _voRow="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;user-select:none;font:400 12px 'IBM Plex Sans',sans-serif";
+    const voResetRowStyle=`${_voRow};color:#c4d0db;background:rgba(255,255,255,0.04)`;
+    const voAutoRowStyle=`${_voRow};color:${autoRotate?'#e3b264':'#c4d0db'};background:${autoRotate?'rgba(224,160,67,.10)':'rgba(255,255,255,0.04)'}`;
+    const voLabelsRowStyle=`${_voRow};color:${labelsOn?'#9cc0ee':'#c4d0db'};background:${labelsOn?'rgba(59,111,176,.10)':'rgba(255,255,255,0.04)'}`;
+    const voLegendRowStyle=`${_voRow};color:${S.legend?'#9cc0ee':'#c4d0db'};background:${S.legend?'rgba(59,111,176,.10)':'rgba(255,255,255,0.04)'}`;
+    const voIconCellStyle="width:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;line-height:1";
+    const _dot8="width:7px;height:7px;border-radius:50%;flex-shrink:0";
+    const voAutoToggleStyle=`${_dot8};background:${autoRotate?'#e0a043':'rgba(255,255,255,0.18)'}`;
+    const voLabelsToggleStyle=`${_dot8};background:${labelsOn?'#6ea0e0':'rgba(255,255,255,0.18)'}`;
+    const voLegendToggleStyle=`${_dot8};background:${S.legend?'#6ea0e0':'rgba(255,255,255,0.18)'}`;
+    const voDrawerStyle="display:flex;flex-direction:column;gap:2px;padding:10px 10px 8px;border-bottom:1px solid rgba(255,255,255,0.07)";
+    const voSectionLabelStyle="font:500 8px 'IBM Plex Mono',monospace;color:#5a6877;letter-spacing:0.12em;margin-bottom:4px";
+    const voDivStyle="height:1px;background:rgba(255,255,255,0.07);margin:4px 0";
+    const zoomBarStyle="display:flex;align-items:center;gap:3px;padding:6px 7px";
+    const zoomBtnStyle="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;user-select:none;font:400 19px 'IBM Plex Sans',sans-serif;color:#cdd6df;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);line-height:1;flex-shrink:0";
+    const zoomPctStyle="width:38px;text-align:center;font:600 10px 'IBM Plex Mono',monospace;color:#8a98a6;letter-spacing:0.04em;flex-shrink:0";
+    const viewOptsBtnStyle=`width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;user-select:none;flex-shrink:0;border:1px solid ${viewOptsOpen?'rgba(110,160,224,.5)':'rgba(255,255,255,0.10)'};background:${viewOptsOpen?'rgba(59,111,176,.18)':'rgba(255,255,255,0.06)'};color:${viewOptsOpen?'#9cc0ee':'#cdd6df'}`;
+    // right controls cluster
+    const ctrlClusterStyle=`position:absolute;bottom:18px;right:${clusterRight}px;z-index:22;display:flex;flex-direction:column;align-items:stretch;background:rgba(13,19,26,0.91);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.10);border-radius:13px;box-shadow:0 12px 36px -8px rgba(0,0,0,.62);transition:right .28s cubic-bezier(.4,0,.2,1);overflow:hidden`;
+
+    // ---- ISOLATION (single floor / single room / group of rooms) ----
+    const isoFloor=S.isoFloor||'all';
+    const isoRooms=S.isoRooms||[];
+    const isoActive = isoFloor!=='all' || isoRooms.length>0;
+    const isoTotal=this.rooms.length;
+    const isoVisCount = isoRooms.length ? isoRooms.length : (isoFloor==='all'? isoTotal : this.rooms.filter(r=>r.floor===isoFloor).length);
+    const isoFloorDefs=[['all','All'],['basement','Basement'],['main','Main'],['second','2nd']];
+    const isoFloors=isoFloorDefs.map(([key,label])=>{ const on=isoRooms.length===0 && isoFloor===key;
+      return { label, onClick:()=>set({isoFloor:key, isoRooms:[]}),
+        style:`flex:1;text-align:center;padding:5px 4px;border-radius:6px;cursor:pointer;font:500 11px 'IBM Plex Sans';white-space:nowrap;`+(on?'background:#3b6fb0;color:#fff;':'background:rgba(255,255,255,0.05);color:#aab6c1;border:1px solid rgba(255,255,255,0.12);') }; });
+    const floorOrder=['second','main','basement'];
+    const isoRoomGroups=floorOrder.filter(f=>this.rooms.some(r=>r.floor===f)).map(f=>({
+      label:this.floorLabels[f],
+      rooms:this.rooms.filter(r=>r.floor===f).map(r=>{ const on=isoRooms.includes(r.id);
+        return { name:r.name, onClick:()=>set(s=>{ const cur=new Set(s.isoRooms||[]); cur.has(r.id)?cur.delete(r.id):cur.add(r.id); return { isoRooms:[...cur], isoFloor:'all' }; }),
+          style:`padding:4px 9px;border-radius:13px;cursor:pointer;font:500 10.5px 'IBM Plex Sans';`+(on?'background:#3b6fb0;color:#fff;border:1px solid #3b6fb0;':'background:rgba(255,255,255,0.05);color:#aab6c1;border:1px solid rgba(255,255,255,0.12);') }; }),
+    }));
+    const isoClear=()=>set({isoFloor:'all', isoRooms:[]});
+    const toggleIso=()=>set(s=>({isoPanel:!s.isoPanel}));
+    const showIsoPanel=!!S.isoPanel;
+    const isoCountLabel = isoActive ? `Showing ${isoVisCount} of ${isoTotal} rooms` : `Showing all ${isoTotal} rooms`;
+    const isoClearLabel = isoActive ? 'Clear' : '';
+    const isoTopLabel = isoActive ? `Isolate · ${isoVisCount}` : 'Isolate';
+    const isoOn = isoActive || S.isoPanel;
+    const isoBtnTopStyle=`pointer-events:auto;padding:7px 12px;border-radius:8px;font:500 11.5px 'IBM Plex Sans';cursor:pointer;user-select:none;border:1px solid ${isoOn?'rgba(110,160,224,0.5)':'rgba(255,255,255,0.10)'};background:${isoOn?'rgba(110,160,224,0.18)':'rgba(22,30,38,0.0)'};color:${isoOn?'#a9c8f0':'#cdd6df'}`;
+
+    return {
+      narrow, nav, navLabelStyle, topbarStyle, railStyle, listPanelStyle, detailPanelStyle,
+      idBoxStyle, idSubStyle, searchWrapStyle, searchInputStyle, searchPlaceholder, controlsWrapStyle,
+      q, onSearch, onSearchFocus, onSearchBlur, clearSearch, hasQ,
+      showResults, noResults, showSuggest, searchResults, searchCountLabel, searchSuggest, resultsStyle,
+      stageGrad, modes, isOverview, isElectrical, isLighting, isNetwork, isSound,
+      svgEls, stageRef:this.stageRef, onPointerDown:this.onPointerDown, onPointerMove:this.onPointerMove, onPointerUp:this.onPointerUp, onContextMenu:this.onContextMenu,
+      explodeIdx, explodeLabel, onExplodeSlide, onSliderDown, onSliderUp, sliderFocused,
+      sliderDot0Style, sliderDot1Style, sliderDot2Style, sliderPopupStyle, sliderStops,
+      toggleLegend, zoomIn, zoomOut, resetView,
+      autoRotate, toggleAuto:this.toggleAuto, autoBtnLabel, autoOrbitColor,
+      toggleLabels,
+      ctrlClusterStyle,
+      viewOptsOpen, toggleViewOpts, zoomPct,
+      setExplode0, setExplode1, setExplode2, explodeBtn0Style, explodeBtn1Style, explodeBtn2Style,
+      voDrawerStyle, voSectionLabelStyle, voDivStyle,
+      voResetRowStyle, voAutoRowStyle, voLabelsRowStyle, voLegendRowStyle,
+      voIconCellStyle, voAutoToggleStyle, voLabelsToggleStyle, voLegendToggleStyle,
+      zoomBarStyle, zoomBtnStyle, zoomPctStyle, viewOptsBtnStyle,
+      isoPanelStyle, legendPanelStyle,
+      leftHidden, rightHidden, toggleLeft, toggleRight,
+      leftTabStyle: narrow?'display:none':`position:absolute;top:50%;margin-top:-24px;z-index:20;cursor:pointer;left:${S.leftHidden?88:403}px;transition:left .28s cubic-bezier(0.4,0,0.2,1);width:14px;height:48px;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-left:none;border-radius:0 6px 6px 0;display:flex;align-items:center;justify-content:center;color:#6a7a88;font-size:10px`,
+      rightTabStyle: narrow?'display:none':`position:absolute;top:50%;margin-top:-24px;z-index:20;cursor:pointer;right:${S.rightHidden?13:353}px;transition:right .28s cubic-bezier(0.4,0,0.2,1);width:14px;height:48px;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-right:none;border-radius:6px 0 0 6px;display:flex;align-items:center;justify-content:center;color:#6a7a88;font-size:10px`,
+      leftTabChevron: S.leftHidden?'›':'‹',
+      rightTabChevron: S.rightHidden?'‹':'›',
+      isoFloors, isoRoomGroups, isoClear, toggleIso, showIsoPanel, isoCountLabel, isoClearLabel, isoTopLabel, isoBtnTopStyle,
+      showPrompt, promptText, showLegend:S.legend, legendTitle, legendItems,
+      goLighting:()=>set({mode:'lighting'}),
+      overviewStats, quickFacts, needs, alertText,
+      typeFilters, circGroups, ecount, hasSel:!!selC, noSel:!selC, circDet,
+      lsum, lfilters, lroom:S.lroom, lroomOpts, setLroom, bulbRows, lcount, noBulb:!sb, hasBulb:!!sb, bd, locate,
+      networks:this.networks, gateway, nodeList, nodeDet,
+      zoneList, zoneDet,
+      isSecurity, isClimate, isUpkeep,
+      camFilters, camList, camOnline, camTotal, camDet, feedTiles, openGrid, closeGrid, showGrid, feedGridSub,
+      openExpand, closeExpand, showCamExpanded, bigFeed, histTiles, expandSub,
+      sensorsPlanned, sensorList, sensorDet, climateBannerText,
+      upSummary, upTotal, upList, upDet, upAlertText, goClimate, goUpkeep,
+    };
+  }
+}
+</script>
+</body>
+</html>

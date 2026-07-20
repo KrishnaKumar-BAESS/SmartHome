@@ -12,6 +12,12 @@ Format: [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `home-docs/app/` — interactive Smart Home Documentation System; isometric 3D
+  house model (pan/zoom/rotate/explode) with 8 views: Overview, Electrical,
+  Lighting, Network, Sound, Security, Climate, Upkeep; covers 21 rooms across
+  3 floors, 13+ circuits on 2 panels, 18 bulbs, 6 mesh nodes, 8 cameras; runs
+  in-browser via the DC runtime with no build step (`home-documentation.dc.html`
+  + `support.js`)
 - Scaffolded umbrella repo structure: root docs, `.claude/`, `security/`,
   `home-docs/`, `platforms/`, `scripts/`
 - `AGENTS.md` — canonical, tool-agnostic AI assistant guide including changelog
