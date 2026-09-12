@@ -1,46 +1,37 @@
-# Architecture — SmartHome Umbrella Repo
+# Architecture
 
-## What this repo is
+SmartHome is a workspace of independent home subsystems. Root tooling provides
+consistent commands and CI; it does not introduce shared databases or services.
 
-`SmartHome` is a **monorepo of subsystems**. Each home automation system (or the
-home documentation system) lives in its own top-level directory and is completely
-self-contained. There is no shared application runtime — the umbrella is an
-organisational boundary, not a build system.
+## Active application
 
-Shared meta — conventions, glossary, architecture notes, decision records — lives
-at the root under `docs/`.
+`home-docs/apps/web` is a React 19 application built with Vite 8. It uses native
+React components and locally bundled fonts. Vite compiles modules at build time;
+there is no DC runtime, browser template compiler, or CDN React dependency.
 
-## Subsystem boundary model
+`src/data/house.ts` owns inventory and floor coordinates. The house controller
+owns interaction state and derives view data. The SVG renderer projects the floor
+model and system overlays. Separate components render navigation, search, inventory,
+details, isolation, camera demonstrations, and view controls.
 
-A subsystem:
+New code uses strict TypeScript. The preserved controller, geometry renderer and
+converted views currently use native JSX; they are linted and covered by browser
+tests, with incremental TypeScript conversion documented as remaining work.
 
-- Has a single top-level directory (e.g. `security/`, `home-docs/`).
-- Owns all of its code, configuration, infrastructure definitions, and internal
-  documentation inside that directory.
-- Does **not** share libraries, databases, or runtime services with other
-  subsystems. If sharing becomes necessary, it warrants an ADR.
-- Has its own tooling choices (language, framework, package manager) independent
-  of other subsystems.
+## Boundaries
 
-Automation **platforms** (Home Assistant, Node-RED, Zigbee2MQTT, ESPHome, …) are
-a special category: they each get a subdirectory under `platforms/` rather than a
-top-level directory, because they are infrastructure rather than distinct products.
+- `home-docs/`: active documentation app and source references.
+- `security/`: reserved for a future deliberate KumarSec migration.
+- `platforms/`: reserved for Home Assistant and other platform configurations.
+- `docs/archive/`: historical source, not application code or public assets.
 
-## How to add a new subsystem
+There is no cross-repository runtime integration. A new subsystem owns its code,
+configuration and tests. Add a workspace glob only when a package exists. Do not
+create empty packages, shared libraries or a task orchestrator ahead of need.
 
-1. **Create the top-level directory** (or `platforms/<name>/` for a platform).
-2. **Give it a `README.md`** describing its purpose, status, and key entry points.
-3. **Add internal structure as needed** — `apps/`, `services/`, `infra/`, `docs/`
-   — following the conventions in [`docs/conventions.md`](conventions.md).
-4. **Register it** in the subsystem map table in the root [`README.md`](../README.md)
-   and in [`AGENTS.md`](../AGENTS.md).
-5. **Add a changelog entry** under `[Unreleased]` in [`CHANGELOG.md`](../CHANGELOG.md)
-   following the protocol in `AGENTS.md`.
+## Deployment
 
-## Current subsystems
-
-| Directory    | Type       | Status      |
-|--------------|------------|-------------|
-| `security/`  | Subsystem  | Placeholder |
-| `home-docs/` | Subsystem  | Placeholder |
-| `platforms/` | Platforms  | Reserved    |
+`pnpm build` writes a static site to `home-docs/apps/web/dist`. A static server
+can host that directory. The application currently uses one URL and requires no
+history fallback routing. Never serve the repository root, which includes private
+home reference material and the historical prototype.

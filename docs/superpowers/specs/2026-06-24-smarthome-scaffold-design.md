@@ -154,7 +154,7 @@ every assistant handles it consistently:
   do not require an entry.
 - Each entry is one line, imperative, and names the subsystem it touches when
   applicable (e.g. `Added security/ placeholder reserving the slot for the
-  polished KumarSec stack`).
+polished KumarSec stack`).
 - Versioned releases (cutting `[Unreleased]` to a dated version) are manual and
   intentional; assistants append to `[Unreleased]`, they do not cut releases
   unless asked.

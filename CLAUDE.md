@@ -6,11 +6,11 @@ specific to Claude Code; it does not duplicate anything in `AGENTS.md`.
 
 ## `.claude/` layout
 
-| File                       | Purpose                                      |
-|----------------------------|----------------------------------------------|
-| `settings.json`            | Checked-in project settings (shared)         |
-| `settings.local.json`      | Machine-local overrides — **gitignored**, never commit |
-| `README.md`                | Explains this folder                         |
+| File                  | Purpose                                                |
+| --------------------- | ------------------------------------------------------ |
+| `settings.json`       | Checked-in project settings (shared)                   |
+| `settings.local.json` | Machine-local overrides — **gitignored**, never commit |
+| `README.md`           | Explains this folder                                   |
 
 ## Superpowers / skills
 

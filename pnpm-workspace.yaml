@@ -1,0 +1,5 @@
+packages:
+  - home-docs/apps/*
+
+minimumReleaseAge: 1440
+strictPeerDependencies: true

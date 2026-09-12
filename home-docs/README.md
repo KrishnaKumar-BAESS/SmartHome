@@ -1,42 +1,19 @@
-# home-docs/
+# Home documentation
 
-Interactive home documentation system for 8502 Forrest St · April 147.
+The active application lives in [apps/web](apps/web/). It preserves the original
+interactive house model, search, floor isolation, camera demonstrations, and eight
+documentation modes in a native React app.
 
-## What's here
+Run `pnpm dev` from the repository root. See the root [README](../README.md) for
+installation, checks and the production preview.
 
-`app/` — self-contained browser app (no build step required):
+| Location                       | Purpose                                                   |
+| ------------------------------ | --------------------------------------------------------- |
+| `apps/web/src/data/house.ts`   | House inventory and original floor geometry               |
+| `apps/web/src/features/house/` | Native React view components, controller and SVG renderer |
+| `apps/web/src/lib/`            | Typed styling and keyboard helpers                        |
+| `apps/web/e2e/`                | Browser interaction tests                                 |
+| `reference/`                   | Original source workbook                                  |
 
-| File | Purpose |
-|------|---------|
-| `home-documentation.dc.html` | Main app — 3D isometric house model with 8 documentation views |
-| `support.js` | DC runtime (loads React 18 from CDN, powers the `.dc.html` format) |
-
-## Running locally
-
-Serve `app/` over HTTP (required — React loads from the CDN and `file://` won't work):
-
-```sh
-cd home-docs/app
-python -m http.server 8080
-```
-
-Then open `http://localhost:8080/home-documentation.dc.html` in a browser.
-
-## Views
-
-| Mode | What it shows |
-|------|--------------|
-| Overview | Isometric 3D house model — all floors, pan/zoom/rotate/explode |
-| Electrical | Breaker panels (Main + Basement Subpanel), 13+ circuits, loads |
-| Lighting | 18 bulbs across all rooms, fixture types, dimmer status |
-| Network | Mesh nodes, coverage map, 6-node Wi-Fi topology |
-| Sound | Speaker zones |
-| Security | 8 cameras with live-feed mockups |
-| Climate | 7 planned sensor locations |
-| Upkeep | 7 consumable items with service intervals |
-
-## Tech
-
-`.dc.html` is a Claude Design Component — a self-contained React app authored in the
-DC prototype format. The runtime (`support.js`) compiles the template and mounts it.
-No build tooling, no package.json, no Node required.
+The documentation data remains local and read-only. Camera feeds are mockups;
+no device integrations or backend were added by the tooling migration.

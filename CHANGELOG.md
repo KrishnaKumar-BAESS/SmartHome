@@ -10,14 +10,28 @@ Format: [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep home-docs model controls and floor isolation inside mobile viewports.
+
+### Changed
+
+- Modernize home-docs with native React 19 components, Vite 8, typed inventory, and locally bundled fonts.
+- Organize home-docs into apps/web and reference; archive the original DC app intact outside production assets.
+- Update repository guidance to describe the active application and remaining integration boundaries.
+
 ### Added
+
+- Add pnpm workspace commands, a pinned toolchain and lockfile, ESLint, Prettier, Vitest and Playwright.
+- Add CI checks and dependency update configuration.
+- Add inventory migration parity and reference-integrity tests plus desktop/mobile browser checks.
 
 - `home-docs/app/` — interactive Smart Home Documentation System; isometric 3D
   house model (pan/zoom/rotate/explode) with 8 views: Overview, Electrical,
   Lighting, Network, Sound, Security, Climate, Upkeep; covers 21 rooms across
   3 floors, 13+ circuits on 2 panels, 18 bulbs, 6 mesh nodes, 8 cameras; runs
   in-browser via the DC runtime with no build step (`home-documentation.dc.html`
-  + `support.js`)
+  - `support.js`)
 - Scaffolded umbrella repo structure: root docs, `.claude/`, `security/`,
   `home-docs/`, `platforms/`, `scripts/`
 - `AGENTS.md` — canonical, tool-agnostic AI assistant guide including changelog

@@ -1,54 +1,32 @@
-# AGENTS.md — AI Assistant Guide
+# SmartHome contributor and agent guide
 
-This file is the **single source of truth** for any AI coding assistant working in
-this repository. Read it before making any changes.
+SmartHome organizes independent home subsystems. Read [docs/conventions.md](docs/conventions.md)
+before editing. Current architecture: [docs/architecture.md](docs/architecture.md).
 
-## Repo purpose
+## Active code
 
-`SmartHome` is an umbrella monorepo for home automation and home documentation.
-Subsystems are self-contained top-level directories. Shared meta lives at the root.
+- `home-docs/apps/web/`: React 19 / Vite 8 application.
+- `home-docs/apps/web/src/data/house.ts`: inventory and floor geometry.
+- `home-docs/apps/web/src/features/house/`: native React views, controller, renderer.
+- `security/` and `platforms/`: reserved; no integration exists yet.
+- `docs/archive/`: immutable historical reference, excluded from builds and formatting.
+- `home-docs/reference/`: source workbook; preserve its contents.
 
-## Subsystem map
+## Working rules
 
-| Directory    | Status      | Notes                                                |
-|--------------|-------------|------------------------------------------------------|
-| `security/`  | Placeholder | KumarSec polished stack — https://github.com/BAESolutions/KumarSec |
-| `home-docs/` | Placeholder | Home documentation system, design pending            |
-| `platforms/` | Reserved    | One subdirectory per future automation platform      |
+1. Use the pinned Node and pnpm versions. Use pnpm only; commit the lockfile.
+2. Keep code inside its subsystem. Add shared packages only for demonstrated reuse.
+3. New modules use strict TypeScript. Existing JSX is preserved migration code; do
+   not introduce DC templates, CDN scripts, eval, or browser compilation.
+4. Preserve the house model and inventory. Do not label documented/mock device
+   statuses as live telemetry. Never change historical sources to satisfy tests.
+5. Run `pnpm format:check`, `pnpm check` and `pnpm test:e2e` before committing.
+6. Inspect `git diff --stat` before every atomic conventional commit. Do not add
+   assistant attribution. Avoid unrelated line-ending changes.
+7. Record notable changes in root `CHANGELOG.md` under `[Unreleased]`; do not cut
+   releases unless requested.
+8. Secrets belong in ignored environment files. Serve production `dist/` only,
+   never the repository root or reference material.
 
-## Conventions
-
-1. **Each subsystem is self-contained.** It owns its own `apps/`, `services/`,
-   `infra/`, and `docs/` as needed. Do not reach across subsystem boundaries.
-2. **Secrets are never committed.** `.env` files are gitignored. Commit
-   `.env.example` templates instead. See [`docs/conventions.md`](docs/conventions.md).
-3. **Follow existing patterns.** Match the naming, structure, and tooling already
-   present in the subsystem you are modifying. Introduce new tooling only when
-   there is a clear reason.
-4. **Directory names are kebab-case.** File names in documentation are kebab-case.
-   Code follows the conventions of the language/framework in use.
-
-## Changelog update protocol
-
-The repo keeps a single root [`CHANGELOG.md`](CHANGELOG.md) in
-[Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) format.
-
-- All notable changes go under the **`[Unreleased]`** section, grouped by
-  `Added` / `Changed` / `Deprecated` / `Removed` / `Fixed` / `Security`.
-- **When to update:** any change that adds or removes a subsystem, changes
-  structure or conventions, or is otherwise user-visible. Routine doc typo fixes
-  do not require an entry.
-- Each entry is one line, imperative mood, and names the subsystem it touches
-  when applicable (e.g. `Added security/ placeholder reserving the slot for the
-  polished KumarSec stack`).
-- Versioned releases (cutting `[Unreleased]` to a dated version) are manual and
-  intentional. Assistants append to `[Unreleased]`; they do not cut releases
-  unless explicitly asked.
-
-## KumarSec reference
-
-The `security/` subsystem will eventually host a polished version of KumarSec:
-<https://github.com/BAESolutions/KumarSec>. The stack includes RTSP cameras,
-MediaMTX media server, a YOLO-based AI worker, a FastAPI REST API, a Next.js web
-front-end, a Kotlin Android app, and a backup service. No code lives here yet —
-migration is deliberate and pending.
+Run commands at the root. Browser setup: `pnpm exec playwright install chromium`.
+See [docs/development.md](docs/development.md) for checks and rollback details.

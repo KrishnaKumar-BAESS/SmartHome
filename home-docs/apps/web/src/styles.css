@@ -1,0 +1,169 @@
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+input {
+  font-family: inherit;
+}
+input::placeholder {
+  color: #7c8a97;
+  opacity: 1;
+}
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+}
+@keyframes wireFlow {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+@keyframes nodePulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.08;
+  }
+}
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes feedScan {
+  0% {
+    top: -22%;
+  }
+  100% {
+    top: 104%;
+  }
+}
+@keyframes feedFlicker {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.62;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.vsl {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+.vsl::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.vsl::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #e0a043;
+  clip-path: polygon(0 35%, 60% 35%, 60% 0, 100% 50%, 60% 100%, 60% 65%, 0 65%);
+  margin-top: -5px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    filter 0.15s;
+}
+.vsl:active::-webkit-slider-thumb,
+.vsl:focus::-webkit-slider-thumb {
+  background: #f5c466;
+  filter: drop-shadow(0 0 5px rgba(224, 160, 67, 0.65));
+}
+.vsl::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.vsl::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  background: #e0a043;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+body {
+  min-width: 320px;
+  background: #1b242d;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+.nav-button {
+  border: 0;
+  appearance: none;
+  text-align: inherit;
+}
+:focus-visible {
+  outline: 2px solid #e0a043;
+  outline-offset: 3px;
+}
+.hover-0:hover,
+.hover-0:focus-visible {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.panel-toggle {
+  color: #cdd6df;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 9px 12px;
+  cursor: pointer;
+  font-size: 12px;
+}

@@ -12,15 +12,15 @@ session.
 
 KumarSec is a self-hosted home security system. Its stack:
 
-| Component         | Technology              | Role                                      |
-|-------------------|-------------------------|-------------------------------------------|
-| Cameras           | RTSP streams            | Live video source                         |
-| Media server      | MediaMTX                | RTSP relay and HLS/WebRTC distribution    |
-| AI worker         | YOLO (object detection) | Motion analysis and event detection       |
-| REST API          | FastAPI (Python)        | Core backend, event storage, integrations |
-| Web front-end     | Next.js (TypeScript)    | Live view, event timeline, settings       |
-| Android app       | Kotlin                  | Mobile live view and notifications        |
-| Backup service    | —                       | Clip archival and off-site backup         |
+| Component      | Technology              | Role                                      |
+| -------------- | ----------------------- | ----------------------------------------- |
+| Cameras        | RTSP streams            | Live video source                         |
+| Media server   | MediaMTX                | RTSP relay and HLS/WebRTC distribution    |
+| AI worker      | YOLO (object detection) | Motion analysis and event detection       |
+| REST API       | FastAPI (Python)        | Core backend, event storage, integrations |
+| Web front-end  | Next.js (TypeScript)    | Live view, event timeline, settings       |
+| Android app    | Kotlin                  | Mobile live view and notifications        |
+| Backup service | —                       | Clip archival and off-site backup         |
 
 ## When migration happens
 
