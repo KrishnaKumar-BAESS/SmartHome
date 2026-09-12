@@ -40,6 +40,7 @@ export function TopBar({ view }) {
           <path d={'M10.2 10.2 L14 14'}></path>
         </svg>
         <input
+          ref={view.searchRef}
           value={view.q}
           onChange={view.onSearch}
           onFocus={view.onSearchFocus}
@@ -48,6 +49,8 @@ export function TopBar({ view }) {
           placeholder={view.searchPlaceholder}
           style={css(view.searchInputStyle)}
           aria-label="Search home inventory"
+          title="Search (press / anywhere)"
+          aria-activedescendant={view.searchActiveId}
         />
         {view.hasQ ? (
           <>
@@ -91,10 +94,9 @@ export function TopBar({ view }) {
               {(view.searchResults ?? []).map((r, index) => (
                 <Fragment key={r.id ?? r.key ?? r.label ?? index}>
                   <div
+                    id={r.id}
                     onClick={r.onClick}
-                    style={css(
-                      'display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;cursor:pointer',
-                    )}
+                    style={css(r.rowStyle)}
                     className="hover-0"
                     role="button"
                     tabIndex={0}

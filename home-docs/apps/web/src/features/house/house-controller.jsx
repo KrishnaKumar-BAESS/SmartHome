@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, createRef } from 'react';
 import {
   boxes,
   circuits,
@@ -64,6 +64,8 @@ export class HouseController extends Component {
     histIdx: 0,
     q: '',
     searchFocus: false,
+    searchSel: -1,
+    hoverRoom: null,
     vw: typeof window === 'undefined' ? 1280 : window.innerWidth,
     vh: typeof window === 'undefined' ? 800 : window.innerHeight,
     showRoomLabels: true,
@@ -309,6 +311,19 @@ export class HouseController extends Component {
     ];
   }
 
+  searchRef = createRef();
+
+  modeOrder = [
+    'overview',
+    'electrical',
+    'lighting',
+    'network',
+    'sound',
+    'security',
+    'climate',
+    'upkeep',
+  ];
+
   spk(arr) {
     return arr.map((p) => {
       const col =
@@ -339,12 +354,42 @@ export class HouseController extends Component {
     };
     window.addEventListener('resize', this._ro);
     this._ro();
+    this._onKey = (e) => {
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target;
+      if (
+        t &&
+        (t.tagName === 'INPUT' ||
+          t.tagName === 'TEXTAREA' ||
+          t.isContentEditable)
+      )
+        return;
+      if (e.key === '/') {
+        e.preventDefault();
+        this.searchRef.current?.focus();
+      } else if (e.key >= '1' && e.key <= '8') {
+        this.setState({ mode: this.modeOrder[Number(e.key) - 1] });
+      } else if (e.key === '+' || e.key === '=') {
+        this.setState((s) => ({ zoom: Math.min(4, s.zoom * 1.15) }));
+      } else if (e.key === '-' || e.key === '_') {
+        this.setState((s) => ({ zoom: Math.max(0.4, s.zoom * 0.87) }));
+      } else if (e.key === '0' || e.key === 'r') {
+        this.setState({ yaw: 35, pitch: 58, zoom: 1, panX: 0, panY: 0 });
+      } else if (e.key === 'Escape') {
+        if (this.state.camExpanded) this.setState({ camExpanded: false });
+        else if (this.state.viewOptsOpen)
+          this.setState({ viewOptsOpen: false });
+        else if (this.state.isoPanel) this.setState({ isoPanel: false });
+      }
+    };
+    window.addEventListener('keydown', this._onKey);
   }
 
   componentWillUnmount() {
     this._stage?.removeEventListener('wheel', this.onWheelNative);
     if (this._tick) clearInterval(this._tick);
     if (this._ro) window.removeEventListener('resize', this._ro);
+    if (this._onKey) window.removeEventListener('keydown', this._onKey);
     if (this._explRAF) cancelAnimationFrame(this._explRAF);
     if (this._autoRAF) cancelAnimationFrame(this._autoRAF);
   }
@@ -671,26 +716,54 @@ export class HouseController extends Component {
     );
     const allMatches = toks.length ? idx.filter((it) => matchH(it.h)) : [];
     const searchCount = allMatches.length;
-    const searchResults = allMatches.slice(0, 16).map((it) => ({
+    const searchSel = typeof S.searchSel === 'number' ? S.searchSel : -1;
+    const searchResults = allMatches.slice(0, 16).map((it, i) => ({
+      id: `search-opt-${i}`,
+      active: i === searchSel,
+      rowStyle:
+        'display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;cursor:pointer' +
+        (i === searchSel ? ';background:rgba(255,255,255,0.09)' : ''),
       label: it.label,
       sub: it.sub,
       cat: it.cat,
       swatch: `width:9px;height:9px;border-radius:2px;background:${it.accent};flex-shrink:0`,
       chipStyle: `font:600 8.5px 'IBM Plex Mono',monospace;color:${it.accent};background:${this.hexA(it.accent, 0.12)};border:1px solid ${this.hexA(it.accent, 0.3)};padding:2px 7px;border-radius:5px;flex-shrink:0;letter-spacing:0.04em`,
       onClick: () =>
-        set(Object.assign({}, it.patch, { q: '', searchFocus: false })),
+        set(
+          Object.assign({}, it.patch, {
+            q: '',
+            searchFocus: false,
+            searchSel: -1,
+          }),
+        ),
     }));
-    const onSearch = (e) => set({ q: e.target.value });
-    const onSearchFocus = () => set({ searchFocus: true });
+    const onSearch = (e) => set({ q: e.target.value, searchSel: -1 });
+    const onSearchFocus = () => set({ searchFocus: true, searchSel: -1 });
     const onSearchBlur = () =>
       setTimeout(() => {
         this.setState({ searchFocus: false });
       }, 170);
     const clearSearch = () => set({ q: '', searchFocus: false });
     const onSearchKeyDown = (e) => {
-      if (e.key !== 'Escape') return;
-      if (this.state.q) set({ q: '' });
-      else e.currentTarget.blur();
+      if (e.key === 'Escape') {
+        if (this.state.q) set({ q: '', searchSel: -1 });
+        else e.currentTarget.blur();
+        return;
+      }
+      const n = searchResults.length;
+      if (!showResults || n === 0) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const dir = e.key === 'ArrowDown' ? 1 : -1;
+        const next = (((searchSel + dir) % n) + n) % n;
+        set({ searchSel: next });
+        document
+          .getElementById(`search-opt-${next}`)
+          ?.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter') {
+        const r = searchResults[searchSel] ?? searchResults[0];
+        if (r) r.onClick();
+      }
     };
     const hasQ = ql.length > 0;
     const showResults = S.searchFocus && hasQ;
@@ -1471,6 +1544,10 @@ export class HouseController extends Component {
       onPanelClick: () => set({ mode: 'electrical', selCirc: null }),
       showRoomLabels: S.showRoomLabels !== false,
       floorLabelMinX,
+      hoverRoom: S.hoverRoom,
+      onRoomHover: (rid) => {
+        if (this.state.hoverRoom !== rid) this.setState({ hoverRoom: rid });
+      },
     };
     if (isElectrical) {
       sceneOpt.selC = selC;
@@ -1813,6 +1890,11 @@ export class HouseController extends Component {
       onSearchBlur,
       clearSearch,
       onSearchKeyDown,
+      searchRef: this.searchRef,
+      searchActiveId:
+        showResults && searchSel >= 0 && searchSel < searchResults.length
+          ? `search-opt-${searchSel}`
+          : undefined,
       hasQ,
       showResults,
       noResults,

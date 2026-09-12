@@ -11,6 +11,7 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
+- Add home-docs keyboard shortcuts (`/` search, `1`–`8` views, `+`/`-` zoom, `0` reset, Escape closes overlays), arrow-key navigation in search results, and a hover highlight on clickable rooms in the model.
 - Add pnpm workspace commands, a pinned toolchain and lockfile, ESLint, Prettier, Vitest, and Playwright.
 - Add CI checks and dependency update configuration.
 - Add inventory migration parity and reference-integrity tests plus desktop/mobile browser checks.

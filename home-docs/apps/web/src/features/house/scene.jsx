@@ -155,12 +155,17 @@ export function renderScene(house, opt = {}) {
       zt = zb + r.height,
       n = r.verts.length;
     const sel = isHi(r.id);
+    const hov = !sel && !!opt.onRoomClick && opt.hoverRoom === r.id;
     const top = floorTop[r.floor];
     // REVERSED transparency: highlighted rooms read SOLID; everything else fades back
-    const topFill = sel ? house.mix(top, hiColor, 0.5) : top;
-    const topStroke = sel ? hiColor : '#aab6c1';
+    const topFill = sel
+      ? house.mix(top, hiColor, 0.5)
+      : hov
+        ? house.mix(top, hiColor, 0.18)
+        : top;
+    const topStroke = sel || hov ? hiColor : '#aab6c1';
     const wallFill = sel ? house.mix(top, hiColor, 0.32) : darken(top, 0.9);
-    const faceOp = hasFocus ? (sel ? 1 : 0.16) : 1;
+    const faceOp = hasFocus ? (sel ? 1 : hov ? 0.55 : 0.16) : 1;
     let area2 = 0;
     for (let i = 0; i < n; i++) {
       const a = r.verts[i],
@@ -189,7 +194,7 @@ export function renderScene(house, opt = {}) {
       faces.push({
         d: polyD([p1, p2, p3, p4]),
         fill: wallFill,
-        stroke: sel ? topStroke : '#aab6c1',
+        stroke: sel || hov ? topStroke : '#aab6c1',
         sw: 0.6,
         depth: (p1.depth + p2.depth + p3.depth + p4.depth) / 4,
         op: faceOp,
@@ -201,7 +206,7 @@ export function renderScene(house, opt = {}) {
       d: polyD(tp),
       fill: topFill,
       stroke: topStroke,
-      sw: sel ? 1.6 : 0.9,
+      sw: sel ? 1.6 : hov ? 1.3 : 0.9,
       depth: tp.reduce((s, p) => s + p.depth, 0) / tp.length,
       op: faceOp,
       rid: r.id,
@@ -216,6 +221,18 @@ export function renderScene(house, opt = {}) {
       opt.onRoomClick && f.rid
         ? {
             onClick: () => opt.onRoomClick(f.rid),
+            // hover preview only for mouse: touch taps must not re-render
+            // the scene mid-gesture or the tap's click event is lost
+            onPointerEnter: opt.onRoomHover
+              ? (e) => {
+                  if (e.pointerType === 'mouse') opt.onRoomHover(f.rid);
+                }
+              : undefined,
+            onPointerLeave: opt.onRoomHover
+              ? (e) => {
+                  if (e.pointerType === 'mouse') opt.onRoomHover(null);
+                }
+              : undefined,
             style: { cursor: 'pointer' },
           }
         : {};

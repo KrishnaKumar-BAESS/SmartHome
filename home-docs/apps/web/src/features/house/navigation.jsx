@@ -9,6 +9,7 @@ export function Navigation({ view }) {
         type="button"
         className="nav-button"
         aria-label="Overview"
+        title={'Overview — shortcut 1'}
         aria-pressed={view.mode === 'overview'}
         data-mode="overview"
       >
@@ -39,6 +40,7 @@ export function Navigation({ view }) {
         type="button"
         className="nav-button"
         aria-label="Electrical"
+        title={'Electrical — shortcut 2'}
         aria-pressed={view.mode === 'electrical'}
         data-mode="electrical"
       >
@@ -58,6 +60,7 @@ export function Navigation({ view }) {
         type="button"
         className="nav-button"
         aria-label="Lighting"
+        title={'Lighting — shortcut 3'}
         aria-pressed={view.mode === 'lighting'}
         data-mode="lighting"
       >
@@ -87,6 +90,7 @@ export function Navigation({ view }) {
         type="button"
         className="nav-button"
         aria-label="Network"
+        title={'Network — shortcut 4'}
         aria-pressed={view.mode === 'network'}
         data-mode="network"
       >
@@ -131,6 +135,7 @@ export function Navigation({ view }) {
         type="button"
         className="nav-button"
         aria-label="Sound"
+        title={'Sound — shortcut 5'}
         aria-pressed={view.mode === 'sound'}
         data-mode="sound"
       >
@@ -159,6 +164,7 @@ export function Navigation({ view }) {
         type="button"
         className="nav-button"
         aria-label="Security"
+        title={'Security — shortcut 6'}
         aria-pressed={view.mode === 'security'}
         data-mode="security"
       >
@@ -183,6 +189,7 @@ export function Navigation({ view }) {
         type="button"
         className="nav-button"
         aria-label="Climate"
+        title={'Climate — shortcut 7'}
         aria-pressed={view.mode === 'climate'}
         data-mode="climate"
       >
@@ -213,6 +220,7 @@ export function Navigation({ view }) {
         type="button"
         className="nav-button"
         aria-label="Upkeep"
+        title={'Upkeep — shortcut 8'}
         aria-pressed={view.mode === 'upkeep'}
         data-mode="upkeep"
       >
