@@ -28,5 +28,6 @@ states and are not descriptions of the current application layout.
 
 ### Fixed
 
+- Keep home-docs floor labels legible: clamp them clear of the list panel and halo them against room faces.
 - Keep home-docs model controls and floor isolation inside mobile viewports.
 - Exclude generated `.delta/` worktrees from formatting so nested historical sources remain untouched.

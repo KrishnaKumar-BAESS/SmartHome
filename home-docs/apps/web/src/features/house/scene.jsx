@@ -420,7 +420,13 @@ export function renderScene(house, opt = {}) {
       });
     });
     if (minSx === 1e9) return;
-    const lx = Math.max(22, minSx - 18),
+    const label = house.floorLabels[f];
+    // 10px IBM Plex Mono: ~6px advance per char plus 0.05em letter-spacing.
+    const labelW = label.length * 6.5;
+    // Anchor is the text end; keep the whole label right of the overlaid
+    // left panel (opt.floorLabelMinX, in viewBox units) and the view edge.
+    const minLx = Math.max(22, opt.floorLabelMinX || 0) + labelW;
+    const lx = Math.max(minLx, minSx - 18),
       ly = minSy;
     const flCk = opt.onFloorClick
       ? {
@@ -442,12 +448,16 @@ export function renderScene(house, opt = {}) {
           style: {
             font: "600 10px 'IBM Plex Mono',monospace",
             fill: opt.onFloorClick ? '#c8d8ea' : '#aeb9c4',
+            paintOrder: 'stroke',
+            stroke: 'rgba(16,23,30,0.85)',
+            strokeWidth: 3,
+            strokeLinejoin: 'round',
             letterSpacing: '0.05em',
             cursor: opt.onFloorClick ? 'pointer' : 'default',
           },
           ...flCk,
         },
-        house.floorLabels[f],
+        label,
       ),
     );
   });

@@ -65,6 +65,7 @@ export class HouseController extends Component {
     q: '',
     searchFocus: false,
     vw: typeof window === 'undefined' ? 1280 : window.innerWidth,
+    vh: typeof window === 'undefined' ? 800 : window.innerHeight,
     showRoomLabels: true,
     sliderFocused: false,
     viewOptsOpen: false,
@@ -332,7 +333,9 @@ export class HouseController extends Component {
     }, 1000);
     this._ro = () => {
       const w = window.innerWidth || 1280;
-      if (w !== this.state.vw) this.setState({ vw: w });
+      const h = window.innerHeight || 800;
+      if (w !== this.state.vw || h !== this.state.vh)
+        this.setState({ vw: w, vh: h });
     };
     window.addEventListener('resize', this._ro);
     this._ro();
@@ -1449,12 +1452,20 @@ export class HouseController extends Component {
     };
     const onFloorClick = (floor) => set({ isoFloor: floor, isoRooms: [] });
 
+    // Keep floor labels clear of the overlaid left panel: convert its
+    // screen-space edge into scene viewBox units (960x600, xMidYMid meet).
+    const sceneScale = Math.min((S.vw || 1280) / 960, (S.vh || 800) / 600);
+    const panelEdgePx = narrow ? 0 : (S.leftHidden ? 88 : 403) + 22;
+    const floorLabelMinX =
+      (panelEdgePx - ((S.vw || 1280) - 960 * sceneScale) / 2) / sceneScale;
+
     let sceneOpt = {
       layer: S.mode,
       onRoomClick,
       onFloorClick,
       onPanelClick: () => set({ mode: 'electrical', selCirc: null }),
       showRoomLabels: S.showRoomLabels !== false,
+      floorLabelMinX,
     };
     if (isElectrical) {
       sceneOpt.selC = selC;
