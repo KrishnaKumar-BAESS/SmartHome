@@ -687,6 +687,11 @@ export class HouseController extends Component {
         this.setState({ searchFocus: false });
       }, 170);
     const clearSearch = () => set({ q: '', searchFocus: false });
+    const onSearchKeyDown = (e) => {
+      if (e.key !== 'Escape') return;
+      if (this.state.q) set({ q: '' });
+      else e.currentTarget.blur();
+    };
     const hasQ = ql.length > 0;
     const showResults = S.searchFocus && hasQ;
     const noResults = showResults && searchResults.length === 0;
@@ -1807,6 +1812,7 @@ export class HouseController extends Component {
       onSearchFocus,
       onSearchBlur,
       clearSearch,
+      onSearchKeyDown,
       hasQ,
       showResults,
       noResults,

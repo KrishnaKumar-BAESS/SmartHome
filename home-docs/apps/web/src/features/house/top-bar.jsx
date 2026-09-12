@@ -44,6 +44,7 @@ export function TopBar({ view }) {
           onChange={view.onSearch}
           onFocus={view.onSearchFocus}
           onBlur={view.onSearchBlur}
+          onKeyDown={view.onSearchKeyDown}
           placeholder={view.searchPlaceholder}
           style={css(view.searchInputStyle)}
           aria-label="Search home inventory"
