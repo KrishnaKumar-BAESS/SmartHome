@@ -31,5 +31,6 @@ states and are not descriptions of the current application layout.
 
 - Keep home-docs floor labels legible: clamp them clear of the list panel and halo them against room faces.
 - Clear and dismiss the home-docs search field with the Escape key.
+- Give home-docs speaker-layout markers unique React keys, silencing console errors in Sound views.
 - Keep home-docs model controls and floor isolation inside mobile viewports.
 - Exclude generated `.delta/` worktrees from formatting so nested historical sources remain untouched.

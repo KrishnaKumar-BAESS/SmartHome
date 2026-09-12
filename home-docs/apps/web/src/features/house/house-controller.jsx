@@ -325,7 +325,7 @@ export class HouseController extends Component {
   ];
 
   spk(arr) {
-    return arr.map((p) => {
+    return arr.map((p, i) => {
       const col =
         p.t === 'sub'
           ? '#c0573b'
@@ -336,6 +336,7 @@ export class HouseController extends Component {
               : '#3b6fb0';
       const sz = p.t === 'seat' ? 16 : 13;
       return {
+        key: `${p.t}-${i}`,
         label: p.t === 'seat' ? '' : p.l,
         style: `position:absolute;left:${p.x}%;top:${p.y}%;transform:translate(-50%,-50%);width:${sz}px;height:${sz}px;border-radius:${p.t === 'seat' ? '50%' : '2px'};background:${p.t === 'seat' ? 'transparent' : col};border:${p.t === 'seat' ? '1.5px solid #8a94a0' : 'none'};display:flex;align-items:center;justify-content:center;font:600 7px 'IBM Plex Mono',monospace;color:#fff;`,
       };
