@@ -38,6 +38,8 @@ states and are not descriptions of the current application layout.
 
 ### Fixed
 
+- Accept and safely encode Comcast's routed signaling session IDs in the camera prototype; verify real video from all three household cameras with existing Xfinity app access preserved.
+
 - Match the camera prototype's outgoing ICE candidate payload to the Xfinity Android app protocol.
 
 - Keep home-docs floor labels legible: clamp them clear of the list panel and halo them against room faces.

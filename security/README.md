@@ -1,7 +1,7 @@
 # Security subsystem
 
 The [local Xfinity camera prototype](apps/camera-viewer/README.md) imports viewing
-credentials from an authorized Android phone and attempts WebRTC playback through
+credentials from an authorized Android phone and displays WebRTC video through
 a localhost-only server. See its guide for setup, limitations, and the distinction
 between automated checks and real-camera validation.
 

@@ -5,9 +5,10 @@ signed-in Xfinity Android app over ADB. Its local server handles legacy Socket.I
 signaling; the browser negotiates WebRTC and displays received video. It provides
 no camera-setting controls and requires no pairing changes.
 
-**Status:** implemented prototype; real-camera playback and simultaneous Xfinity
-app viewing require separate live validation. Independent account login and
-automatic token renewal are not implemented. Fresh credentials require the phone.
+**Status:** real-camera playback verified on three household cameras on
+2026-09-13; the operator also confirmed normal Xfinity app playback during testing.
+Independent account login and automatic token renewal are not implemented.
+Fresh credentials require the phone.
 
 ## Start
 
@@ -70,3 +71,23 @@ They do not send real tokens or establish live-camera playback.
 Live verification must separately record camera name, increasing decoded-frame
 count, resolution, duration, and whether Xfinity still displays the camera. Keep
 footage and credentials out of test artifacts and commits.
+
+### Live validation — 2026-09-13
+
+The local viewer displayed actual camera images in the Codex in-app browser on
+Windows. The browser reported connected media and increasing decoded-frame counts:
+
+| Camera        | Resolution | Observed decoded frames |
+| ------------- | ---------- | ----------------------- |
+| KumarBell     | 1280 × 960 | 309 → 710               |
+| kumarDriveway | 1280 × 720 | 204 → 535               |
+| kumarPond     | 1280 × 720 | 206 → 267               |
+
+These were brief sequential playback checks; exact durations were not timed.
+Stopping and switching cameras succeeded. The operator confirmed the Xfinity app
+still played the cameras normally while the desktop tests ran. No camera reset,
+pairing change, account sign-out, or firmware change was performed.
+
+This validates phone-assisted video playback and coexistence for this setup.
+It does not establish unattended reliability, independent token renewal, audio,
+or behavior after credential expiry. The home atlas remains separate.

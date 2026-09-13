@@ -24,13 +24,13 @@ describe('signaling boundary', () => {
       send = send;
       close = vi.fn();
       onmessage?: (event: { data: string }) => void;
-      constructor() {
+      constructor(readonly url: string) {
         TestSocket.instance = this;
       }
     }
     vi.stubGlobal('WebSocket', TestSocket);
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response('test-session:60:60:websocket'),
+      new Response('MTkyLjAuMi4xOjQ0Mw==,test-session:60:60:websocket'),
     );
     const connection = new SignalingConnection(
       session,
@@ -39,6 +39,9 @@ describe('signaling boundary', () => {
     );
     try {
       await connection.connect();
+      expect(TestSocket.instance.url).toBe(
+        `wss://${session.host}/socket.io/1/websocket/MTkyLjAuMi4xOjQ0Mw%3D%3D%2Ctest-session`,
+      );
       TestSocket.instance.onmessage?.({
         data: '5:::{"name":"message","args":[{"type":"offer","from":"camera-peer","payload":{"sdp":"test"}}]}',
       });

@@ -48,6 +48,10 @@ atlas or separate KumarSec/FamSecDash repositories is introduced.
 
 ## References
 
+Validation update, 2026-09-13: the [prototype guide](../../security/apps/camera-viewer/README.md#live-validation--2026-09-13)
+records decoded video from all three household cameras and operator confirmation
+of normal Xfinity playback during testing. The phone dependency remains.
+
 - [Prototype guide](../../security/apps/camera-viewer/README.md)
 - [Security subsystem](../../security/README.md)
 - [Security and privacy](../security.md)

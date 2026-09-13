@@ -50,14 +50,14 @@ If Corepack is unavailable or its shims cannot be enabled, see
 
 ## Repository map
 
-| Path                                                 | Responsibility                                     | Status                         |
-| ---------------------------------------------------- | -------------------------------------------------- | ------------------------------ |
-| [home-docs/apps/web](home-docs/apps/web/README.md)   | React application, inventory, SVG model, and tests | Active                         |
-| [home-docs/reference](home-docs/reference/README.md) | Preserved source workbook                          | Reference; no automatic import |
-| [security](security/README.md)                       | Local Xfinity camera playback prototype            | Live validation required       |
-| [platforms](platforms/README.md)                     | Reserved for automation platform configurations    | No implementation              |
-| [docs](docs/README.md)                               | Shared guides and architecture decisions           | Maintained                     |
-| [docs/archive](docs/archive/README.md)               | Original DC prototype and generated runtime        | Immutable historical reference |
+| Path                                                 | Responsibility                                     | Status                           |
+| ---------------------------------------------------- | -------------------------------------------------- | -------------------------------- |
+| [home-docs/apps/web](home-docs/apps/web/README.md)   | React application, inventory, SVG model, and tests | Active                           |
+| [home-docs/reference](home-docs/reference/README.md) | Preserved source workbook                          | Reference; no automatic import   |
+| [security](security/README.md)                       | Local Xfinity camera playback prototype            | Phone-assisted playback verified |
+| [platforms](platforms/README.md)                     | Reserved for automation platform configurations    | No implementation                |
+| [docs](docs/README.md)                               | Shared guides and architecture decisions           | Maintained                       |
+| [docs/archive](docs/archive/README.md)               | Original DC prototype and generated runtime        | Immutable historical reference   |
 
 KumarSec and FamSecDash remain separate repositories. No runtime integration
 with either exists in SmartHome.

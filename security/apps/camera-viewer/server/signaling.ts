@@ -78,13 +78,13 @@ export class SignalingConnection {
       if (!response.ok) throw new Error('Handshake rejected');
       const parts = (await response.text()).trim().split(':');
       if (
-        !/^[A-Za-z0-9_-]{1,160}$/.test(parts[0]) ||
+        !/^[A-Za-z0-9_+=,./-]{1,256}$/.test(parts[0]) ||
         !parts[3]?.split(',').includes('websocket')
       )
         throw new Error('Unsupported handshake');
       if (this.closed) return;
       this.socket = new WebSocket(
-        `wss://${this.session.host}/socket.io/1/websocket/${parts[0]}`,
+        `wss://${this.session.host}/socket.io/1/websocket/${encodeURIComponent(parts[0])}`,
       );
       this.socket.onmessage = (event) => {
         try {
