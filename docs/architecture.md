@@ -3,12 +3,15 @@
 SmartHome separates home subsystems by ownership while sharing repository-level
 tooling. The static house atlas lives in `home-docs/apps/web/`. A separate local
 camera prototype in `security/apps/camera-viewer/` adds a localhost Node server,
-ADB session import, and browser WebRTC playback. There is no shared database or
+renewable account access, optional ADB session import, and browser WebRTC playback. There is no shared database or
 cross-repository runtime dependency. See [its decision](decisions/0003-local-camera-prototype.md)
 for the authentication boundary and live-validation requirements. The local server
 also serves the atlas at `/house/`; Security opens the player in a same-origin
 dialog. [Decision 0004](decisions/0004-security-live-camera-integration.md) defines
 this runtime integration. Standalone static atlas hosting remains supported.
+[Decision 0005](decisions/0005-renewable-camera-account.md) adds Windows-encrypted
+account persistence and automatic credential renewal; live account validation is
+tracked in the camera service guide.
 
 ## System context
 
@@ -34,7 +37,7 @@ event demonstrations do not establish a connection to a camera.
 | --------------- | ------------------------------------------------------------------- | --------------------------------------------------- |
 | Root            | pnpm workspace, lockfile, common lint/format tools, CI, shared docs | Application state or a shared runtime service       |
 | `home-docs/`    | Web app, inventory, geometry, app tests, source references          | Live automation or editing backend                  |
-| `security/`     | Local camera playback prototype                                     | Independent account login or remote hosting         |
+| `security/`     | Local camera playback and renewable account session                 | Remote hosting or camera recording                  |
 | `platforms/`    | Reserved location for platform configurations                       | Installed Home Assistant or other running platforms |
 | `docs/archive/` | Preserved pre-migration source                                      | Maintained production code                          |
 

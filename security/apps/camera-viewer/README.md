@@ -1,14 +1,17 @@
-# Local Xfinity camera prototype
+# Local Xfinity camera service
 
-This standalone application imports short-lived viewing sessions from the
-signed-in Xfinity Android app over ADB. Its local server handles legacy Socket.IO
-signaling; the browser negotiates WebRTC and displays received video. It provides
-no camera-setting controls and requires no pairing changes.
+This application serves the SmartHome Security player, renews a separately
+signed-in Xfinity account session, and requests fresh camera viewing credentials.
+Its local server handles legacy Socket.IO signaling; the browser negotiates
+WebRTC and displays received video. No camera-setting controls or pairing changes
+are involved. ADB import remains an optional diagnostic fallback.
 
 **Status:** real-camera playback verified on three household cameras on
 2026-09-13; the operator also confirmed normal Xfinity app playback during testing.
-Independent account login and automatic token renewal are not implemented.
-Fresh credentials require the phone.
+Account sign-in, encrypted persistence, automatic renewal, and playback retries
+are implemented with automated tests. Live account-mode validation is pending
+completion of the operator's Xfinity sign-in; the earlier playback evidence below
+uses phone-imported credentials and does not establish unattended reliability.
 
 ## Start
 
@@ -26,6 +29,25 @@ observed in your own Xfinity app traffic, of the form
 log names it. `CAMERA_NAMES` optionally maps camera MAC identifiers to labels.
 `ADB_PATH` selects an Android SDK executable if automatic discovery does not work.
 
+For account mode on Windows, set `XFINITY_CLIENT_SECRET` in `.env.local` from the
+production login configuration of your installed Xfinity app. The implementation
+was traced against Android app 6.10.0-3, including its `partnerConfigSettings.json`,
+OAuth exchange, and camera API models. This is an unofficial integration, not an
+Xfinity-supported public API. No client or account credentials are checked in.
+The local setup currently requires access to that client configuration; ADB is
+not needed after setup.
+
+Register the current user's callback once, after building (PowerShell, repo root):
+
+```powershell
+./security/apps/camera-viewer/register-login.ps1
+```
+
+Use `-Port` if changing `PORT`. The script refuses to overwrite another app's
+handler. Xfinity accepts `xfinitydigitalhome://auth` for this client and rejects a
+localhost redirect. The handler sends only the matching authorization callback
+to the running local service; the server validates state, expiry, and PKCE.
+
 ```sh
 corepack pnpm camera:start
 ```
@@ -40,17 +62,34 @@ both apps, then `corepack pnpm security:start`. Open
 The embedded player uses the same steps below. Closing its panel stops playback.
 See the [integration decision](../../../docs/decisions/0004-security-live-camera-integration.md).
 
-1. Connect one authorized ADB phone and open the signed-in Xfinity camera list.
-2. Select **Import from phone**. Only Xfinity's app-specific logs are read.
+1. Select **Sign in to Xfinity**, complete Xfinity's login/MFA, and allow the
+   Windows callback prompt. If an embedded browser stalls, use a normal desktop
+   browser. Return to the player; it loads the account's cameras.
+2. Subsequent launches reuse `account.local`, encrypted with Windows DPAPI for
+   the same Windows user. Keep the service running; no phone connection is needed.
 3. Select a camera and **Connect**. This sends its viewing token to the configured
    Comcast signaling host and attempts an additional viewing session.
 4. Verify increasing **Decoded frames**, nonzero resolution, and visible video.
    A connected signaling socket alone is not proof of playback.
-5. Select **Stop** to close the prototype session. The phone stays signed in.
+5. Select **Stop** to close this viewing session and cancel automatic retries.
 
-Audio starts muted; use the player controls to enable it. When credentials expire,
-return to the Xfinity camera list and import again. Stopping the server discards
-imported credentials. The application writes no raw logs or tokens to disk.
+Audio starts muted; use the player controls to enable it. Account access is
+checked every minute and renewed when within a minute of expiry. Renewal is
+single-flight, saves rotated refresh credentials, and retries temporary errors
+after a delay. New camera connections request new viewing tokens. An open player
+retries interrupted signaling or 30 seconds without new video, with delays from
+2 to 30 seconds. Stop, closing the panel, or leaving the page cancels playback.
+
+An Xfinity-revoked/expired refresh session requires another interactive sign-in;
+the service cannot promise perpetual access. Account credentials stay server-side
+in Windows-encrypted `account.local`; viewing credentials stay in memory. The
+client credential stays in ignored `.env.local`. No password, raw ADB log, or
+footage is stored. Run as the same Windows user after a restart; another user or
+machine cannot decrypt this store. There is no automatic OS-startup installation.
+
+For phone-assisted diagnostics, expand **Setup and troubleshooting**, connect
+one authorized ADB phone, open its Xfinity camera list, then **Import from phone**.
+Those temporary credentials cannot renew and are discarded on server exit.
 
 ## Boundaries and troubleshooting
 
@@ -66,14 +105,22 @@ imported credentials. The application writes no raw logs or tokens to disk.
 - The atlas inventory and example history remain recorded data; its Live cameras
   panel uses this player when hosted by the local security service.
 - The [security decision](../../../docs/decisions/0003-local-camera-prototype.md)
-  defines the credential, exposure, and validation boundaries.
+  records the original prototype; [account renewal](../../../docs/decisions/0005-renewable-camera-account.md)
+  extends its credential, exposure, and validation boundaries.
+
+To roll back account mode, stop the service, remove `XFINITY_CLIENT_SECRET` from
+the local environment, and remove the encrypted `account.local` and any
+`account.local.pending.local` file. Run `register-login.ps1 -Remove` with the same
+port to remove only this callback registration. This removes local access; it
+does not revoke Xfinity-issued credentials at the provider or log out the phone.
 
 ## Verify
 
 From the root run `corepack pnpm format:check`, `corepack pnpm check`, and
 `corepack pnpm test:e2e`. Unit tests cover import validation, credential omission,
-destination restrictions, local-origin checks, and signaling framing. Browser
-tests cover setup/import UI on desktop and mobile Chromium using synthetic data.
+destination restrictions, local-origin checks, signaling framing, PKCE callbacks,
+refresh rotation/concurrency, persistence failures, and restart recovery. Browser
+tests cover setup/import UI and cancelable reconnects on desktop and mobile Chromium using synthetic data.
 They do not send real tokens or establish live-camera playback.
 
 Live verification must separately record camera name, increasing decoded-frame

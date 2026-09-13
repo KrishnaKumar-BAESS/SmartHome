@@ -6,7 +6,8 @@ if (new URLSearchParams(window.location.search).get('embedded') === '1')
 interface Camera {
   id: string;
   label: string;
-  expires: number;
+  expires?: number;
+  renewable?: boolean;
 }
 interface SignalMessage {
   type: string;
@@ -21,6 +22,8 @@ interface SignalEvent {
 const element = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
 const importButton = element<HTMLButtonElement>('import');
+const loginButton = element<HTMLButtonElement>('login');
+const refreshButton = element<HTMLButtonElement>('refresh');
 const connectButton = element<HTMLButtonElement>('connect');
 const stopButton = element<HTMLButtonElement>('stop');
 const select = element<HTMLSelectElement>('camera');
@@ -34,6 +37,12 @@ let candidates: RTCIceCandidateInit[] = [];
 let serial: Promise<void> = Promise.resolve();
 let statsTimer: ReturnType<typeof setInterval> | undefined;
 let generation = 0;
+let renewable = false;
+let desiredCamera: string | undefined;
+let retryTimer: ReturnType<typeof setTimeout> | undefined;
+let watchdog: ReturnType<typeof setTimeout> | undefined;
+let loginTimer: ReturnType<typeof setInterval> | undefined;
+let attempts = 0;
 
 function status(message: string, error = false) {
   element('status').textContent = message;
@@ -57,24 +66,27 @@ async function api(path: string, value?: unknown) {
 }
 
 function showCameras(value: Camera[]) {
+  const selected = select.value;
   cameras = value;
   select.replaceChildren(
     ...value.map((camera) => new Option(camera.label, camera.id)),
   );
-  select.disabled = !value.length;
-  connectButton.disabled = !value.length || !!sessionId;
+  if (value.some((camera) => camera.id === selected)) select.value = selected;
+  select.disabled = !value.length || !!desiredCamera;
+  connectButton.disabled = !value.length || !!desiredCamera;
   updateExpiry();
 }
 
 function updateExpiry() {
   const camera = cameras.find((camera) => camera.id === select.value);
   if (camera)
-    element('expiry').textContent =
-      `Credentials for ${camera.label} expire at ${new Date(camera.expires).toLocaleTimeString()}. A new connection needs unexpired credentials.`;
+    element('expiry').textContent = camera.renewable
+      ? 'SmartHome requests fresh viewing credentials automatically. No phone connection is required.'
+      : `Credentials for ${camera.label} expire at ${new Date(camera.expires!).toLocaleTimeString()}. A new connection needs unexpired credentials.`;
 }
 select.addEventListener('change', updateExpiry);
 
-async function stop() {
+async function release() {
   generation++;
   const oldId = sessionId;
   sessionId = undefined;
@@ -83,6 +95,7 @@ async function stop() {
   peer?.close();
   peer = undefined;
   clearInterval(statsTimer);
+  clearTimeout(watchdog);
   video.srcObject = null;
   element('placeholder').hidden = false;
   element('playback').textContent = 'Stopped';
@@ -91,6 +104,41 @@ async function stop() {
   stopButton.disabled = true;
   select.disabled = !cameras.length;
   if (oldId) await api(`/api/sessions/${oldId}/stop`, {}).catch(() => {});
+}
+
+async function stop() {
+  desiredCamera = undefined;
+  clearTimeout(retryTimer);
+  retryTimer = undefined;
+  await release();
+}
+
+async function retry(message: string) {
+  if (!desiredCamera || !renewable) {
+    await stop();
+    status(message, true);
+    return;
+  }
+  if (retryTimer) return;
+  const camera = desiredCamera;
+  await release();
+  if (desiredCamera !== camera) return;
+  const delay = Math.min(30_000, 2000 * 2 ** Math.min(attempts++, 4));
+  status(`${message} Retrying in ${delay / 1000} seconds…`, true);
+  stopButton.disabled = false;
+  connectButton.disabled = true;
+  select.disabled = true;
+  retryTimer = setTimeout(() => {
+    retryTimer = undefined;
+    if (desiredCamera === camera) void connectCamera(camera);
+  }, delay);
+}
+
+function watchVideo() {
+  clearTimeout(watchdog);
+  watchdog = setTimeout(() => {
+    void retry('Video stopped arriving.');
+  }, 30_000);
 }
 
 async function send(type: string, payload: unknown) {
@@ -130,8 +178,7 @@ function addIceServers(raw: unknown[]) {
 async function receive(event: SignalEvent, current: number) {
   if (current !== generation) return;
   if (event.kind === 'error') {
-    await stop();
-    status(event.message || 'Connection failed.', true);
+    await retry(event.message || 'Connection failed.');
     return;
   }
   if (event.kind === 'status') {
@@ -176,10 +223,7 @@ async function receive(event: SignalEvent, current: number) {
     element('connection').textContent = connection.connectionState;
     if (connection.connectionState === 'failed') {
       element('playback').textContent = 'Disconnected';
-      status(
-        'Media connection failed. Check LAN/VPN routing, then reconnect.',
-        true,
-      );
+      void retry('Media connection failed.');
     }
   };
   await connection.setRemoteDescription({
@@ -210,6 +254,8 @@ async function receive(event: SignalEvent, current: number) {
             if (report.framesDecoded > lastFrames) {
               lastFrames = report.framesDecoded;
               lastFrameAt = Date.now();
+              attempts = 0;
+              watchVideo();
             }
             if (Date.now() - lastFrameAt > 10_000) {
               element('playback').textContent = 'Waiting for video';
@@ -251,10 +297,10 @@ importButton.addEventListener('click', () => {
     });
 });
 
-connectButton.addEventListener('click', () => {
-  connectButton.disabled = true;
-  void (async () => {
-    await stop();
+async function connectCamera(camera: string) {
+  try {
+    await release();
+    if (desiredCamera !== camera) return;
     const current = generation;
     connectButton.disabled = true;
     select.disabled = true;
@@ -263,45 +309,139 @@ connectButton.addEventListener('click', () => {
     iceServers = [];
     candidates = [];
     serial = Promise.resolve();
-    const data = await api('/api/sessions', { camera: select.value });
+    stopButton.disabled = false;
+    const data = await api('/api/sessions', { camera });
+    if (current !== generation || desiredCamera !== camera) {
+      await api(`/api/sessions/${data.id}/stop`, {}).catch(() => {});
+      return;
+    }
     sessionId = data.id;
     stopButton.disabled = false;
+    watchVideo();
     events = new EventSource(`/api/sessions/${sessionId}/events`);
     events.onmessage = (event) => {
       serial = serial
         .then(() => receive(JSON.parse(event.data), current))
         .catch(async (error) => {
-          await stop();
-          status(`Playback negotiation failed: ${error.message}`, true);
+          if (current === generation)
+            await retry(`Playback negotiation failed: ${error.message}`);
         });
     };
     events.onerror = () => {
-      if (sessionId) {
-        void stop();
-        status(
-          'The local signaling connection closed. Reconnect to retry.',
-          true,
-        );
-      }
+      if (current === generation && sessionId)
+        void retry('The local signaling connection closed.');
     };
-  })().catch(async (error) => {
-    await stop();
-    status(error.message, true);
-  });
+  } catch (error) {
+    const account = await api('/api/account').catch(() => null);
+    if (account && !account.signedIn && renewable) {
+      await stop();
+      loginButton.hidden = false;
+      status('Xfinity requires a new sign-in.', true);
+    } else if (desiredCamera === camera)
+      await retry(
+        error instanceof Error ? error.message : 'Connection failed.',
+      );
+  }
+}
+connectButton.addEventListener('click', () => {
+  attempts = 0;
+  desiredCamera = select.value;
+  void connectCamera(desiredCamera);
 });
 stopButton.addEventListener('click', () => {
   void stop().then(() => status('Viewer stopped.'));
 });
 window.addEventListener('pagehide', () => {
+  desiredCamera = undefined;
+  clearTimeout(retryTimer);
+  clearTimeout(watchdog);
+  clearInterval(statsTimer);
+  clearInterval(loginTimer);
   events?.close();
   peer?.close();
 });
-void api('/api/cameras')
-  .then((data) => {
-    showCameras(data.cameras);
-    if (!data.configured)
-      status(
-        'Configure verified signaling hosts in .env.local before importing sessions.',
-      );
-  })
+async function loadCameras() {
+  return api('/api/cameras')
+    .then((data) => {
+      renewable = !!data.renewable;
+      showCameras(data.cameras);
+      if (!data.configured)
+        status(
+          'Configure verified signaling hosts in .env.local before importing sessions.',
+        );
+      else if (!desiredCamera)
+        status(
+          data.cameras.length
+            ? 'Select a camera and connect.'
+            : 'Sign in to Xfinity to load your cameras.',
+        );
+    })
+    .catch((error) => status(error.message, true));
+}
+
+async function accountStatus() {
+  const account = await api('/api/account');
+  loginButton.hidden = !account.configured || account.signedIn;
+  refreshButton.hidden = !account.signedIn;
+  element('account-status').textContent = account.persistenceFailed
+    ? 'Account storage failed. Keep this service running and check disk access before restarting.'
+    : account.signedIn
+      ? 'Xfinity account connected · automatic renewal enabled'
+      : account.configured
+        ? 'Sign in to enable automatic access renewal.'
+        : 'Account sign-in is not configured. See Setup and troubleshooting.';
+  return account;
+}
+loginButton.addEventListener('click', () => {
+  // Open synchronously so browsers permit the sign-in tab.
+  const popup = window.open('about:blank', '_blank');
+  if (!popup) {
+    status('Allow the sign-in pop-up, then try again.', true);
+    return;
+  }
+  popup.opener = null;
+  loginButton.disabled = true;
+  void api('/api/account/login', {})
+    .then((data) => {
+      popup.location.href = data.url;
+      status('Complete Xfinity sign-in in the new tab, then return here.');
+      const deadline = Date.now() + 10 * 60_000;
+      clearInterval(loginTimer);
+      loginTimer = setInterval(() => {
+        void accountStatus()
+          .then((account) => {
+            if (
+              account.signedIn ||
+              account.loginError ||
+              Date.now() > deadline
+            ) {
+              clearInterval(loginTimer);
+              loginButton.disabled = false;
+              if (account.signedIn) {
+                status('Account connected. Loading cameras…');
+                void loadCameras();
+              } else
+                status(
+                  account.loginError ||
+                    'Sign-in timed out. Start sign-in again.',
+                  true,
+                );
+            }
+          })
+          .catch(() => {});
+      }, 2000);
+    })
+    .catch((error) => {
+      popup.close();
+      loginButton.disabled = false;
+      status(error.message, true);
+    });
+});
+refreshButton.addEventListener('click', () => {
+  void accountStatus()
+    .then(loadCameras)
+    .catch((error) => status(error.message, true));
+});
+void accountStatus()
+  .then(loadCameras)
   .catch((error) => status(error.message, true));

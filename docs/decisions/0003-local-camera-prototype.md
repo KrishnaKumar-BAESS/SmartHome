@@ -6,6 +6,8 @@
 Evolution: [0004](0004-security-live-camera-integration.md) integrates this player
 into the house atlas's Security view through the same local service. Its credential
 source and loopback exposure boundary remain unchanged.
+Later, [0005](0005-renewable-camera-account.md) adds a renewable account credential
+source while preserving optional ADB diagnostics and loopback-only exposure.
 
 ## Context
 

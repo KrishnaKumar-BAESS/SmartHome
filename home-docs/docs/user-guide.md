@@ -89,16 +89,18 @@ setup, run `corepack pnpm build` and `corepack pnpm security:start` from the
 repository root, then open <http://127.0.0.1:4318/house/>. A static-only copy shows
 setup guidance instead of claiming a working camera connection.
 
-Connect the authorized phone, open the signed-in Xfinity camera list, and choose
-**Import from phone** in the panel. Select an imported camera, then **Connect**.
+Follow the [player setup guide](../../security/apps/camera-viewer/README.md) to
+configure account access on Windows. Choose **Sign in to Xfinity** once, then
+select a camera and **Connect**. Later launches reuse the encrypted account session.
 The player reports **Live** only after decoding video. **Stop** or closing the
-panel ends playback. If viewing credentials expire, reopen the Xfinity camera
-list and import again. The existing Xfinity app remains paired.
+panel ends playback and cancels retries. Credentials renew automatically;
+Xfinity may require another sign-in if it revokes the session. The existing
+Xfinity app remains paired. ADB import is a temporary troubleshooting fallback.
 
 Selecting an inventory camera still shows its recorded specifications and
 illustrative coverage. **Review demo history** opens generated examples, not
 recorded footage. Inventory offline badges are stored values, not current health
-checks. Independent token renewal, NVR recording, and remote hosting are not
+checks. NVR recording and remote hosting are not
 implemented; see the [player guide](../../security/apps/camera-viewer/README.md).
 
 ## Keyboard and layout

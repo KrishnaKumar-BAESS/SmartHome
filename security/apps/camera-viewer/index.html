@@ -16,12 +16,12 @@
         <span class="badge">Local prototype</span>
       </header>
       <p class="intro">
-        Live viewing through your existing Xfinity pairing. This prototype
-        imports short-lived viewing credentials from your signed-in Android
-        phone.
+        Live viewing through your existing Xfinity pairing. Sign in once on this
+        computer to let SmartHome renew access automatically.
       </p>
       <section class="toolbar" aria-label="Camera controls">
-        <button id="import">Import from phone</button>
+        <button id="login" hidden>Sign in to Xfinity</button>
+        <button id="refresh" class="secondary" hidden>Refresh cameras</button>
         <label for="camera"
           >Camera
           <select id="camera" disabled>
@@ -32,9 +32,9 @@
         <button id="stop" class="secondary" disabled>Stop</button>
       </section>
       <p id="status" role="status" aria-live="polite">
-        Ready to import. Connect an authorized ADB phone and open the Xfinity
-        camera list.
+        Checking account connection…
       </p>
+      <p id="account-status" class="note"></p>
       <section class="viewer" aria-label="Live camera video">
         <video id="video" autoplay muted playsinline controls></video>
         <div id="placeholder">
@@ -66,20 +66,24 @@
         initially; use the player controls to enable sound.
       </p>
       <details>
-        <summary>Setup and limitations</summary>
+        <summary>Setup and troubleshooting</summary>
         <p>
           Configure the verified Xfinity signaling hosts in
-          <code>.env.local</code>. Keep the phone signed in. If a token expires,
-          return to the Xfinity camera list and import again. Importing alone
-          does not open an independent stream; Connect sends its viewing token
-          to the configured Comcast signaling host.
+          <code>.env.local</code> and register the Windows sign-in callback as
+          described in the camera viewer README. Account credentials are
+          encrypted for this Windows user. If Xfinity revokes the session, sign
+          in again here. A connected phone is not needed for account mode.
         </p>
         <p>
-          This is a local diagnostic prototype. Independent account login,
-          automatic token renewal, and remote dashboard access are not
-          implemented. Connection status alone does not prove video is playing;
-          decoded frames and resolution come from the browser’s media
+          This service runs locally on this computer. Remote dashboard access is
+          not implemented. Connection status alone does not prove video is
+          playing; decoded frames and resolution come from the browser’s media
           statistics.
+        </p>
+        <button id="import" class="secondary">Import from phone</button>
+        <p>
+          Diagnostic fallback only: imports temporary viewing credentials from
+          an authorized ADB phone. These cannot renew themselves.
         </p>
       </details>
     </main>

@@ -67,12 +67,12 @@ export function LiveCameras({ onClose }: { onClose: () => void }) {
                 This copy of the house atlas has no camera service attached.
               </p>
               <p>
-                On the laptop connected to your signed-in phone, run{' '}
+                On the computer configured for camera access, run{' '}
                 <code>corepack pnpm build</code> and{' '}
                 <code>corepack pnpm security:start</code> from SmartHome.
               </p>
               <a href="http://127.0.0.1:4318/house/">Open local SmartHome</a>
-              <p>Then select Security → Live cameras → Import from phone.</p>
+              <p>Then select Security → Live cameras and sign in to Xfinity.</p>
             </>
           )}
         </div>

@@ -7,11 +7,12 @@ network, sound, security, climate, and upkeep information.
 
 **Home atlas scope:** read-only house documentation with recorded device statuses
 and demonstration history. When served by the local security service, its
-**Security → Live cameras** panel also displays real Xfinity video. Device control,
-independent account login, and persistent editing are not implemented.
+**Security → Live cameras** panel also displays real Xfinity video. Device control
+and persistent editing are not implemented.
 
-The [local camera player](security/apps/camera-viewer/README.md) uses an authorized
-Android phone for viewing credentials. Run `corepack pnpm build` and
+The [local camera player](security/apps/camera-viewer/README.md) supports Windows
+account sign-in and automatic credential renewal, with an optional phone-import
+fallback. Follow its one-time configuration guide, then run `corepack pnpm build` and
 `corepack pnpm security:start`, then open <http://127.0.0.1:4318/house/> for the
 integrated Security view. Static atlas hosting remains available without live video.
 

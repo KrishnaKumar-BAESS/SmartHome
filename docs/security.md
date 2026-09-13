@@ -5,8 +5,11 @@ The [camera prototype](../security/apps/camera-viewer/README.md) has a separate
 The [Security integration](decisions/0004-security-live-camera-integration.md)
 serves the built atlas and player on that same origin. Player framing is limited
 to the same origin; cross-origin credential requests remain rejected.
-It reads authorized Xfinity app logs, holds short-lived tokens in server memory,
-and supports a WebRTC viewer. The static-atlas description below applies to
+It supports a renewable account session encrypted using Windows DPAPI, with
+optional authorized Xfinity app log import. Short-lived viewing tokens remain in
+server memory. [Account renewal](decisions/0005-renewable-camera-account.md)
+defines callback validation, persistence, and fixed upstream destinations.
+The static-atlas description below applies to
 `home-docs`, not that separate service.
 
 SmartHome currently renders versioned home documentation in the browser.
@@ -80,4 +83,5 @@ Before introducing live cameras, telemetry, remote editing, or automation, recor
 authentication, authorization, secret storage, retention, error behavior, and
 operational ownership in an [ADR](decisions/README.md).
 The [security subsystem](../security/README.md) contains a local prototype;
-remote exposure and independent account authentication remain outside its scope.
+remote exposure remains outside its scope. Account access uses the local-only
+boundary documented in ADR-0005.

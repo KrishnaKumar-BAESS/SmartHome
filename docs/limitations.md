@@ -5,7 +5,8 @@ Use them when assessing a change or deciding what the application can support.
 
 The table describes the home atlas. The separate [camera prototype](../security/apps/camera-viewer/README.md)
 supplies its Live cameras panel when served by the local security service, and
-retains its phone dependency and local credential handling.
+supports renewable Windows account credentials. Its live account validation
+status and remaining authentication limits are documented in that service's guide.
 
 | Area             | Current boundary                                                                                                                                                           | What addressing it requires                                                                         |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |

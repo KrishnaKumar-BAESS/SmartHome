@@ -11,6 +11,9 @@ implemented state.
 
 ## Create or evolve a decision
 
+[0005 — Renewable local camera account](0005-renewable-camera-account.md)
+adds Windows sign-in, encrypted session persistence, and automatic renewal.
+
 [0004 — Security live camera integration](0004-security-live-camera-integration.md)
 records the same-origin runtime shared by the atlas and verified camera player.
 

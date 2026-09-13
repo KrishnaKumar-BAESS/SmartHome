@@ -12,6 +12,8 @@ import {
   type CameraSession,
 } from './sessions.js';
 import { SignalingConnection } from './signaling.js';
+import type { Account } from './account.js';
+import type { CameraAccount } from './camera-account.js';
 
 interface AppOptions {
   port: number;
@@ -20,6 +22,8 @@ interface AppOptions {
   allowedHosts: ReadonlySet<string>;
   names: Record<string, string>;
   readSessions?: () => Promise<CameraSession[]>;
+  account?: Account;
+  cameraAccount?: CameraAccount;
 }
 
 export function isLocalRequest(request: IncomingMessage, port: number) {
@@ -91,10 +95,36 @@ export function createViewerServer(options: AppOptions) {
       });
     const url = new URL(request.url || '/', `http://127.0.0.1:${options.port}`);
     try {
+      if (request.method === 'GET' && url.pathname === '/api/account')
+        return json(
+          response,
+          200,
+          options.account?.status() || { configured: false, signedIn: false },
+        );
+      if (request.method === 'POST' && url.pathname === '/api/account/login') {
+        await body(request);
+        if (!options.account)
+          throw new Error('Configure account sign-in first.');
+        return json(response, 200, { url: options.account.begin() });
+      }
+      if (
+        request.method === 'POST' &&
+        url.pathname === '/api/account/callback'
+      ) {
+        const data = await body(request);
+        if (!options.account || typeof data.callback !== 'string')
+          throw new Error('Invalid sign-in callback.');
+        await options.account.complete(data.callback);
+        return json(response, 200, { ok: true });
+      }
       if (request.method === 'GET' && url.pathname === '/api/cameras') {
         return json(response, 200, {
-          cameras: cameras.map(publicCamera),
+          cameras:
+            options.account?.status().signedIn && options.cameraAccount
+              ? await options.cameraAccount.list()
+              : cameras.map(publicCamera),
           configured: options.allowedHosts.size > 0,
+          renewable: options.account?.status().signedIn || false,
         });
       }
       if (request.method === 'POST' && url.pathname === '/api/import') {
@@ -117,7 +147,16 @@ export function createViewerServer(options: AppOptions) {
       }
       if (request.method === 'POST' && url.pathname === '/api/sessions') {
         const data = await body(request);
-        const camera = cameras.find((camera) => camera.camera === data.camera);
+        if (streams.size >= 3)
+          return json(response, 409, {
+            error: 'Stop an existing viewer before opening another.',
+          });
+        const camera =
+          options.account?.status().signedIn &&
+          options.cameraAccount &&
+          typeof data.camera === 'string'
+            ? await options.cameraAccount.session(data.camera)
+            : cameras.find((camera) => camera.camera === data.camera);
         if (!camera)
           return json(response, 404, {
             error: 'Import a camera session first.',
