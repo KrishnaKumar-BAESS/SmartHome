@@ -15,6 +15,7 @@ No device integration or editing backend exists.
 - [Development](../docs/development.md): commands, configuration, and troubleshooting.
 - [Web app reference](apps/web/README.md): source map and implementation constraints.
 - [Data model](docs/data-model.md): collection relationships and reviewed updates.
+- [UI audit](docs/ui-audit.md): logged speed, accessibility, usability, layout, and polish gaps.
 - [Deployment](../docs/deployment.md): build-only hosting and rollback.
 - [Source references](reference/README.md): original workbook provenance.
 

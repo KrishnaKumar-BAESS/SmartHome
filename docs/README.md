@@ -17,15 +17,16 @@ earlier decisions and are not setup instructions.
 
 ## Understand and operate
 
-| Guide                                                | Audience and purpose                                          |
-| ---------------------------------------------------- | ------------------------------------------------------------- |
-| [Architecture](architecture.md)                      | System boundaries, runtime flow, and extension points         |
-| [Web app reference](../home-docs/apps/web/README.md) | Source map, controller, renderer, and migration constraints   |
-| [Data model](../home-docs/docs/data-model.md)        | Inventory relationships, coordinates, and intentional updates |
-| [Deployment](deployment.md)                          | Build, private hosting, acceptance checks, and rollback       |
-| [Security and privacy](security.md)                  | Trust boundaries, bundled data, credentials, and reporting    |
-| [Known limitations](limitations.md)                  | Current gaps and criteria for addressing them                 |
-| [Glossary](glossary.md)                              | Terms used by the repository and application                  |
+| Guide                                                | Audience and purpose                                           |
+| ---------------------------------------------------- | -------------------------------------------------------------- |
+| [Architecture](architecture.md)                      | System boundaries, runtime flow, and extension points          |
+| [Web app reference](../home-docs/apps/web/README.md) | Source map, controller, renderer, and migration constraints    |
+| [Data model](../home-docs/docs/data-model.md)        | Inventory relationships, coordinates, and intentional updates  |
+| [Deployment](deployment.md)                          | Build, private hosting, acceptance checks, and rollback        |
+| [Security and privacy](security.md)                  | Trust boundaries, bundled data, credentials, and reporting     |
+| [Known limitations](limitations.md)                  | Current gaps and criteria for addressing them                  |
+| [UI audit](../home-docs/docs/ui-audit.md)            | Dated findings log for speed, accessibility, usability, polish |
+| [Glossary](glossary.md)                              | Terms used by the repository and application                   |
 
 ## Subsystems and history
 

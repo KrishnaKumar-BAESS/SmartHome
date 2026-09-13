@@ -98,7 +98,8 @@ Use Tab to move through focusable controls and Enter or Space to activate
 buttons and preserved clickable panels. Navigation indicates the active mode.
 The UI has some keyboard support, but full keyboard-only model manipulation and
 screen-reader coverage have not been verified. See
-[known limitations](../../docs/limitations.md).
+[known limitations](../../docs/limitations.md) and the logged
+[UI audit findings](ui-audit.md).
 
 Below 900 pixels wide the app uses its narrow layout. The navigation can scroll
 horizontally. **Show model / Show panels** toggles the side panels; desktop views
