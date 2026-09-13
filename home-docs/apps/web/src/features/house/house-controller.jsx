@@ -497,12 +497,6 @@ export class HouseController extends Component {
       B = this.bMap();
     const set = (o) => this.setState(o);
     const tone = this.props.stageTone ?? 'slate';
-    const stageGrad =
-      tone === 'ink'
-        ? 'radial-gradient(125% 120% at 50% 0%,#2a2f36 0%,#1d2126 55%,#15181c 100%)'
-        : tone === 'navy'
-          ? 'radial-gradient(125% 120% at 50% 0%,#26384c 0%,#1a293a 55%,#132030 100%)'
-          : 'radial-gradient(125% 120% at 50% 0%,#33414f 0%,#232e38 55%,#1a232c 100%)';
 
     // MODES
     const modeDef = [
@@ -525,6 +519,20 @@ export class HouseController extends Component {
       climate: '#3f9a8c',
       upkeep: '#b07b3b',
     };
+    // Ambient stage backdrop tinted by the active mode's accent, so
+    // switching systems recolors the whole scene, not just the chrome.
+    const accent = modeAccent[S.mode] || '#3b6fb0';
+    const baseGrad =
+      tone === 'ink'
+        ? ['#262d37', '#171c23', '#0f1318']
+        : tone === 'navy'
+          ? ['#26384c', '#1a293a', '#132030']
+          : ['#33414f', '#232e38', '#1a232c'];
+    const stageGrad =
+      `radial-gradient(85% 65% at 82% -4%,${this.hexA(accent, 0.2)} 0%,transparent 58%),` +
+      `radial-gradient(70% 58% at 8% 104%,${this.hexA(accent, 0.12)} 0%,transparent 55%),` +
+      `radial-gradient(125% 120% at 50% 0%,${baseGrad[0]} 0%,${baseGrad[1]} 55%,${baseGrad[2]} 100%)`;
+
     const modes = modeDef.map(([key, label]) => ({
       key,
       label,
@@ -552,17 +560,15 @@ export class HouseController extends Component {
     modeDef.forEach(([key]) => {
       const on = S.mode === key,
         ac = modeAccent[key];
+      const activeGlow = `background:${this.hexA(ac, 0.17)};color:${ac};box-shadow:inset 0 0 0 1px ${this.hexA(ac, 0.32)},0 8px 22px -8px ${this.hexA(ac, 0.55)};`;
       nav[key] = {
         onClick: () => set({ mode: key }),
+        active: on,
         style: narrow
-          ? `display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:9px;cursor:pointer;user-select:none;flex-shrink:0;white-space:nowrap;transition:background .15s,color .15s;` +
-            (on
-              ? `background:${this.hexA(ac, 0.18)};color:${ac};`
-              : `background:transparent;color:#7f8d9a;`)
-          : `display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 3px;border-radius:11px;cursor:pointer;user-select:none;transition:background .15s,color .15s;` +
-            (on
-              ? `background:${this.hexA(ac, 0.18)};color:${ac};`
-              : `background:transparent;color:#7f8d9a;`),
+          ? `display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:10px;cursor:pointer;user-select:none;flex-shrink:0;white-space:nowrap;transition:background .15s,color .15s,box-shadow .15s;` +
+            (on ? activeGlow : `background:transparent;color:#7f8d9a;`)
+          : `display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 3px;border-radius:12px;cursor:pointer;user-select:none;transition:background .15s,color .15s,box-shadow .15s;` +
+            (on ? activeGlow : `background:transparent;color:#7f8d9a;`),
       };
     });
     const navLabelStyle = narrow
@@ -798,23 +804,29 @@ export class HouseController extends Component {
     }));
 
     // --- responsive layout style strings (one template, JS-driven layout) ---
-    const topbarStyle = `position:absolute;top:0;left:0;right:0;height:56px;z-index:34;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:0 14px;background:rgba(17,24,31,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.08)`;
+    // Shared "floating glass" chrome recipe for every piece of UI over the stage.
+    const glass =
+      'background:rgba(15,21,28,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.085)';
+    const glassShadow = 'box-shadow:0 20px 50px -20px rgba(0,0,0,0.72)';
+    const topbarStyle = narrow
+      ? `position:absolute;top:0;left:0;right:0;height:56px;z-index:34;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:0 14px;background:rgba(15,21,28,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.08)`
+      : `position:absolute;top:10px;left:10px;right:10px;height:54px;z-index:34;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:0 14px;${glass};border-radius:16px;${glassShadow}`;
     const railStyle = narrow
       ? `position:absolute;top:56px;left:0;right:0;height:52px;z-index:26;display:flex;flex-direction:row;align-items:center;gap:3px;padding:0 8px;overflow-x:auto;overflow-y:hidden;background:rgba(13,19,25,0.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.06)`
-      : `position:absolute;top:56px;left:0;bottom:0;width:76px;z-index:26;display:flex;flex-direction:column;gap:3px;padding:11px 9px;overflow-y:auto;background:rgba(13,19,25,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-right:1px solid rgba(255,255,255,0.06)`;
+      : `position:absolute;top:74px;left:10px;bottom:10px;width:72px;z-index:26;display:flex;flex-direction:column;gap:4px;padding:10px 8px;overflow-y:auto;${glass};border-radius:16px;${glassShadow}`;
     const listPanelStyle =
       (narrow
-        ? `position:absolute;left:8px;right:8px;top:118px;height:42vh;z-index:18;display:flex;flex-direction:column;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:hidden`
-        : `position:absolute;left:88px;top:68px;bottom:14px;width:316px;z-index:18;display:flex;flex-direction:column;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:hidden`) +
+        ? `position:absolute;left:8px;right:8px;top:118px;height:42vh;z-index:18;display:flex;flex-direction:column;background:rgba(17,23,30,0.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.09);border-radius:14px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:hidden`
+        : `position:absolute;left:90px;top:74px;bottom:10px;width:316px;z-index:18;display:flex;flex-direction:column;background:rgba(17,23,30,0.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.085);border-radius:16px;${glassShadow};color:#e8edf2;overflow:hidden`) +
       (narrow
         ? (S.leftHidden ? ';transform:translateY(calc(-100% - 120px))' : '') +
           ';transition:transform .28s cubic-bezier(0.4,0,0.2,1)'
-        : (S.leftHidden ? ';transform:translateX(-100%)' : '') +
+        : (S.leftHidden ? ';transform:translateX(calc(-100% - 106px))' : '') +
           ';transition:transform .28s cubic-bezier(0.4,0,0.2,1)');
     const detailPanelStyle =
       (narrow
-        ? `position:absolute;left:8px;right:8px;bottom:8px;max-height:40vh;z-index:19;display:flex;flex-direction:column;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:auto`
-        : `position:absolute;right:14px;top:68px;bottom:14px;width:340px;z-index:18;display:flex;flex-direction:column;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:auto`) +
+        ? `position:absolute;left:8px;right:8px;bottom:8px;max-height:40vh;z-index:19;display:flex;flex-direction:column;background:rgba(17,23,30,0.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.09);border-radius:14px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:auto`
+        : `position:absolute;right:10px;top:74px;bottom:10px;width:340px;z-index:18;display:flex;flex-direction:column;background:rgba(17,23,30,0.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.085);border-radius:16px;${glassShadow};color:#e8edf2;overflow:auto`) +
       (narrow
         ? (S.rightHidden ? ';transform:translateY(calc(100% + 20px))' : '') +
           ';transition:transform .28s cubic-bezier(0.4,0,0.2,1)'
@@ -822,7 +834,7 @@ export class HouseController extends Component {
           ';transition:transform .28s cubic-bezier(0.4,0,0.2,1)');
     const idBoxStyle = `display:flex;align-items:center;gap:10px;min-width:0`;
     const idSubStyle = `font:400 9.5px 'IBM Plex Mono',monospace;color:#8a98a6;margin-top:2px;${narrow ? 'display:none' : ''}`;
-    const searchWrapStyle = `position:relative;width:100%;max-width:${narrow ? '100%' : '560px'};margin:0 auto;display:flex;align-items:center;gap:9px;height:38px;padding:0 11px;background:${S.searchFocus ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.06)'};border:1px solid ${S.searchFocus ? 'rgba(140,180,230,0.5)' : 'rgba(255,255,255,0.13)'};border-radius:10px;transition:background .15s,border-color .15s`;
+    const searchWrapStyle = `position:relative;width:100%;max-width:${narrow ? '100%' : '560px'};margin:0 auto;display:flex;align-items:center;gap:9px;height:38px;padding:0 11px;background:${S.searchFocus ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.06)'};border:1px solid ${S.searchFocus ? this.hexA(accent, 0.55) : 'rgba(255,255,255,0.13)'};${S.searchFocus ? `box-shadow:0 0 0 3px ${this.hexA(accent, 0.14)};` : ''}border-radius:12px;transition:background .15s,border-color .15s,box-shadow .15s`;
     const searchInputStyle = `flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;color:#e8edf2;font:500 13px 'IBM Plex Sans'`;
     const searchPlaceholder = narrow
       ? 'Search the house…'
@@ -1534,7 +1546,7 @@ export class HouseController extends Component {
     // Keep floor labels clear of the overlaid left panel: convert its
     // screen-space edge into scene viewBox units (960x600, xMidYMid meet).
     const sceneScale = Math.min((S.vw || 1280) / 960, (S.vh || 800) / 600);
-    const panelEdgePx = narrow ? 0 : (S.leftHidden ? 88 : 403) + 22;
+    const panelEdgePx = narrow ? 0 : (S.leftHidden ? 90 : 406) + 22;
     const floorLabelMinX =
       (panelEdgePx - ((S.vw || 1280) - 960 * sceneScale) / 2) / sceneScale;
 
@@ -1610,6 +1622,7 @@ export class HouseController extends Component {
 
     // ---- prompt / legend / hint ----
     const showPrompt = (isElectrical && !selC) || (isLighting && !sb);
+    const promptStyle = `position:absolute;top:${narrow ? 64 : 76}px;left:50%;transform:translateX(-50%);z-index:16;font:500 11.5px 'IBM Plex Sans';color:#c4d0db;background:rgba(15,21,28,0.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:8px 16px;border:1px solid rgba(255,255,255,0.10);border-radius:20px;white-space:nowrap;animation:floatIn .3s ease both`;
     const promptText = isElectrical
       ? 'Click a circuit in the list — or click a room in the model'
       : isLighting
@@ -1741,10 +1754,10 @@ export class HouseController extends Component {
           panX: (s.panX || 0) + (s.rightHidden ? -sh : sh),
         };
       });
-    const mapRight = narrow ? 8 : rightHidden ? 20 : 370;
+    const mapRight = narrow ? 8 : rightHidden ? 20 : 366;
     const clusterRight = narrow ? 8 : mapRight + 16;
-    const isoPanelStyle = `position:absolute;top:${narrow ? 114 : 64}px;right:${mapRight}px;z-index:30;width:236px;max-width:calc(100% - 16px);max-height:calc(100dvh - ${narrow ? 132 : 84}px);display:flex;flex-direction:column;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-radius:10px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:hidden;animation:floatIn .25s ease both;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
-    const legendPanelStyle = `position:absolute;right:${narrow ? 8 : clusterRight + 185}px;bottom:${narrow ? 68 : 18}px;max-width:calc(100% - 16px);z-index:16;display:flex;flex-direction:column;gap:6px;padding:10px 13px;background:rgba(13,19,26,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.10);border-radius:9px;animation:floatIn .3s ease both;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
+    const isoPanelStyle = `position:absolute;top:${narrow ? 114 : 74}px;right:${mapRight}px;z-index:30;width:236px;max-width:calc(100% - 16px);max-height:calc(100dvh - ${narrow ? 132 : 94}px);display:flex;flex-direction:column;background:rgba(17,23,30,0.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.09);border-radius:14px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:hidden;animation:floatIn .25s ease both;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
+    const legendPanelStyle = `position:absolute;right:${narrow ? 8 : clusterRight + 185}px;bottom:${narrow ? 68 : 18}px;max-width:calc(100% - 16px);z-index:16;display:flex;flex-direction:column;gap:6px;padding:10px 13px;background:rgba(13,19,26,0.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.10);border-radius:12px;animation:floatIn .3s ease both;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
     const labelsOn = S.showRoomLabels !== false;
     const toggleLabels = () =>
       set((s) => ({ showRoomLabels: !s.showRoomLabels }));
@@ -1978,10 +1991,10 @@ export class HouseController extends Component {
       toggleRight,
       leftTabStyle: narrow
         ? 'display:none'
-        : `position:absolute;top:50%;margin-top:-24px;z-index:20;cursor:pointer;left:${S.leftHidden ? 88 : 403}px;transition:left .28s cubic-bezier(0.4,0,0.2,1);width:14px;height:48px;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-left:none;border-radius:0 6px 6px 0;display:flex;align-items:center;justify-content:center;color:#6a7a88;font-size:10px`,
+        : `position:absolute;top:50%;margin-top:-24px;z-index:20;cursor:pointer;left:${S.leftHidden ? 90 : 406}px;transition:left .28s cubic-bezier(0.4,0,0.2,1);width:14px;height:48px;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-left:none;border-radius:0 6px 6px 0;display:flex;align-items:center;justify-content:center;color:#6a7a88;font-size:10px`,
       rightTabStyle: narrow
         ? 'display:none'
-        : `position:absolute;top:50%;margin-top:-24px;z-index:20;cursor:pointer;right:${S.rightHidden ? 13 : 353}px;transition:right .28s cubic-bezier(0.4,0,0.2,1);width:14px;height:48px;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-right:none;border-radius:6px 0 0 6px;display:flex;align-items:center;justify-content:center;color:#6a7a88;font-size:10px`,
+        : `position:absolute;top:50%;margin-top:-24px;z-index:20;cursor:pointer;right:${S.rightHidden ? 9 : 349}px;transition:right .28s cubic-bezier(0.4,0,0.2,1);width:14px;height:48px;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-right:none;border-radius:6px 0 0 6px;display:flex;align-items:center;justify-content:center;color:#6a7a88;font-size:10px`,
       leftTabChevron: S.leftHidden ? '›' : '‹',
       rightTabChevron: S.rightHidden ? '‹' : '›',
       isoFloors,
@@ -1994,7 +2007,10 @@ export class HouseController extends Component {
       isoTopLabel,
       isoBtnTopStyle,
       showPrompt,
+      promptStyle,
       promptText,
+      accent,
+      logoMarkStyle: `width:18px;height:18px;border:1.5px solid ${accent};box-shadow:0 0 14px ${this.hexA(accent, 0.5)},inset 0 0 6px ${this.hexA(accent, 0.3)};transform:rotate(45deg);flex-shrink:0;transition:border-color .3s,box-shadow .3s`,
       showLegend: S.legend,
       legendTitle,
       legendItems,

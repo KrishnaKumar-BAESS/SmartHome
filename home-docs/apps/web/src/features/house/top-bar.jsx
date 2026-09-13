@@ -6,11 +6,7 @@ export function TopBar({ view }) {
   return (
     <div style={css(view.topbarStyle)}>
       <div style={css(view.idBoxStyle)}>
-        <div
-          style={css(
-            'width:18px;height:18px;border:1.5px solid #6ea0e0;transform:rotate(45deg);flex-shrink:0',
-          )}
-        ></div>
+        <div style={css(view.logoMarkStyle)}></div>
         <div style={css('min-width:0')}>
           <div
             style={css(

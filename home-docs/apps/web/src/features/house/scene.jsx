@@ -216,6 +216,44 @@ export function renderScene(house, opt = {}) {
   faces.sort((a, b) => b.depth - a.depth);
 
   const els = [];
+
+  // ---- soft ground shadow beneath the footprint, grounding the model ----
+  if (bx0 < bx1) {
+    const gz = bz0 - 0.06;
+    const gPts = [
+      project(bx0, by0, gz),
+      project(bx1, by0, gz),
+      project(bx1, by1, gz),
+      project(bx0, by1, gz),
+    ];
+    els.push(
+      RE(
+        'defs',
+        { key: k() },
+        RE(
+          'filter',
+          {
+            id: 'groundShadow',
+            x: '-45%',
+            y: '-45%',
+            width: '190%',
+            height: '190%',
+          },
+          RE('feGaussianBlur', { stdDeviation: 13 }),
+        ),
+      ),
+    );
+    els.push(
+      RE('path', {
+        key: k(),
+        d: polyD(gPts),
+        fill: 'rgba(0,0,0,0.4)',
+        filter: 'url(#groundShadow)',
+        style: { pointerEvents: 'none' },
+      }),
+    );
+  }
+
   faces.forEach((f) => {
     const rProps =
       opt.onRoomClick && f.rid

@@ -7,7 +7,9 @@ export function Navigation({ view }) {
         style={css(view.nav.overview.style)}
         onClick={view.nav.overview.onClick}
         type="button"
-        className="nav-button"
+        className={
+          view.nav.overview.active ? 'nav-button is-active' : 'nav-button'
+        }
         aria-label="Overview"
         title={'Overview — shortcut 1'}
         aria-pressed={view.mode === 'overview'}
@@ -38,7 +40,9 @@ export function Navigation({ view }) {
         style={css(view.nav.electrical.style)}
         onClick={view.nav.electrical.onClick}
         type="button"
-        className="nav-button"
+        className={
+          view.nav.electrical.active ? 'nav-button is-active' : 'nav-button'
+        }
         aria-label="Electrical"
         title={'Electrical — shortcut 2'}
         aria-pressed={view.mode === 'electrical'}
@@ -58,7 +62,9 @@ export function Navigation({ view }) {
         style={css(view.nav.lighting.style)}
         onClick={view.nav.lighting.onClick}
         type="button"
-        className="nav-button"
+        className={
+          view.nav.lighting.active ? 'nav-button is-active' : 'nav-button'
+        }
         aria-label="Lighting"
         title={'Lighting — shortcut 3'}
         aria-pressed={view.mode === 'lighting'}
@@ -88,7 +94,9 @@ export function Navigation({ view }) {
         style={css(view.nav.network.style)}
         onClick={view.nav.network.onClick}
         type="button"
-        className="nav-button"
+        className={
+          view.nav.network.active ? 'nav-button is-active' : 'nav-button'
+        }
         aria-label="Network"
         title={'Network — shortcut 4'}
         aria-pressed={view.mode === 'network'}
@@ -133,7 +141,9 @@ export function Navigation({ view }) {
         style={css(view.nav.sound.style)}
         onClick={view.nav.sound.onClick}
         type="button"
-        className="nav-button"
+        className={
+          view.nav.sound.active ? 'nav-button is-active' : 'nav-button'
+        }
         aria-label="Sound"
         title={'Sound — shortcut 5'}
         aria-pressed={view.mode === 'sound'}
@@ -162,7 +172,9 @@ export function Navigation({ view }) {
         style={css(view.nav.security.style)}
         onClick={view.nav.security.onClick}
         type="button"
-        className="nav-button"
+        className={
+          view.nav.security.active ? 'nav-button is-active' : 'nav-button'
+        }
         aria-label="Security"
         title={'Security — shortcut 6'}
         aria-pressed={view.mode === 'security'}
@@ -187,7 +199,9 @@ export function Navigation({ view }) {
         style={css(view.nav.climate.style)}
         onClick={view.nav.climate.onClick}
         type="button"
-        className="nav-button"
+        className={
+          view.nav.climate.active ? 'nav-button is-active' : 'nav-button'
+        }
         aria-label="Climate"
         title={'Climate — shortcut 7'}
         aria-pressed={view.mode === 'climate'}
@@ -218,7 +232,9 @@ export function Navigation({ view }) {
         style={css(view.nav.upkeep.style)}
         onClick={view.nav.upkeep.onClick}
         type="button"
-        className="nav-button"
+        className={
+          view.nav.upkeep.active ? 'nav-button is-active' : 'nav-button'
+        }
         aria-label="Upkeep"
         title={'Upkeep — shortcut 8'}
         aria-pressed={view.mode === 'upkeep'}

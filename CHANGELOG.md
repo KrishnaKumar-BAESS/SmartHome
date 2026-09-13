@@ -22,6 +22,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- Refresh the home-docs shell with floating glass chrome (top bar, nav rail and panels), a mode-tinted backdrop, an accent-glow active view, and a grounded shadow under the house model.
 - Modernize home-docs with native React 19 components, Vite 8, typed inventory, and locally bundled fonts.
 - Organize home-docs into `apps/web/` and `reference/`; archive the original DC app intact outside production assets.
 - Reconcile repository guidance with the active implementation, clarify recorded/demo data and test limits, and document the evolution from scaffold to shared workspace tooling.
