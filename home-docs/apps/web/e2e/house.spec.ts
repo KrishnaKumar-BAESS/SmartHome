@@ -64,16 +64,24 @@ test('search locates a camera and its documented details', async ({ page }) => {
   ).toBeVisible();
 });
 
-test('keyboard navigation and camera grid remain usable', async ({ page }) => {
+test('keyboard navigation opens live cameras with static-host setup guidance', async ({
+  page,
+}) => {
   await page.goto('/');
   const security = page.getByRole('button', { name: 'Security', exact: true });
   await security.focus();
   await page.keyboard.press('Enter');
   await expect(security).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button').filter({ hasText: 'All feeds' }).click();
+  await page
+    .getByRole('button', { name: '▦ Live cameras', exact: true })
+    .click();
   await expect(
-    page.getByText('Side Gate', { exact: true }).first(),
+    page.getByRole('heading', {
+      name: 'Open SmartHome with its local camera service',
+    }),
   ).toBeVisible();
+  await page.getByRole('button', { name: 'Close live cameras' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
 test('model zoom changes projected floor geometry', async ({

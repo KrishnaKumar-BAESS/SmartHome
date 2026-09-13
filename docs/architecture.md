@@ -5,7 +5,10 @@ tooling. The static house atlas lives in `home-docs/apps/web/`. A separate local
 camera prototype in `security/apps/camera-viewer/` adds a localhost Node server,
 ADB session import, and browser WebRTC playback. There is no shared database or
 cross-repository runtime dependency. See [its decision](decisions/0003-local-camera-prototype.md)
-for the authentication boundary and live-validation requirements.
+for the authentication boundary and live-validation requirements. The local server
+also serves the atlas at `/house/`; Security opens the player in a same-origin
+dialog. [Decision 0004](decisions/0004-security-live-camera-integration.md) defines
+this runtime integration. Standalone static atlas hosting remains supported.
 
 ## System context
 
@@ -37,7 +40,7 @@ event demonstrations do not establish a connection to a camera.
 
 KumarSec and FamSecDash remain separate repositories. Root workspace discovery
 includes `home-docs/apps/*` and `security/apps/*`. A shared toolchain change can affect
-all workspace packages even though subsystem runtimes are independent.
+all workspace packages. Integrated Security hosting requires both app builds.
 
 ## Browser execution
 

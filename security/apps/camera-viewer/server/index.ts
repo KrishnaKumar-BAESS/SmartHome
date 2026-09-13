@@ -24,6 +24,9 @@ const app = createViewerServer({
   allowedHosts,
   names,
   webRoot: fileURLToPath(new URL('../web/', import.meta.url)),
+  houseRoot: fileURLToPath(
+    new URL('../../../../../home-docs/apps/web/dist/', import.meta.url),
+  ),
 });
 app.server.listen(port, '127.0.0.1', () =>
   console.log(`Camera viewer: http://127.0.0.1:${port}`),

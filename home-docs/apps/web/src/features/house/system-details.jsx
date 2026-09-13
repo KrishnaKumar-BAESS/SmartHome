@@ -700,6 +700,17 @@ export function SystemDetails({ view }) {
 
         {view.isSecurity ? (
           <>
+            <button
+              type="button"
+              className="security-live-launch"
+              onClick={view.openGrid}
+            >
+              Open live cameras
+            </button>
+            <p className="security-recorded-note">
+              Documented camera details below. Preview and history are
+              demonstrations.
+            </p>
             <div
               style={css(
                 'position:relative;width:100%;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:#0b1015;border:1px solid #20303c;box-shadow:inset 0 0 60px rgba(0,0,0,0.6)',
@@ -861,7 +872,7 @@ export function SystemDetails({ view }) {
                 tabIndex={0}
                 onKeyDown={activateOnKey}
               >
-                {'⛶ Expand & review history'}
+                {'⛶ Review demo history'}
               </div>
               <div
                 onClick={view.openGrid}
@@ -872,7 +883,7 @@ export function SystemDetails({ view }) {
                 tabIndex={0}
                 onKeyDown={activateOnKey}
               >
-                {'▦ All'}
+                {'Live cameras'}
               </div>
             </div>
           </>

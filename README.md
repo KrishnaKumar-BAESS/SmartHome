@@ -5,13 +5,15 @@ subsystems. Its active application, **HOUSE.SYS**, is an interactive house atlas
 explore floor geometry, find equipment, and inspect recorded electrical, lighting,
 network, sound, security, climate, and upkeep information.
 
-**Home atlas scope:** a static, read-only documentation app. Device statuses are
-recorded data; camera feeds and event history are demonstrations. There is no live
-telemetry, device control, backend authentication, or persistent editing.
+**Home atlas scope:** read-only house documentation with recorded device statuses
+and demonstration history. When served by the local security service, its
+**Security → Live cameras** panel also displays real Xfinity video. Device control,
+independent account login, and persistent editing are not implemented.
 
-A separate [local camera prototype](security/apps/camera-viewer/README.md) uses an
-authorized Android phone for viewing credentials. It does not turn the atlas
-demonstrations into live telemetry.
+The [local camera player](security/apps/camera-viewer/README.md) uses an authorized
+Android phone for viewing credentials. Run `corepack pnpm build` and
+`corepack pnpm security:start`, then open <http://127.0.0.1:4318/house/> for the
+integrated Security view. Static atlas hosting remains available without live video.
 
 ## Start locally
 

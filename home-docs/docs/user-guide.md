@@ -4,10 +4,10 @@ HOUSE.SYS helps you find recorded information about the house and relate it to
 a visual floor model. Start the app using the [quick start](../../README.md#start-locally)
 or use a deployment supplied by the repository owner.
 
-**The atlas is documentation.** Device states are recorded values. Camera
-graphics and history are demonstrations, even where the UI says LIVE, Online,
-Today, or shows a changing clock. Climate sensor records are planned.
-There is no connection to home devices and no persistent editing.
+**The atlas inventory is documentation.** Device states are recorded values;
+camera previews and history are demonstrations. Climate sensor records are planned.
+The separate **Security → Live cameras** panel displays actual video when this
+app runs through the local security service. There is no persistent editing.
 
 ## First walkthrough
 
@@ -25,16 +25,16 @@ model controls. Choose **Show panels** to return to the inventory and details.
 
 ## Documentation modes
 
-| Mode       | What it shows                                                                 | Typical use                                      |
-| ---------- | ----------------------------------------------------------------------------- | ------------------------------------------------ |
-| Overview   | House summary, system summaries, and room model                               | Get oriented or search for a room                |
-| Electrical | Panels, circuit types, circuit details, and served-room highlights            | Follow a documented circuit-to-room relationship |
-| Lighting   | Fixture records, specifications, room/status filters, and replacement status  | Find a recorded bulb or fixture specification    |
-| Network    | Mesh nodes, documented network membership, server details, and model overlays | Inspect the recorded topology                    |
-| Sound      | Defined audio zones and illustrative speaker layouts                          | Understand the documented zone arrangement       |
-| Security   | Camera records, illustrative coverage, feed grid, and simulated history       | Explore recorded camera placement                |
-| Climate    | Planned sensors, target measurements, and mount locations                     | Review the documented sensor plan                |
-| Upkeep     | Maintenance items, recorded usage/life values, parts, and status              | Find a documented maintenance item               |
+| Mode       | What it shows                                                                  | Typical use                                      |
+| ---------- | ------------------------------------------------------------------------------ | ------------------------------------------------ |
+| Overview   | House summary, system summaries, and room model                                | Get oriented or search for a room                |
+| Electrical | Panels, circuit types, circuit details, and served-room highlights             | Follow a documented circuit-to-room relationship |
+| Lighting   | Fixture records, specifications, room/status filters, and replacement status   | Find a recorded bulb or fixture specification    |
+| Network    | Mesh nodes, documented network membership, server details, and model overlays  | Inspect the recorded topology                    |
+| Sound      | Defined audio zones and illustrative speaker layouts                           | Understand the documented zone arrangement       |
+| Security   | Camera inventory, illustrative coverage, demo history, and a live-camera panel | Inspect placement or open live Xfinity video     |
+| Climate    | Planned sensors, target measurements, and mount locations                      | Review the documented sensor plan                |
+| Upkeep     | Maintenance items, recorded usage/life values, parts, and status               | Find a documented maintenance item               |
 
 Selecting items changes the displayed details and relevant model highlighting.
 The app does not send commands, update hardware configuration, schedule work, or
@@ -82,15 +82,24 @@ the room selection; choosing rooms switches to room-based isolation.
 Use **All** or **Clear** to restore the entire house. Isolation controls the model,
 while each mode's inventory filters remain separate.
 
-## Camera demonstrations
+## Security cameras
 
-In **Security**, select a camera to inspect its recorded specifications and
-illustrative coverage. **All feeds** opens the camera grid. The expanded viewer
-offers generated event-history examples and a return to its demonstration live view.
+In **Security**, choose **Live cameras** to open the integrated player. For local
+setup, run `corepack pnpm build` and `corepack pnpm security:start` from the
+repository root, then open <http://127.0.0.1:4318/house/>. A static-only copy shows
+setup guidance instead of claiming a working camera connection.
 
-No video stream, microphone audio, NVR, cloud recording, or physical health check
-is connected. An offline badge is a stored status. History entries and duration
-labels are generated examples, not evidence that an event occurred.
+Connect the authorized phone, open the signed-in Xfinity camera list, and choose
+**Import from phone** in the panel. Select an imported camera, then **Connect**.
+The player reports **Live** only after decoding video. **Stop** or closing the
+panel ends playback. If viewing credentials expire, reopen the Xfinity camera
+list and import again. The existing Xfinity app remains paired.
+
+Selecting an inventory camera still shows its recorded specifications and
+illustrative coverage. **Review demo history** opens generated examples, not
+recorded footage. Inventory offline badges are stored values, not current health
+checks. Independent token renewal, NVR recording, and remote hosting are not
+implemented; see the [player guide](../../security/apps/camera-viewer/README.md).
 
 ## Keyboard and layout
 

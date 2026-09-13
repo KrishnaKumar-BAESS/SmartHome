@@ -11,6 +11,9 @@ implemented state.
 
 ## Create or evolve a decision
 
+[0004 — Security live camera integration](0004-security-live-camera-integration.md)
+records the same-origin runtime shared by the atlas and verified camera player.
+
 [0003 — Local camera prototype](0003-local-camera-prototype.md) records the ADB
 credential source, localhost boundary, and real-camera validation requirements.
 

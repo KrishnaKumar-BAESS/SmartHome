@@ -4,11 +4,12 @@ These are current implementation constraints, not promised roadmap dates.
 Use them when assessing a change or deciding what the application can support.
 
 The table describes the home atlas. The separate [camera prototype](../security/apps/camera-viewer/README.md)
-has its own phone dependency, credential handling, and live-validation requirements.
+supplies its Live cameras panel when served by the local security service, and
+retains its phone dependency and local credential handling.
 
 | Area             | Current boundary                                                                                                                                                           | What addressing it requires                                                                         |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Live device data | Inventory/status fields are recorded; no polling, streaming, or device API exists                                                                                          | Deliberate integration design with authentication, failure states, and provenance                   |
+| Live device data | Inventory/status fields are recorded; only the local Security live-camera panel receives device video                                                                      | Other telemetry needs deliberate integration, authentication, failure states, and provenance        |
 | Cameras          | Feed graphics and deterministic event history are demonstrations; labels such as LIVE and Today are inherited UI                                                           | Accurate demonstration labeling in a future UI change, or a separately verified live integration    |
 | Climate          | All current sensor records are planned; no measured readings are ingested                                                                                                  | Real sensor source, freshness semantics, units, and unavailable-state handling                      |
 | Editing          | No UI persistence, workbook import, or database                                                                                                                            | Reviewed authoring/storage design; current updates go through source and Git                        |

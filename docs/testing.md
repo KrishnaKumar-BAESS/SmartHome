@@ -59,7 +59,7 @@ Both projects exercise:
    or external requests during that navigation, and no horizontal page overflow.
 2. Searching for Front Doorbell, switching to Security, clearing the query, and
    finding its displayed name.
-3. Enter-key activation of Security and opening the camera grid.
+3. Enter-key activation of Security, live-camera setup on a static host, and panel dismissal.
 4. Model zoom changing a projected path; the mobile case first hides side panels.
 5. Floor isolation reducing visible paths, restoring all floors, and switching
    to Stacked changing geometry.

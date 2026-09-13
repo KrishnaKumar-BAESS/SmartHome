@@ -3,6 +3,10 @@
 - Date: 2026-09-13
 - Status: Accepted for local prototype scope; live validation is separate
 
+Evolution: [0004](0004-security-live-camera-integration.md) integrates this player
+into the house atlas's Security view through the same local service. Its credential
+source and loopback exposure boundary remain unchanged.
+
 ## Context
 
 Owned Xfinity cameras exchange encrypted WebRTC media with the signed-in Android

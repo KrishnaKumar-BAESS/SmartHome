@@ -10,6 +10,12 @@
 body {
   margin: 0;
 }
+.embedded main {
+  padding: 16px;
+}
+.embedded header {
+  display: none;
+}
 main {
   max-width: 1120px;
   margin: auto;

@@ -11,6 +11,8 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
+- Integrate verified Xfinity playback into SmartHome's Security view through the local security service; preserve the existing Xfinity app connection and clearly label inventory previews/history as demonstrations.
+
 - Add a local security camera prototype with ADB session import, restricted Xfinity signaling, WebRTC playback, and explicit live-validation requirements.
 
 - Add a dated home-docs UI audit logging performance, accessibility, usability, responsive, motion, and visual findings with source references.

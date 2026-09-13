@@ -2,6 +2,9 @@
 
 The [camera prototype](../security/apps/camera-viewer/README.md) has a separate
 [localhost and credential boundary](decisions/0003-local-camera-prototype.md).
+The [Security integration](decisions/0004-security-live-camera-integration.md)
+serves the built atlas and player on that same origin. Player framing is limited
+to the same origin; cross-origin credential requests remain rejected.
 It reads authorized Xfinity app logs, holds short-lived tokens in server memory,
 and supports a WebRTC viewer. The static-atlas description below applies to
 `home-docs`, not that separate service.

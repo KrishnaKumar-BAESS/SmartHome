@@ -13,7 +13,7 @@ import { SystemDetails } from './system-details';
 import { DetailsToggle } from './details-toggle';
 import { SceneLegend } from './scene-legend';
 import { ViewControls } from './view-controls';
-import { CameraGrid } from './camera-grid';
+import { LiveCameras } from './live-cameras';
 import { CameraViewer } from './camera-viewer';
 
 export function HouseView({ view }) {
@@ -38,7 +38,9 @@ export function HouseView({ view }) {
       <DetailsToggle view={view} />
       <SceneLegend view={view} />
       <ViewControls view={view} />
-      <CameraGrid view={view} />
+      {view.isSecurity && view.showGrid ? (
+        <LiveCameras onClose={view.closeGrid} />
+      ) : null}
       <CameraViewer view={view} />
     </main>
   );

@@ -5,8 +5,9 @@ documentation modes, a projected SVG model, inventory search, floor/room
 isolation, and camera demonstrations.
 
 The data is local and read-only. Status values describe recorded inventory;
-camera feeds/history are simulated and climate sensors are planned.
-No device integration or editing backend exists.
+camera previews/history are simulated and climate sensors are planned. The
+**Security → Live cameras** panel embeds the verified Xfinity player when served
+by the [local security service](../security/README.md). Editing is not implemented.
 
 ## Use or develop
 

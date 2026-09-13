@@ -4,7 +4,7 @@ import {
   type ServerResponse,
 } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { extname, resolve, sep } from 'node:path';
 import {
   readPhoneSessions,
@@ -16,6 +16,7 @@ import { SignalingConnection } from './signaling.js';
 interface AppOptions {
   port: number;
   webRoot: string;
+  houseRoot?: string;
   allowedHosts: ReadonlySet<string>;
   names: Record<string, string>;
   readSessions?: () => Promise<CameraSession[]>;
@@ -82,7 +83,7 @@ export function createViewerServer(options: AppOptions) {
     response.setHeader('Referrer-Policy', 'no-referrer');
     response.setHeader(
       'Content-Security-Policy',
-      "default-src 'self'; connect-src 'self'; media-src 'self' blob:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+      "default-src 'self'; connect-src 'self'; media-src 'self' blob:; style-src 'self'; script-src 'self'; frame-src 'self'; frame-ancestors 'self'; base-uri 'none'",
     );
     if (!isLocalRequest(request, options.port))
       return json(response, 403, {
@@ -197,20 +198,51 @@ export function createViewerServer(options: AppOptions) {
         return json(response, 404, { error: 'Not found.' });
       if (request.method !== 'GET')
         return json(response, 405, { error: 'Method not allowed.' });
-      const root = resolve(options.webRoot);
+      if (url.pathname === '/house') {
+        response.writeHead(302, { Location: '/house/' });
+        response.end();
+        return;
+      }
+      const isHouse = url.pathname.startsWith('/house/');
+      if (isHouse && !options.houseRoot)
+        return json(response, 404, {
+          error: 'Build the SmartHome atlas first.',
+        });
+      const root = resolve(isHouse ? options.houseRoot! : options.webRoot);
+      const assetPath = isHouse
+        ? url.pathname.slice('/house'.length)
+        : url.pathname;
       const path = resolve(
         root,
-        `.${decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname)}`,
+        `.${decodeURIComponent(assetPath === '/' ? '/index.html' : assetPath)}`,
       );
       if (!path.startsWith(root + sep))
         return json(response, 404, { error: 'Not found.' });
       const content = await readFile(path).catch(() => null);
       if (!content) return json(response, 404, { error: 'Not found.' });
+      if (isHouse) {
+        // Preserve the atlas's inline theme initializer without allowing arbitrary scripts.
+        const hashes =
+          extname(path) === '.html'
+            ? [...content.toString().matchAll(/<script>([\s\S]*?)<\/script>/g)]
+                .map(
+                  (match) =>
+                    `'sha256-${createHash('sha256').update(match[1]).digest('base64')}'`,
+                )
+                .join(' ')
+            : '';
+        response.setHeader(
+          'Content-Security-Policy',
+          `default-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' ${hashes}; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'`,
+        );
+      }
       const mime: Record<string, string> = {
         '.html': 'text/html',
         '.js': 'text/javascript',
         '.css': 'text/css',
         '.svg': 'image/svg+xml',
+        '.woff': 'font/woff',
+        '.woff2': 'font/woff2',
       };
       response.writeHead(200, {
         'Content-Type': mime[extname(path)] || 'application/octet-stream',

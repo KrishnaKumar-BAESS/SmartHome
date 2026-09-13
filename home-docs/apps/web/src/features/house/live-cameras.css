@@ -1,0 +1,94 @@
+.live-cameras {
+  box-sizing: border-box;
+  width: min(1180px, calc(100vw - 32px));
+  height: calc(100dvh - 32px);
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  border: 1px solid var(--lift-18);
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--t1);
+  overflow: hidden;
+}
+.live-cameras[open] {
+  display: flex;
+  flex-direction: column;
+}
+.live-cameras::backdrop {
+  background: rgb(7 11 15 / 85%);
+}
+.live-cameras-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+}
+.live-cameras h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.live-cameras p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.live-cameras-heading p {
+  margin: 5px 0 0;
+  color: var(--t3);
+}
+.live-cameras button,
+.security-live-launch {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--lift-18);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: var(--bg);
+  color: var(--t1);
+}
+.live-cameras button:focus-visible,
+.security-live-launch:focus-visible {
+  outline: 2px solid #c0573b;
+  outline-offset: 3px;
+}
+.live-cameras iframe {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+}
+.live-cameras-setup {
+  padding: 24px;
+  max-width: 650px;
+}
+.live-cameras-setup a {
+  color: var(--t1);
+}
+.security-live-launch {
+  width: 100%;
+  margin-bottom: 12px;
+  background: #a5452c;
+  color: #fff;
+  font-weight: 600;
+}
+.security-recorded-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--t3);
+  margin: 0 0 12px;
+}
+@media (max-width: 600px) {
+  .live-cameras {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+  }
+  .live-cameras-heading {
+    padding: 12px;
+    flex-wrap: wrap;
+  }
+  .live-cameras-heading button {
+    padding: 8px 12px;
+  }
+}

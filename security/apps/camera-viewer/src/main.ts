@@ -1,5 +1,8 @@
 import './style.css';
 
+if (new URLSearchParams(window.location.search).get('embedded') === '1')
+  document.body.classList.add('embedded');
+
 interface Camera {
   id: string;
   label: string;

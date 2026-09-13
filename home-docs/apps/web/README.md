@@ -36,9 +36,11 @@ state and provides callbacks through it.
 | Panel visibility        | `list-toggle.jsx`, `details-toggle.jsx`                         |
 | Model configuration     | `isolation-panel.jsx`, `view-controls.jsx`, `scene-legend.jsx`  |
 | Model backdrop          | `stage-background.jsx`, `stage-grid.jsx`, `stage-vignette.jsx`  |
-| Camera demonstrations   | `camera-grid.jsx`, `camera-viewer.jsx`                          |
+| Camera demonstrations   | `camera-viewer.jsx`                                             |
+| Live camera integration | `live-cameras.tsx`, `live-cameras.css`                          |
 
-These remain JSX migration components. Avoid copying their large loosely typed
+Existing JSX components remain migration code. The live-camera dialog is strict
+TypeScript and embeds the same-origin security player. Avoid copying the large loosely typed
 `view` contract into unrelated new features.
 
 ## Controller contract
@@ -54,7 +56,7 @@ The main state groups are:
 - **Filtering and search:** electrical/lighting/camera filters, query, and search focus.
 - **Geometry:** yaw, pitch, zoom, pan, separation mode, and continuous `explodeT`.
 - **Visibility:** floor/room isolation, side panels, labels, legend, view options,
-  expanded camera, and camera grid.
+  demonstration history viewer, and live-camera panel.
 - **Lifecycle:** viewport width, automatic rotation, and animation/listener handles.
 
 Search indexes rooms, circuits, panels, lights, nodes, servers, cameras, sensors,

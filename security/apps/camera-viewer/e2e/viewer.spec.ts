@@ -1,5 +1,43 @@
 import { expect, test } from '@playwright/test';
 
+test('SmartHome Security embeds the real player and closes it with the panel', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/house/');
+  const atlas = await page.request.get('/house/');
+  const policy = atlas.headers()['content-security-policy'];
+  expect(policy).toContain("frame-ancestors 'none'");
+  expect(policy).toMatch(/script-src 'self' 'sha256-[^']+';/);
+  const playerPage = await page.request.get('/?embedded=1');
+  expect(playerPage.headers()['content-security-policy']).toContain(
+    "frame-ancestors 'self'",
+  );
+  for (const path of [
+    '/house/.env.local',
+    '/house/package.json',
+    '/house/..%2f..%2fAGENTS.md',
+  ])
+    expect((await page.request.get(path)).status()).toBe(404);
+  await page.getByRole('button', { name: 'Security', exact: true }).click();
+  await page
+    .getByRole('button', { name: '▦ Live cameras', exact: true })
+    .click();
+  const player = page.frameLocator('iframe[title="Live camera player"]');
+  await expect(
+    player.getByRole('button', { name: 'Import from phone' }),
+  ).toBeVisible();
+  await expect(player.locator('#frames')).toHaveText('0');
+  await expect(player.locator('#playback')).toHaveText('Stopped');
+  await page.getByRole('button', { name: 'Close live cameras' }).click();
+  await expect(page.locator('iframe')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: '▦ Live cameras', exact: true }),
+  ).toBeFocused();
+  expect(errors).toEqual([]);
+});
+
 test('explains setup without claiming a live feed', async ({ page }) => {
   await page.goto('/');
   await expect(

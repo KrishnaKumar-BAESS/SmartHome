@@ -567,7 +567,7 @@ export function SystemList({ view }) {
                   "font:600 13px 'Inter',system-ui,'Segoe UI',sans-serif",
                 )}
               >
-                {'Cameras'}
+                {'Camera inventory'}
               </div>
               <div
                 onClick={view.openGrid}
@@ -578,7 +578,7 @@ export function SystemList({ view }) {
                 tabIndex={0}
                 onKeyDown={activateOnKey}
               >
-                {'▦ All feeds'}
+                {'▦ Live cameras'}
               </div>
             </div>
             <div
@@ -589,7 +589,7 @@ export function SystemList({ view }) {
               {view.camOnline}
               {' of '}
               {view.camTotal}
-              {' online · click to view live'}
+              {' recorded as online · select for documented details'}
             </div>
             <div
               style={css('display:flex;gap:5px;flex-wrap:wrap;margin-top:10px')}

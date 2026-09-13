@@ -906,7 +906,7 @@ export class HouseController extends Component {
       {
         label: 'SECURITY',
         stat: String(this.cameras.length),
-        sub: `${this.cameras.filter((c) => c.status === 'online').length} cameras online`,
+        sub: `${this.cameras.length} documented cameras`,
         accent: '#c0573b',
         onClick: () => set({ mode: 'security' }),
       },
@@ -1312,7 +1312,7 @@ export class HouseController extends Component {
       statusColor: camStatusCol(sc.status),
       offline: !scOnline,
       liveColor: scOnline ? '#e5544a' : 'var(--t4)',
-      liveLabel: scOnline ? 'LIVE' : 'OFFLINE',
+      liveLabel: 'DEMO PREVIEW',
       res: sc.res,
       time: feedTime,
       watermark: sc.room.toUpperCase(),
@@ -1336,7 +1336,7 @@ export class HouseController extends Component {
         sub: `${c.type} · ${c.room}`,
         offline: !on,
         liveColor: on ? '#e5544a' : 'var(--t4)',
-        liveLabel: on ? 'LIVE' : 'OFFLINE',
+        liveLabel: 'DEMO PREVIEW',
         res: c.res,
         time: feedTime,
         watermark: c.room.toUpperCase(),
@@ -1347,7 +1347,7 @@ export class HouseController extends Component {
     const openGrid = () => set({ feedGrid: true });
     const closeGrid = () => set({ feedGrid: false });
     const showGrid = !!S.feedGrid;
-    const feedGridSub = `${camOnline} of ${camTotal} cameras online · ${feedTime}`;
+    const feedGridSub = `${camTotal} documented cameras · demonstration previews`;
 
     // ---- expanded camera + history review ----
     const openExpand = () => set({ camExpanded: true, histIdx: 0 });
@@ -1364,23 +1364,23 @@ export class HouseController extends Component {
       watermark: sc.room.toUpperCase(),
       liveColor:
         histSel === 0 ? (scOnline ? '#e5544a' : 'var(--t4)') : '#e0b46b',
-      liveLabel: histSel === 0 ? (scOnline ? 'LIVE' : 'OFFLINE') : 'REVIEW',
+      liveLabel: histSel === 0 ? 'DEMO PREVIEW' : 'DEMO HISTORY',
       time: histActive ? `${histActive.day} ${histActive.time}` : feedTime,
       eventLabel: histActive
         ? `${histActive.type} · ${histActive.dur}`
         : scOnline
-          ? 'Live view'
-          : 'No signal',
+          ? 'Demonstration preview'
+          : 'Recorded offline',
       showOffline: !scOnline && histSel === 0,
     };
-    const expandSub = `${sc.name} · ${camHist.length} recent events`;
+    const expandSub = `${sc.name} · ${camHist.length} demonstration events`;
     const histTiles = [
       {
         idx: 0,
-        label: 'Live view',
-        sub: scOnline ? 'streaming now' : 'offline',
+        label: 'Demo preview',
+        sub: 'Recorded inventory; no live stream',
         color: scOnline ? '#e5544a' : 'var(--t4)',
-        time: scOnline ? 'LIVE' : 'OFF',
+        time: 'DEMO',
         watermark: sc.room.toUpperCase(),
         onClick: () => selectHist(0),
         dotStyle: `position:absolute;top:50%;transform:translate(-50%,-50%);width:${histSel === 0 ? 12 : 9}px;height:${histSel === 0 ? 12 : 9}px;border-radius:50%;background:${scOnline ? '#e5544a' : 'var(--t4)'};border:1.5px solid var(--marker-ring);cursor:pointer;left:4%`,

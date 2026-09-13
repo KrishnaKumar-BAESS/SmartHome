@@ -10,6 +10,7 @@
     "dev": "pnpm --filter @smarthome/home-docs dev",
     "preview": "pnpm --filter @smarthome/home-docs preview",
     "camera:start": "pnpm --filter @smarthome/camera-viewer start",
+    "security:start": "pnpm --filter @smarthome/camera-viewer start",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",

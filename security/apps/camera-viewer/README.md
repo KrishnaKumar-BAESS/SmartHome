@@ -30,8 +30,15 @@ log names it. `CAMERA_NAMES` optionally maps camera MAC identifiers to labels.
 corepack pnpm camera:start
 ```
 
-Open [the local viewer](http://127.0.0.1:4318). The server binds to `127.0.0.1`
-and serves only the generated `dist/web` directory.
+Open [the local viewer](http://127.0.0.1:4318). The server binds to `127.0.0.1`.
+It serves the player's generated `dist/web` directory and the atlas's production
+`home-docs/apps/web/dist` directory at `/house/`.
+
+For integrated viewing, run `corepack pnpm build` at the repository root to build
+both apps, then `corepack pnpm security:start`. Open
+[SmartHome](http://127.0.0.1:4318/house/) and select **Security → Live cameras**.
+The embedded player uses the same steps below. Closing its panel stops playback.
+See the [integration decision](../../../docs/decisions/0004-security-live-camera-integration.md).
 
 1. Connect one authorized ADB phone and open the signed-in Xfinity camera list.
 2. Select **Import from phone**. Only Xfinity's app-specific logs are read.
@@ -56,7 +63,8 @@ imported credentials. The application writes no raw logs or tokens to disk.
   locally. Comcast validates tokens when a viewing session joins.
 - A VPN, routing issue, or old-camera SDP incompatibility can prevent media even
   when signaling connects. Failures are displayed, not replaced by mock footage.
-- The home atlas remains a separate documentation app with recorded data.
+- The atlas inventory and example history remain recorded data; its Live cameras
+  panel uses this player when hosted by the local security service.
 - The [security decision](../../../docs/decisions/0003-local-camera-prototype.md)
   defines the credential, exposure, and validation boundaries.
 
@@ -90,4 +98,5 @@ pairing change, account sign-out, or firmware change was performed.
 
 This validates phone-assisted video playback and coexistence for this setup.
 It does not establish unattended reliability, independent token renewal, audio,
-or behavior after credential expiry. The home atlas remains separate.
+or behavior after credential expiry. Subsequent atlas integration is described
+in the [integration decision](../../../docs/decisions/0004-security-live-camera-integration.md).
