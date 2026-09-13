@@ -1,49 +1,80 @@
 # Conventions
 
-## Directory and file naming
+These conventions apply to maintained files throughout SmartHome. Start with
+[contributing](../CONTRIBUTING.md) for the complete workflow.
 
-- **Directory names:** kebab-case (`home-docs/`, `my-service/`).
-- **Documentation file names:** kebab-case (`architecture.md`, `getting-started.md`).
-- **Code files:** follow the conventions of the language or framework in use
-  (e.g. PEP 8 for Python, Next.js conventions for TypeScript).
-- **ADR files:** `docs/decisions/NNNN-<slug>.md` where `NNNN` is zero-padded.
-- **Superpowers specs:** `docs/superpowers/specs/YYYY-MM-DD-<slug>.md`.
+## Ownership and layout
 
-## Subsystem internal structure
+Each subsystem owns its application, configuration, tests, and documentation.
+Use `apps/`, `services/`, `infra/`, and `docs/` only when they contain real
+content. The root owns shared repository tooling and cross-subsystem guidance.
 
-Each subsystem may contain any subset of the following directories as needed:
+Automation platforms live under `platforms/<platform-name>/`. Add a workspace
+glob only when a package exists. Shared packages require demonstrated reuse;
+cross-subsystem runtime coupling requires an architecture decision.
 
-```
-<subsystem>/
-├── apps/        # end-user applications (web, mobile, desktop)
-├── services/    # backend services and workers
-├── infra/       # infrastructure-as-code (Docker, Compose, Terraform, …)
-├── docs/        # subsystem-specific documentation
-└── README.md    # required: purpose, status, key entry points
-```
+## Names and source files
 
-Only create directories that have content. Do not pre-create empty placeholders
-inside a subsystem.
+- Directories, documentation, and new web modules use kebab-case.
+- React components use PascalCase exports; ordinary functions use camelCase.
+- New application modules use strict TypeScript (`.ts` or `.tsx`).
+- Existing `.jsx` files are migration code, not a precedent for new unchecked modules.
+- ADRs use `docs/decisions/NNNN-<slug>.md` with sequential, zero-padded numbers.
+- Dated design specifications use `docs/superpowers/specs/YYYY-MM-DD-<slug>.md`.
 
-## Secrets handling
+Follow [EditorConfig](../.editorconfig), [Git attributes](../.gitattributes), and
+[Prettier](../.prettierrc.json): UTF-8, LF line endings, a final newline, and
+two-space indentation. Prettier owns formatting; avoid unrelated normalization.
 
-- `.env` files and any file matching `*.local` are gitignored globally.
-- Never commit credentials, API keys, tokens, or passwords.
-- Provide a `.env.example` template (committed, no real values) for any
-  subsystem that requires environment variables.
-- For production secrets, document the expected variable names in `.env.example`
-  and reference the appropriate secret store in the subsystem's `README.md`.
+## Application constraints
 
-## Commit conventions
+Preserve documented inventory, reference relationships, and floor geometry.
+Do not present recorded or simulated states as verified device telemetry.
+Do not introduce DC templates, CDN runtime scripts, `eval`, or browser template
+compilation into the active application.
 
-- Use conventional commit prefixes: `feat:`, `fix:`, `chore:`, `docs:`,
-  `refactor:`, `test:`.
-- Scope is optional but encouraged when touching a specific subsystem:
-  `feat(security): …`, `docs(home-docs): …`.
-- Keep the subject line under 72 characters.
+The TypeScript configuration permits existing JavaScript with `checkJs: false`.
+Do not describe a passing typecheck as complete static verification of the JSX
+controller or renderer. See [testing](testing.md).
 
-## Changelog expectations
+## Dependencies and commands
 
-Follow the protocol documented in [`AGENTS.md`](../AGENTS.md) under
-"Changelog update protocol". The short version: notable changes go into
-`CHANGELOG.md` under `[Unreleased]`; assistants never cut a release unless asked.
+Use the Node version in [.node-version](../.node-version) and pnpm version in
+[package.json](../package.json). Use pnpm for dependencies, scripts, and the
+single committed lockfile. Do not add npm or Yarn lockfiles.
+
+Keep dependency versions exact. Review compatibility and the official registry
+when investigating an unfamiliar version; do not revert a migration on suspicion.
+See [dependency maintenance](development.md#dependency-maintenance).
+
+## Secrets and reference material
+
+The [.gitignore](../.gitignore) excludes `.env`, `.env.*`, and `*.local`,
+with an exception for `.env.example`. When a subsystem requires environment
+variables, commit a template with names, purpose, and harmless example values.
+Document how that subsystem receives production secrets.
+
+The current app needs no environment variables. Browser-bundled values are
+readable by viewers and cannot store secrets. See [security and privacy](security.md).
+
+Treat `docs/archive/` as immutable. Preserve the contents of
+`home-docs/reference/house-inventory.xlsx`. Neither is a public asset or a
+place to apply automatic formatting.
+
+## Commits and changelog
+
+Use conventional prefixes such as `feat:`, `fix:`, `docs:`, `refactor:`,
+`test:`, and `chore:`; use a subsystem scope where helpful.
+Keep subjects under 72 characters and commits atomic. Never add assistant
+self-attribution to commits or PRs.
+
+Before every commit, run the [required gates](testing.md#required-local-gates),
+inspect `git diff --stat`, and review the diff. Record notable changes using the
+[changelog protocol](../AGENTS.md#changelog-update-protocol). Do not create a
+versioned release unless requested.
+
+## Documentation
+
+Write task-oriented instructions with expected results, evidence for behavioral
+claims, and links to owning source files. Describe current behavior separately
+from future work. Follow [documentation maintenance](documentation.md).

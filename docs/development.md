@@ -1,44 +1,143 @@
 # Development
 
-Use the Node version in `.node-version` and the pnpm version in `package.json`.
-Install with `pnpm install --frozen-lockfile`. Run `pnpm dev` at the root.
+Run commands in this guide from the repository root. The active workspace package
+is `@smarthome/home-docs` at `home-docs/apps/web/`.
 
-## Quality gates
+## Toolchain and installation
 
-Before committing, run `pnpm format:check`, `pnpm check`, and
-`pnpm test:e2e`. Install Chromium once with
-`pnpm exec playwright install chromium`. CI installs browser system dependencies
-on Linux and runs the same checks against the production build.
+The development and CI baseline is Node.js **22.23.2** from
+[.node-version](../.node-version) and pnpm **12.4.1** from
+[package.json](../package.json). The package's Node engine range is broader than
+this baseline; use the pinned version when reproducing failures.
+[.npmrc](../.npmrc) enforces engine compatibility.
 
-Unit tests compare every migrated inventory field and coordinate against the
-archived source, validate references, and check CSS conversion. Browser tests cover
-all eight modes, search, keyboard navigation, camera demonstrations, model zoom,
-desktop/mobile layouts, and freedom from external runtime requests.
+With Node and Corepack available:
 
-## Editing the house
+```sh
+corepack enable
+corepack install
+node --version
+pnpm --version
+pnpm install --frozen-lockfile
+pnpm exec playwright install chromium
+```
 
-Edit `home-docs/apps/web/src/data/house.ts` for inventory and coordinates. The
-migration parity test intentionally records the original baseline: when making a
-future intentional inventory change, replace exact legacy parity with an updated
-reviewed fixture while retaining reference-integrity tests. Do not edit the archive
-to make a test pass.
+Expect `v22.23.2` and `12.4.1` from the version checks. If enabling Corepack
+shims requires privileges, use `corepack pnpm` in place of `pnpm` for commands;
+no global shim is needed. If the Node distribution does not include Corepack,
+bootstrap pnpm with `npm install --global pnpm@12.4.1`, then use pnpm exclusively
+for repository work. This bootstrap does not install project dependencies.
 
-View components live under `src/features/house`. The controller's `renderVals`
-method derives view data and the SVG renderer preserves original projection math.
-These JavaScript modules remain explicit migration debt; new modules use TypeScript.
-The TypeScript configuration permits JSX but does not claim full static checking of
-the preserved controller and renderer.
+On Linux, browser setup may also require system packages:
+`pnpm exec playwright install --with-deps chromium`. CI uses this form.
 
-## Dependency updates
+A fresh install needs access to the package registry and browser download host.
+There is no required `.env`, database, container, device, or external service.
+Do not disable frozen-lockfile checks to work around an unexplained mismatch.
 
-Use pnpm only and commit `pnpm-lock.yaml`. Versions are pinned. Verify peer
-compatibility before major upgrades; TypeScript 6 is intentional because the
-selected typescript-eslint release supports versions below 6.1. No global tool
-installation is required beyond Node and pnpm.
+## Run and preview
 
-## Rollback
+```sh
+pnpm dev
+```
 
-The pre-migration files are unchanged under `docs/archive/home-documentation`.
-To inspect that historical app, serve only that directory over HTTP; its CDN runtime
-still requires network access. Git history retains the original paths. The workbook
-has been moved without modifying its contents.
+Open [http://127.0.0.1:5173](http://127.0.0.1:5173).
+The development server reloads source changes. It binds to loopback, and
+`strictPort` makes an occupied port fail instead of silently choosing another.
+
+To inspect the production bundle:
+
+```sh
+pnpm build
+pnpm preview
+```
+
+Open [http://127.0.0.1:4173](http://127.0.0.1:4173).
+Preview serves the existing `dist/`; it does not rebuild after edits.
+Stop either foreground server with Ctrl+C. Stop a manual preview before browser
+tests so they cannot accidentally reuse an older build.
+
+## Command reference
+
+| Root command        | Behavior                                                               |
+| ------------------- | ---------------------------------------------------------------------- |
+| `pnpm dev`          | Run the web package's Vite development server                          |
+| `pnpm typecheck`    | Recursively run package TypeScript checks without emitting             |
+| `pnpm lint`         | Recursively run ESLint with zero allowed warnings                      |
+| `pnpm test`         | Recursively run Vitest once                                            |
+| `pnpm build`        | Recursively build production packages                                  |
+| `pnpm check`        | Run typecheck → lint → unit tests → build; stop on failure             |
+| `pnpm test:e2e`     | Run the web package's Playwright suite against a built preview         |
+| `pnpm preview`      | Serve the web production build locally                                 |
+| `pnpm format:check` | Check all maintained files with Prettier                               |
+| `pnpm format`       | Rewrite all maintained files with Prettier; review the resulting scope |
+
+Use targeted formatting while working, for example
+`pnpm exec prettier --write README.md docs/development.md`.
+[.prettierignore](../.prettierignore) excludes generated output, the lockfile,
+`docs/archive/`, and generated `.delta/` worktrees.
+
+For a focused browser run:
+
+```sh
+pnpm build
+pnpm --filter @smarthome/home-docs exec playwright test --project=desktop
+```
+
+A focused run helps diagnosis but does not replace the full
+[pre-commit gates](testing.md#required-local-gates).
+
+## Configuration map
+
+| File                                                               | Responsibility                                                  |
+| ------------------------------------------------------------------ | --------------------------------------------------------------- |
+| [package.json](../package.json)                                    | Root commands, pnpm pin, engine range, development dependencies |
+| [pnpm-workspace.yaml](../pnpm-workspace.yaml)                      | Package discovery, strict peers, minimum release age            |
+| [pnpm-lock.yaml](../pnpm-lock.yaml)                                | Resolved dependency graph                                       |
+| [eslint.config.mjs](../eslint.config.mjs)                          | JS/TS lint rules and React hook checks                          |
+| [web/package.json](../home-docs/apps/web/package.json)             | Application dependencies and package scripts                    |
+| [tsconfig.json](../home-docs/apps/web/tsconfig.json)               | Strict TS, permitted unchecked JS, compiler inputs              |
+| [vite.config.ts](../home-docs/apps/web/vite.config.ts)             | React plugin, server ports, unit-test discovery                 |
+| [playwright.config.ts](../home-docs/apps/web/playwright.config.ts) | Browser projects, preview lifecycle, retries, traces            |
+| [CI workflow](../.github/workflows/ci.yml)                         | Linux verification and failure artifacts                        |
+
+## Where to edit
+
+Use [app internals](../home-docs/apps/web/README.md) for the source map.
+Inventory and geometry live in `src/data/house.ts`; view derivation and some
+display content remain in `house-controller.jsx`. Changing the source workbook
+does not update the application.
+
+For an intentional data change, follow the
+[data model workflow](../home-docs/docs/data-model.md#intentional-inventory-changes).
+For a geometry or interaction change, preserve projection behavior and verify
+desktop and mobile layouts.
+
+## Dependency maintenance
+
+Use pnpm and commit `pnpm-lock.yaml` with manifest changes. Versions are exact;
+[pnpm-workspace.yaml](../pnpm-workspace.yaml) enables strict peer checks and a
+minimum release age of 1,440 minutes. Inspect registry metadata and peer ranges
+before upgrades; the installed tree alone does not establish compatibility.
+
+[Dependabot](../.github/dependabot.yml) checks npm dependencies weekly and
+GitHub Actions monthly. React packages are grouped together; development tooling
+has its own group. Update the documented toolchain when changing its pins.
+Do not accept dependency changes without all normal gates passing.
+
+## Troubleshooting
+
+| Symptom                                    | Check and recovery                                                                                                                                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Wrong Node/pnpm version or engine error    | Check versions and executable resolution (`Get-Command node,pnpm` in PowerShell or `command -v node pnpm` in a POSIX shell). Use the pinned manager through Corepack if a shim shadows it. |
+| Frozen-lockfile failure                    | Inspect manifest and lockfile changes together; restore the intended pair or make a deliberate pnpm update. Do not discard the lockfile.                                                   |
+| Peer or release-age rejection              | Check the declared compatibility and release metadata. Keep the guardrails; choose a compatible released version or wait for its eligibility.                                              |
+| Port 5173 or 4173 in use                   | Stop the server you started on that port; do not kill unrelated processes. Both ports are strict.                                                                                          |
+| Missing Chromium executable                | Run `pnpm exec playwright install chromium` using this checkout's Playwright version.                                                                                                      |
+| Linux browser missing shared libraries     | Use the browser setup with `--with-deps` where system-package installation is permitted.                                                                                                   |
+| Preview or tests show old behavior         | Rebuild, stop an existing preview, then rerun. Local Playwright may reuse a server on port 4173.                                                                                           |
+| Inventory parity test fails                | Review the deliberate data change against the archive; use a reviewed new fixture when updating inventory. Never edit historical input to match new output.                                |
+| Blank page or missing assets after hosting | Follow [deployment diagnosis](deployment.md#diagnosis-and-rollback); verify the served directory and base path.                                                                            |
+
+Include the command, error, commit, toolchain, and OS when escalating an unresolved
+failure. Keep browser traces and logs private as described in [testing](testing.md).

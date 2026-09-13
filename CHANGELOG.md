@@ -1,47 +1,32 @@
 # Changelog
 
 All notable changes to SmartHome are documented here.
+The structure follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/). See the
+[changelog update protocol](AGENTS.md#changelog-update-protocol) for contributor rules.
 
-Format: [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
-
-**Update protocol for assistants:** see `AGENTS.md` → "Changelog update protocol".
-
----
+Work below is unreleased. Historical scaffold/prototype entries record earlier
+states and are not descriptions of the current application layout.
 
 ## [Unreleased]
 
-### Fixed
+### Added
 
-- Keep home-docs model controls and floor isolation inside mobile viewports.
+- Add pnpm workspace commands, a pinned toolchain and lockfile, ESLint, Prettier, Vitest, and Playwright.
+- Add CI checks and dependency update configuration.
+- Add inventory migration parity and reference-integrity tests plus desktop/mobile browser checks.
+- Add user, data-model, testing, deployment, privacy, and documentation-maintenance guides with a central documentation index and contributor workflow.
+- Establish the subsystem-first repository scaffold, contributor/agent guides, architecture documentation, glossary, and initial architecture decision.
+- Reserve `security/` and `platforms/` for deliberate future integrations.
+- Introduce the original home-documentation prototype with an interactive model and eight documentation modes; its former `home-docs/app/` sources are now preserved under `docs/archive/home-documentation/`.
 
 ### Changed
 
 - Modernize home-docs with native React 19 components, Vite 8, typed inventory, and locally bundled fonts.
-- Organize home-docs into apps/web and reference; archive the original DC app intact outside production assets.
-- Update repository guidance to describe the active application and remaining integration boundaries.
+- Organize home-docs into `apps/web/` and `reference/`; archive the original DC app intact outside production assets.
+- Reconcile repository guidance with the active implementation, clarify recorded/demo data and test limits, and document the evolution from scaffold to shared workspace tooling.
+- Restore the canonical changelog protocol and distinguish historical plans from current contributor instructions.
 
-### Added
+### Fixed
 
-- Add pnpm workspace commands, a pinned toolchain and lockfile, ESLint, Prettier, Vitest and Playwright.
-- Add CI checks and dependency update configuration.
-- Add inventory migration parity and reference-integrity tests plus desktop/mobile browser checks.
-
-- `home-docs/app/` — interactive Smart Home Documentation System; isometric 3D
-  house model (pan/zoom/rotate/explode) with 8 views: Overview, Electrical,
-  Lighting, Network, Sound, Security, Climate, Upkeep; covers 21 rooms across
-  3 floors, 13+ circuits on 2 panels, 18 bulbs, 6 mesh nodes, 8 cameras; runs
-  in-browser via the DC runtime with no build step (`home-documentation.dc.html`
-  - `support.js`)
-- Scaffolded umbrella repo structure: root docs, `.claude/`, `security/`,
-  `home-docs/`, `platforms/`, `scripts/`
-- `AGENTS.md` — canonical, tool-agnostic AI assistant guide including changelog
-  update protocol
-- `CLAUDE.md` — Claude Code-specific supplement; references `AGENTS.md`
-- `docs/architecture.md` — umbrella overview and guide for adding new subsystems
-- `docs/conventions.md` — naming, secrets handling, and commit conventions
-- `docs/glossary.md` — definitions for key terms used across the repo
-- `docs/decisions/0001-monorepo-of-subsystems.md` — ADR capturing the
-  subsystem-first layout decision
-- Added `security/` placeholder reserving the slot for the polished KumarSec stack
-- Added `home-docs/` placeholder reserving the slot for the home documentation system
-- Added `platforms/` placeholder for future automation platforms
+- Keep home-docs model controls and floor isolation inside mobile viewports.
+- Exclude generated `.delta/` worktrees from formatting so nested historical sources remain untouched.

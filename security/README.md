@@ -1,29 +1,34 @@
-# security/
+# Security subsystem
 
-**Status: Placeholder — migration pending.**
+**Status: reserved; no implementation.** This directory reserves a boundary for
+a deliberate future migration from the separate KumarSec repository. No service,
+camera integration, API, frontend, or deployment is present here.
 
-This directory is reserved for the polished home security system, migrated from
-the KumarSec stack: <https://github.com/BAESolutions/KumarSec>
+The **Security** mode in the home atlas belongs to
+[home-docs](../home-docs/README.md) and displays recorded camera information and
+demonstrations. Its presence does not indicate that this subsystem is running.
 
-No code lives here yet. Migration is deliberate and will happen in a separate
-session.
+## Integration boundary
 
-## What KumarSec is
+[KumarSec](https://github.com/BAESolutions/KumarSec) is the identified migration source.
+Its implementation and supported
+deployment must be reviewed at the chosen source revision when a migration is
+requested; this placeholder does not assert that an external stack has already
+been verified or imported.
 
-KumarSec is a self-hosted home security system. Its stack:
+A migration should define scope and ownership in an
+[architecture decision](../docs/decisions/README.md), retain the subsystem's
+internal structure where appropriate, and document:
 
-| Component      | Technology              | Role                                      |
-| -------------- | ----------------------- | ----------------------------------------- |
-| Cameras        | RTSP streams            | Live video source                         |
-| Media server   | MediaMTX                | RTSP relay and HLS/WebRTC distribution    |
-| AI worker      | YOLO (object detection) | Motion analysis and event detection       |
-| REST API       | FastAPI (Python)        | Core backend, event storage, integrations |
-| Web front-end  | Next.js (TypeScript)    | Live view, event timeline, settings       |
-| Android app    | Kotlin                  | Mobile live view and notifications        |
-| Backup service | —                       | Clip archival and off-site backup         |
+- Which services and data move, and which remain external.
+- Authentication, authorization, credentials, network exposure, and retention.
+- Installation, configuration, compatibility, and verification.
+- Deployment, backup/restore, failure diagnosis, and rollback.
+- Any contract with the house atlas or automation platforms.
 
-## When migration happens
+Add `apps/`, `services/`, `infra/`, or `docs/` only when content exists.
+Update the root map, shared architecture, CI coverage, and changelog as part of
+the actual integration. No migration is implied by documentation maintenance.
 
-The polished version will land here with its own internal structure
-(`apps/`, `services/`, `infra/`, `docs/`). An ADR will be filed if any
-significant structural decisions are made during migration.
+For the current repository's trust boundaries, see
+[security and privacy](../docs/security.md).

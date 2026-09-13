@@ -1,24 +1,21 @@
-# CLAUDE.md — Claude Code Specifics
+# Claude Code guidance
 
-Read [`AGENTS.md`](AGENTS.md) first — it is the source of truth for conventions,
-subsystem layout, and the changelog update protocol. This file only adds details
-specific to Claude Code; it does not duplicate anything in `AGENTS.md`.
+Read [AGENTS.md](AGENTS.md) first. It contains the shared contributor rules and
+[changelog update protocol](AGENTS.md#changelog-update-protocol).
+This file adds only Claude Code-specific navigation.
 
-## `.claude/` layout
+## Project configuration
 
-| File                  | Purpose                                                |
-| --------------------- | ------------------------------------------------------ |
-| `settings.json`       | Checked-in project settings (shared)                   |
-| `settings.local.json` | Machine-local overrides — **gitignored**, never commit |
-| `README.md`           | Explains this folder                                   |
+[.claude/README.md](.claude/README.md) describes checked-in and local configuration.
+The shared settings currently disable commit/PR attribution. Machine-local
+overrides are ignored and must not be committed.
 
-## Superpowers / skills
+## Skills and specifications
 
-This repo uses Claude Code superpowers (skills and specs). Specs live in
-`docs/superpowers/specs/` and are named `YYYY-MM-DD-<slug>.md`. When a skill
-or spec is referenced in a task, read it before starting work.
+Read a skill or specification when the task explicitly references it. Dated
+specifications live under `docs/superpowers/specs/`; their
+[index](docs/superpowers/README.md) explains historical applicability.
+A past scaffold plan does not override the active code or current contributor guide.
 
-## Changelog
-
-The changelog protocol is documented in `AGENTS.md` under "Changelog update
-protocol". Follow it for any notable change made while working in this repo.
+Use the root [development commands](docs/development.md) and
+[verification gates](docs/testing.md), regardless of the coding assistant used.

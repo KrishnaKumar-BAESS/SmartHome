@@ -1,37 +1,132 @@
 # Architecture
 
-SmartHome is a workspace of independent home subsystems. Root tooling provides
-consistent commands and CI; it does not introduce shared databases or services.
+SmartHome separates home subsystems by ownership while sharing repository-level
+tooling. The only implemented application is the static house atlas in
+`home-docs/apps/web/`. There is no backend, device integration, shared database,
+or cross-repository runtime dependency.
 
-## Active application
+## System context
 
-`home-docs/apps/web` is a React 19 application built with Vite 8. It uses native
-React components and locally bundled fonts. Vite compiles modules at build time;
-there is no DC runtime, browser template compiler, or CDN React dependency.
+```mermaid
+flowchart LR
+  Person["Atlas user"] --> Browser["Browser: HOUSE.SYS"]
+  Host["Static host: web/dist only"] --> Browser
+  Browser --> State["In-memory view state"]
+  Browser --> Inventory["Bundled recorded inventory"]
+  Workbook["Preserved workbook"] -. "Manual reference only" .-> Maintainer["Maintainer"]
+  Maintainer --> Source["Versioned source"]
+  Source --> Build["Vite production build"]
+  Build --> Host
+```
 
-`src/data/house.ts` owns inventory and floor coordinates. The house controller
-owns interaction state and derives view data. The SVG renderer projects the floor
-model and system overlays. Separate components render navigation, search, inventory,
-details, isolation, camera demonstrations, and view controls.
+The workbook is not parsed at runtime or build time. The browser receives
+inventory through the JavaScript bundle. Recorded camera statuses and generated
+event demonstrations do not establish a connection to a camera.
 
-New code uses strict TypeScript. The preserved controller, geometry renderer and
-converted views currently use native JSX; they are linted and covered by browser
-tests, with incremental TypeScript conversion documented as remaining work.
+## Repository boundaries
 
-## Boundaries
+| Boundary        | Owns                                                                | Does not provide                                    |
+| --------------- | ------------------------------------------------------------------- | --------------------------------------------------- |
+| Root            | pnpm workspace, lockfile, common lint/format tools, CI, shared docs | Application state or a shared runtime service       |
+| `home-docs/`    | Web app, inventory, geometry, app tests, source references          | Live automation or editing backend                  |
+| `security/`     | Reserved destination for a future deliberate integration            | KumarSec code or services                           |
+| `platforms/`    | Reserved location for platform configurations                       | Installed Home Assistant or other running platforms |
+| `docs/archive/` | Preserved pre-migration source                                      | Maintained production code                          |
 
-- `home-docs/`: active documentation app and source references.
-- `security/`: reserved for a future deliberate KumarSec migration.
-- `platforms/`: reserved for Home Assistant and other platform configurations.
-- `docs/archive/`: historical source, not application code or public assets.
+KumarSec and FamSecDash remain separate repositories. Root workspace discovery
+currently includes only `home-docs/apps/*`. A shared toolchain change can affect
+all workspace packages even though subsystem runtimes are independent.
 
-There is no cross-repository runtime integration. A new subsystem owns its code,
-configuration and tests. Add a workspace glob only when a package exists. Do not
-create empty packages, shared libraries or a task orchestrator ahead of need.
+## Browser execution
 
-## Deployment
+```mermaid
+flowchart TD
+  Entry["index.html → main.tsx → App"] --> Controller["HouseController"]
+  Data["data/house.ts"] --> Controller
+  Controller --> Values["renderVals: derived data and callbacks"]
+  Controller --> Scene["renderScene: SVG elements"]
+  Scene --> Values
+  Values --> View["HouseView"]
+  View --> Shell["Navigation, search, lists, details"]
+  View --> Stage["HouseStage and model controls"]
+  View --> Cameras["Camera demonstration panels"]
+  Shell -->|"Events update state"| Controller
+  Stage -->|"Events update state"| Controller
+  Cameras -->|"Events update state"| Controller
+```
 
-`pnpm build` writes a static site to `home-docs/apps/web/dist`. A static server
-can host that directory. The application currently uses one URL and requires no
-history fallback routing. Never serve the repository root, which includes private
-home reference material and the historical prototype.
+[main.tsx](../home-docs/apps/web/src/main.tsx) loads bundled font styles and
+global CSS, creates a React root in Strict Mode, and mounts
+[App](../home-docs/apps/web/src/app.tsx).
+
+[HouseController](../home-docs/apps/web/src/features/house/house-controller.jsx)
+owns selections, mode filters, search, isolation, panel visibility, model
+orientation, and animation state. `renderVals()` derives the view object,
+including event callbacks and the scene. Native React components consume that
+object through [HouseView](../home-docs/apps/web/src/features/house/house-view.jsx).
+
+The controller also contains presentation content, sound-zone definitions,
+room-name mappings, and camera-history generation. Inventory is extracted, but
+domain/presentation separation is not complete. See the
+[web app reference](../home-docs/apps/web/README.md) before changing those paths.
+
+## Geometry and interaction
+
+[renderScene](../home-docs/apps/web/src/features/house/scene.jsx) projects room
+polygons into the stage's `960 × 600` SVG coordinate space. It applies floor
+elevation, separation, room offsets, yaw, pitch, zoom, and pan; sorts visible
+faces by depth; and adds overlays for the selected documentation mode.
+
+Room isolation filters scene geometry. Inventory lists have their own mode
+filters, so isolating the scene does not imply a global data filter. Room
+coordinates and coverage ranges are model units, not a measured survey.
+
+Pointer events rotate or pan the stage; a non-passive wheel listener controls
+zoom. Animation frames drive automatic rotation and floor separation. The
+controller removes its wheel/resize listeners, interval, and animation frames
+on unmount. UI state lives in memory and resets on page reload.
+
+## Build, test, and delivery boundaries
+
+React and fonts are package dependencies bundled by Vite. There is no runtime
+CDN, DC interpreter, or browser compilation in the active app.
+`pnpm build` produces `home-docs/apps/web/dist/`.
+
+Unit tests read the archived prototype as a trusted local migration baseline.
+That Node-only test evaluation is separate from the browser application.
+The archive is neither an entry point nor a public asset. Browser tests run the
+production output through local preview; see [testing](testing.md).
+
+The app has a single URL with in-memory mode changes and no history-router
+fallback requirement. No deployment provider or automatic deployment is configured.
+Hosting and access control are operator responsibilities; see
+[deployment](deployment.md) and [security](security.md).
+
+## Design choices and remaining constraints
+
+[ADR-0001](decisions/0001-monorepo-of-subsystems.md) establishes subsystem
+ownership. [ADR-0002](decisions/0002-native-react-workspace.md) adds the native
+React build and shared pnpm tooling without introducing runtime coupling.
+
+TypeScript is strict for TS/TSX sources; existing JSX is permitted with
+`checkJs: false`. The controller and renderer remain substantial migration code.
+Their current shape is preserved behavior, not a recommended template for a new
+feature. [Known limitations](limitations.md) describes the implications.
+
+## Adding a subsystem or integration
+
+1. Establish the concrete use case, ownership, and data boundary in an ADR when
+   the change creates runtime coupling or a significant architectural obligation.
+2. Add the subsystem directory, or `platforms/<name>/` for supporting
+   infrastructure, with a README covering status, setup, configuration,
+   verification, operations, and rollback.
+3. Keep code and tests within that boundary. Add workspace discovery only for
+   real packages; make root commands and CI cover them deliberately.
+4. Define authentication, secret handling, data retention, failure behavior, and
+   deployment before adding a live service. Do not reuse demonstration labels as
+   evidence of an operational connection.
+5. Update the root map, [documentation index](README.md), relevant guides,
+   and [changelog](../CHANGELOG.md).
+
+Shared packages are justified by demonstrated reuse. A task orchestrator,
+database, and server framework are not prerequisites for the current static app.

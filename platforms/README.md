@@ -1,18 +1,25 @@
-# platforms/
+# Automation platforms
 
-This directory holds subdirectories for automation platform infrastructure — Home
-Assistant, Node-RED, Zigbee2MQTT, ESPHome, and any other platform added in the
-future.
+**Status: reserved; no platforms configured.** Future supporting infrastructure
+such as Home Assistant, Node-RED, Zigbee2MQTT, or ESPHome belongs under this
+directory. These are possible additions, not installed services or dependencies
+of the active house atlas.
 
-Platforms are shared infrastructure that underpin subsystems, as opposed to
-standalone products. They live here rather than at the top level to keep the root
-directory uncluttered.
+A platform supports subsystems rather than becoming a separate end-user product.
+See [architecture](../docs/architecture.md) for the ownership boundary.
 
-**No platforms have been added yet.**
+## Add a platform when needed
 
-## Adding a platform
+1. Create `platforms/<platform-name>/` using kebab-case.
+2. Provide a README covering its purpose, current status, supported version,
+   prerequisites, setup, configuration, verification, operations, and rollback.
+3. Add actual configuration, infrastructure, and documentation as needed;
+   do not scaffold empty directories.
+4. Define network exposure, authentication, secret handling, persistent data,
+   and backup/restore. Commit harmless environment templates if required.
+5. Record cross-subsystem contracts or significant architectural choices in an ADR.
+6. Add appropriate checks and update the root map, documentation index, and
+   `[Unreleased]` changelog.
 
-1. Create `platforms/<platform-name>/` (kebab-case).
-2. Give it a `README.md` describing the platform, its role, and how to run it.
-3. Add internal structure as needed (`infra/`, `docs/`, config files).
-4. Register it in the root `README.md` subsystem map and add a changelog entry.
+There are no platform startup commands or platform environment variables today.
+The house documentation app runs independently.

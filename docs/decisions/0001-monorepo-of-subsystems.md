@@ -3,6 +3,18 @@
 - **Date:** 2026-06-24
 - **Status:** Accepted
 
+## Subsequent evolution
+
+The subsystem ownership decision remains accepted.
+[ADR-0002](0002-native-react-workspace.md) later introduced shared pnpm tooling,
+root quality gates, and CI. The original consequences below describe the scaffold
+at the time: tooling changes can now affect workspace packages even though their
+runtime ownership remains independent. Home documentation is implemented;
+`security/` and `platforms/` remain reserved.
+
+See [current architecture](../architecture.md) for the implemented layout rather
+than using this historical scaffold description as setup instructions.
+
 ## Context
 
 `SmartHome` needs to hold multiple independent home automation systems over time

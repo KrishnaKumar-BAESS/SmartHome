@@ -1,19 +1,34 @@
 # Home documentation
 
-The active application lives in [apps/web](apps/web/). It preserves the original
-interactive house model, search, floor isolation, camera demonstrations, and eight
-documentation modes in a native React app.
+**Status: active.** HOUSE.SYS is a native React house atlas with eight
+documentation modes, a projected SVG model, inventory search, floor/room
+isolation, and camera demonstrations.
 
-Run `pnpm dev` from the repository root. See the root [README](../README.md) for
-installation, checks and the production preview.
+The data is local and read-only. Status values describe recorded inventory;
+camera feeds/history are simulated and climate sensors are planned.
+No device integration or editing backend exists.
 
-| Location                       | Purpose                                                   |
-| ------------------------------ | --------------------------------------------------------- |
-| `apps/web/src/data/house.ts`   | House inventory and original floor geometry               |
-| `apps/web/src/features/house/` | Native React view components, controller and SVG renderer |
-| `apps/web/src/lib/`            | Typed styling and keyboard helpers                        |
-| `apps/web/e2e/`                | Browser interaction tests                                 |
-| `reference/`                   | Original source workbook                                  |
+## Use or develop
 
-The documentation data remains local and read-only. Camera feeds are mockups;
-no device integrations or backend were added by the tooling migration.
+- [User guide](docs/user-guide.md): modes, search, model controls, and mobile use.
+- [Quick start](../README.md#start-locally): install and run from the repository root.
+- [Development](../docs/development.md): commands, configuration, and troubleshooting.
+- [Web app reference](apps/web/README.md): source map and implementation constraints.
+- [Data model](docs/data-model.md): collection relationships and reviewed updates.
+- [Deployment](../docs/deployment.md): build-only hosting and rollback.
+- [Source references](reference/README.md): original workbook provenance.
+
+## Subsystem layout
+
+| Location                       | Responsibility                                   |
+| ------------------------------ | ------------------------------------------------ |
+| `apps/web/src/data/house.ts`   | Recorded inventory and original floor geometry   |
+| `apps/web/src/features/house/` | Native React views, controller, and SVG renderer |
+| `apps/web/src/lib/`            | Typed CSS and keyboard compatibility helpers     |
+| `apps/web/src/styles.css`      | Shared application styles                        |
+| `apps/web/e2e/`                | Browser interaction tests                        |
+| `docs/`                        | User and data-maintenance guides                 |
+| `reference/`                   | Preserved workbook, not automatically imported   |
+
+The original DC app lives in [the immutable archive](../docs/archive/README.md).
+It remains a migration-test baseline and is excluded from production.

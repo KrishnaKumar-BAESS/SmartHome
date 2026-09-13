@@ -1,7 +1,8 @@
 # 0002 — Native React application and pnpm workspace
 
-Date: 2026-09-12
-Status: Accepted
+- **Date:** 2026-09-12
+- **Status:** Accepted
+- **Extends:** [ADR-0001](0001-monorepo-of-subsystems.md), retaining subsystem ownership
 
 ## Context
 
@@ -28,3 +29,14 @@ repeatable gates and CI. The source archive and exact data comparison test provi
 a rollback and preservation baseline. JSX controller/renderer conversion to strict
 TypeScript remains an incremental follow-up; tooling modernization does not imply
 device connectivity or persistence.
+
+The archive is a historical preservation baseline, not a substitute for a known
+good production artifact. Operational rollback restores a complete accepted
+static build; see [deployment and rollback](../deployment.md).
+
+## Implementation references
+
+- [Architecture](../architecture.md): current boundaries and runtime flow.
+- [Web app reference](../../home-docs/apps/web/README.md): controller, views, and renderer.
+- [Testing](../testing.md): preservation checks, browser coverage, and limitations.
+- [Known limitations](../limitations.md): remaining migration constraints.
