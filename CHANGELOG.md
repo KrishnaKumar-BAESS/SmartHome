@@ -11,6 +11,7 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
+- Add a light/dark theme toggle to the home-docs top bar; the choice persists in `localStorage` and is applied before first paint to avoid flashes.
 - Add home-docs keyboard shortcuts (`/` search, `1`–`8` views, `+`/`-` zoom, `0` reset, Escape closes overlays), arrow-key navigation in search results, and a hover highlight on clickable rooms in the model.
 - Add pnpm workspace commands, a pinned toolchain and lockfile, ESLint, Prettier, Vitest, and Playwright.
 - Add CI checks and dependency update configuration.
@@ -22,6 +23,8 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- Replace the home-docs hard-coded dark palette with a token-driven theme system; a clean light theme is now the default and the dark palette is preserved as a selectable theme. Security camera feeds intentionally stay dark in both themes.
+- Switch the home-docs UI typeface from IBM Plex Sans to Inter (IBM Plex Mono retained for data/labels).
 - Refresh the home-docs shell with floating glass chrome (top bar, nav rail and panels), a mode-tinted backdrop, an accent-glow active view, and a grounded shadow under the house model.
 - Modernize home-docs with native React 19 components, Vite 8, typed inventory, and locally bundled fonts.
 - Organize home-docs into `apps/web/` and `reference/`; archive the original DC app intact outside production assets.

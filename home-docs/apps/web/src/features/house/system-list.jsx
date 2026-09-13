@@ -9,19 +9,19 @@ export function SystemList({ view }) {
         <>
           <div
             style={css(
-              'padding:16px 17px 13px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0',
+              'padding:16px 17px 13px;border-bottom:1px solid var(--lift-08);flex-shrink:0',
             )}
           >
             <div
               style={css(
-                "font:600 15px 'IBM Plex Sans';letter-spacing:-0.01em",
+                "font:600 15px 'Inter',system-ui,'Segoe UI',sans-serif;letter-spacing:-0.01em",
               )}
             >
               {'Home Documentation'}
             </div>
             <div
               style={css(
-                "font:400 11.5px 'IBM Plex Sans';color:#9aa8b4;margin-top:3px;line-height:1.45",
+                "font:400 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t3);margin-top:3px;line-height:1.45",
               )}
             >
               {
@@ -38,7 +38,7 @@ export function SystemList({ view }) {
                   <div
                     onClick={s.onClick}
                     style={css(
-                      'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);border-left:3px solid ' +
+                      'background:var(--lift-04);border:1px solid var(--lift-08);border-left:3px solid ' +
                         (s.accent ?? '') +
                         ';border-radius:7px;padding:11px 12px;cursor:pointer',
                     )}
@@ -48,21 +48,21 @@ export function SystemList({ view }) {
                   >
                     <div
                       style={css(
-                        "font:500 9px 'IBM Plex Mono',monospace;color:#9aa8b4;letter-spacing:0.08em",
+                        "font:500 9px 'IBM Plex Mono',monospace;color:var(--t3);letter-spacing:0.08em",
                       )}
                     >
                       {s.label}
                     </div>
                     <div
                       style={css(
-                        "font:600 23px 'IBM Plex Sans';margin-top:5px;line-height:1",
+                        "font:600 23px 'Inter',system-ui,'Segoe UI',sans-serif;margin-top:5px;line-height:1",
                       )}
                     >
                       {s.stat}
                     </div>
                     <div
                       style={css(
-                        "font:400 10.5px 'IBM Plex Sans';color:#8a94a0;margin-top:2px",
+                        "font:400 10.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t4);margin-top:2px",
                       )}
                     >
                       {s.sub}
@@ -87,7 +87,7 @@ export function SystemList({ view }) {
               ></span>
               <div
                 style={css(
-                  "flex:1;font:500 11.5px 'IBM Plex Sans';color:#7fc7b8",
+                  "flex:1;font:500 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--teal-text)",
                 )}
               >
                 {view.climateBannerText}
@@ -102,7 +102,7 @@ export function SystemList({ view }) {
             </div>
             <div
               style={css(
-                "font:500 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.12em;margin:18px 2px 8px",
+                "font:500 9px 'IBM Plex Mono',monospace;color:var(--t4);letter-spacing:0.12em;margin:18px 2px 8px",
               )}
             >
               {'THE HOUSE'}
@@ -111,19 +111,19 @@ export function SystemList({ view }) {
               <Fragment key={f.id ?? f.key ?? f.label ?? index}>
                 <div
                   style={css(
-                    'display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07)',
+                    'display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--lift-06)',
                   )}
                 >
                   <div
                     style={css(
-                      "font:400 11.5px 'IBM Plex Sans';color:#9aa8b4;flex-shrink:0",
+                      "font:400 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t3);flex-shrink:0",
                     )}
                   >
                     {f.label}
                   </div>
                   <div
                     style={css(
-                      "font:500 11.5px 'IBM Plex Sans';color:#e8edf2;text-align:right",
+                      "font:500 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);text-align:right",
                     )}
                   >
                     {f.val}
@@ -139,7 +139,7 @@ export function SystemList({ view }) {
         <>
           <div
             style={css(
-              'padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0',
+              'padding:14px 16px 12px;border-bottom:1px solid var(--lift-08);flex-shrink:0',
             )}
           >
             <div
@@ -147,12 +147,16 @@ export function SystemList({ view }) {
                 'display:flex;align-items:center;justify-content:space-between',
               )}
             >
-              <div style={css("font:600 13px 'IBM Plex Sans'")}>
+              <div
+                style={css(
+                  "font:600 13px 'Inter',system-ui,'Segoe UI',sans-serif",
+                )}
+              >
                 {'Circuits'}
               </div>
               <div
                 style={css(
-                  "font:400 10.5px 'IBM Plex Mono',monospace;color:#8a94a0",
+                  "font:400 10.5px 'IBM Plex Mono',monospace;color:var(--t4)",
                 )}
               >
                 {view.ecount}
@@ -187,14 +191,14 @@ export function SystemList({ view }) {
                 >
                   <div
                     style={css(
-                      "font:600 10px 'IBM Plex Mono',monospace;color:#e8edf2;letter-spacing:0.06em",
+                      "font:600 10px 'IBM Plex Mono',monospace;color:var(--t1);letter-spacing:0.06em",
                     )}
                   >
                     {grp.boxShort}
                   </div>
                   <div
                     style={css(
-                      "font:400 10.5px 'IBM Plex Sans';color:#8a94a0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                      "font:400 10.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t4);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                     )}
                   >
                     {grp.boxName}
@@ -226,7 +230,7 @@ export function SystemList({ view }) {
         <>
           <div
             style={css(
-              'padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0',
+              'padding:14px 16px 12px;border-bottom:1px solid var(--lift-08);flex-shrink:0',
             )}
           >
             <div
@@ -234,10 +238,16 @@ export function SystemList({ view }) {
                 'display:flex;align-items:center;justify-content:space-between',
               )}
             >
-              <div style={css("font:600 13px 'IBM Plex Sans'")}>{'Bulbs'}</div>
               <div
                 style={css(
-                  "font:400 10.5px 'IBM Plex Mono',monospace;color:#8a94a0",
+                  "font:600 13px 'Inter',system-ui,'Segoe UI',sans-serif",
+                )}
+              >
+                {'Bulbs'}
+              </div>
+              <div
+                style={css(
+                  "font:400 10.5px 'IBM Plex Mono',monospace;color:var(--t4)",
                 )}
               >
                 {view.lcount}
@@ -248,12 +258,12 @@ export function SystemList({ view }) {
                 <Fragment key={s.id ?? s.key ?? s.label ?? index}>
                   <div
                     style={css(
-                      'flex:1;text-align:center;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);border-radius:6px;padding:7px 4px',
+                      'flex:1;text-align:center;background:var(--lift-04);border:1px solid var(--lift-08);border-radius:6px;padding:7px 4px',
                     )}
                   >
                     <div
                       style={css(
-                        "font:600 16px 'IBM Plex Sans';color:" +
+                        "font:600 16px 'Inter',system-ui,'Segoe UI',sans-serif;color:" +
                           (s.color ?? '') +
                           ';line-height:1',
                       )}
@@ -262,7 +272,7 @@ export function SystemList({ view }) {
                     </div>
                     <div
                       style={css(
-                        "font:400 8.5px 'IBM Plex Mono',monospace;color:#8a94a0;margin-top:3px;letter-spacing:0.03em",
+                        "font:400 8.5px 'IBM Plex Mono',monospace;color:var(--t4);margin-top:3px;letter-spacing:0.03em",
                       )}
                     >
                       {s.label}
@@ -291,7 +301,7 @@ export function SystemList({ view }) {
                 value={view.lroom}
                 onChange={view.setLroom}
                 style={css(
-                  "flex:1;min-width:0;padding:5px 8px;border:1px solid rgba(255,255,255,0.14);border-radius:6px;background:rgba(255,255,255,0.06);font:500 11px 'IBM Plex Sans';color:#e8edf2;cursor:pointer",
+                  "flex:1;min-width:0;padding:5px 8px;border:1px solid var(--lift-12);border-radius:6px;background:var(--lift-06);font:500 11px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);cursor:pointer",
                 )}
               >
                 {(view.lroomOpts ?? []).map((o, index) => (
@@ -322,14 +332,14 @@ export function SystemList({ view }) {
                   <div style={css('flex:1;min-width:0')}>
                     <div
                       style={css(
-                        "font:500 12px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                        "font:500 12px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                       )}
                     >
                       {b.room}
                     </div>
                     <div
                       style={css(
-                        "font:400 10.5px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                        "font:400 10.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                       )}
                     >
                       {b.fixture}
@@ -354,10 +364,16 @@ export function SystemList({ view }) {
         <>
           <div
             style={css(
-              'padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0',
+              'padding:14px 16px 12px;border-bottom:1px solid var(--lift-08);flex-shrink:0',
             )}
           >
-            <div style={css("font:600 13px 'IBM Plex Sans'")}>{'Networks'}</div>
+            <div
+              style={css(
+                "font:600 13px 'Inter',system-ui,'Segoe UI',sans-serif",
+              )}
+            >
+              {'Networks'}
+            </div>
             <div
               style={css(
                 'display:flex;flex-direction:column;gap:5px;margin-top:10px',
@@ -375,14 +391,14 @@ export function SystemList({ view }) {
                     ></span>
                     <div
                       style={css(
-                        "font:500 11.5px 'IBM Plex Sans';color:#e8edf2",
+                        "font:500 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1)",
                       )}
                     >
                       {n.name}
                     </div>
                     <div
                       style={css(
-                        "font:400 10px 'IBM Plex Mono',monospace;color:#8a94a0;margin-left:auto",
+                        "font:400 10px 'IBM Plex Mono',monospace;color:var(--t4);margin-left:auto",
                       )}
                     >
                       {n.band}
@@ -395,7 +411,7 @@ export function SystemList({ view }) {
           <div style={css('overflow:auto;padding:11px 13px 14px')}>
             <div
               style={css(
-                "font:500 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.12em;margin:2px 2px 8px",
+                "font:500 9px 'IBM Plex Mono',monospace;color:var(--t4);letter-spacing:0.12em;margin:2px 2px 8px",
               )}
             >
               {'MESH NODES'}
@@ -419,14 +435,14 @@ export function SystemList({ view }) {
                   <div style={css('flex:1;min-width:0')}>
                     <div
                       style={css(
-                        "font:500 12px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                        "font:500 12px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                       )}
                     >
                       {n.name}
                     </div>
                     <div
                       style={css(
-                        "font:400 10px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                        "font:400 10px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                       )}
                     >
                       {n.role}
@@ -458,15 +474,19 @@ export function SystemList({ view }) {
         <>
           <div
             style={css(
-              'padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0',
+              'padding:14px 16px 12px;border-bottom:1px solid var(--lift-08);flex-shrink:0',
             )}
           >
-            <div style={css("font:600 13px 'IBM Plex Sans'")}>
+            <div
+              style={css(
+                "font:600 13px 'Inter',system-ui,'Segoe UI',sans-serif",
+              )}
+            >
               {'Sound Zones'}
             </div>
             <div
               style={css(
-                "font:400 11px 'IBM Plex Sans';color:#9aa8b4;margin-top:3px",
+                "font:400 11px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t3);margin-top:3px",
               )}
             >
               {
@@ -492,14 +512,14 @@ export function SystemList({ view }) {
                     <div>
                       <div
                         style={css(
-                          "font:600 14px 'IBM Plex Sans';color:#e8edf2",
+                          "font:600 14px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1)",
                         )}
                       >
                         {z.name}
                       </div>
                       <div
                         style={css(
-                          "font:400 10.5px 'IBM Plex Sans';color:#8a94a0;margin-top:2px",
+                          "font:400 10.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t4);margin-top:2px",
                         )}
                       >
                         {z.room}
@@ -507,7 +527,7 @@ export function SystemList({ view }) {
                     </div>
                     <div
                       style={css(
-                        "font:600 10px 'IBM Plex Mono',monospace;color:#b49af0;background:rgba(123,92,214,0.18);border:1px solid rgba(123,92,214,0.4);padding:3px 8px;border-radius:4px;flex-shrink:0",
+                        "font:600 10px 'IBM Plex Mono',monospace;color:var(--ring-text);background:rgba(123,92,214,0.18);border:1px solid rgba(123,92,214,0.4);padding:3px 8px;border-radius:4px;flex-shrink:0",
                       )}
                     >
                       {z.config}
@@ -516,7 +536,7 @@ export function SystemList({ view }) {
                   <div style={css('display:flex;gap:14px;margin-top:9px')}>
                     <div
                       style={css(
-                        "font:400 10.5px 'IBM Plex Sans';color:#aab6c1",
+                        "font:400 10.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t3)",
                       )}
                     >
                       {'⚡ '}
@@ -534,7 +554,7 @@ export function SystemList({ view }) {
         <>
           <div
             style={css(
-              'padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0',
+              'padding:14px 16px 12px;border-bottom:1px solid var(--lift-08);flex-shrink:0',
             )}
           >
             <div
@@ -542,7 +562,11 @@ export function SystemList({ view }) {
                 'display:flex;align-items:center;justify-content:space-between',
               )}
             >
-              <div style={css("font:600 13px 'IBM Plex Sans'")}>
+              <div
+                style={css(
+                  "font:600 13px 'Inter',system-ui,'Segoe UI',sans-serif",
+                )}
+              >
                 {'Cameras'}
               </div>
               <div
@@ -559,7 +583,7 @@ export function SystemList({ view }) {
             </div>
             <div
               style={css(
-                "font:400 11px 'IBM Plex Sans';color:#9aa8b4;margin-top:4px",
+                "font:400 11px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t3);margin-top:4px",
               )}
             >
               {view.camOnline}
@@ -605,14 +629,14 @@ export function SystemList({ view }) {
                   <div style={css('flex:1;min-width:0')}>
                     <div
                       style={css(
-                        "font:500 12px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                        "font:500 12px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                       )}
                     >
                       {c.name}
                     </div>
                     <div
                       style={css(
-                        "font:400 10.5px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                        "font:400 10.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                       )}
                     >
                       {c.sub}
@@ -620,7 +644,7 @@ export function SystemList({ view }) {
                   </div>
                   <div
                     style={css(
-                      "font:500 9px 'IBM Plex Mono',monospace;color:#8a94a0;flex-shrink:0",
+                      "font:500 9px 'IBM Plex Mono',monospace;color:var(--t4);flex-shrink:0",
                     )}
                   >
                     {c.res}
@@ -636,7 +660,7 @@ export function SystemList({ view }) {
         <>
           <div
             style={css(
-              'padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0',
+              'padding:14px 16px 12px;border-bottom:1px solid var(--lift-08);flex-shrink:0',
             )}
           >
             <div
@@ -644,12 +668,16 @@ export function SystemList({ view }) {
                 'display:flex;align-items:center;justify-content:space-between',
               )}
             >
-              <div style={css("font:600 13px 'IBM Plex Sans'")}>
+              <div
+                style={css(
+                  "font:600 13px 'Inter',system-ui,'Segoe UI',sans-serif",
+                )}
+              >
                 {'Climate Sensors'}
               </div>
               <div
                 style={css(
-                  "font:600 9px 'IBM Plex Mono',monospace;color:#e3b264;background:rgba(192,137,47,0.16);border:1px solid rgba(192,137,47,0.34);padding:3px 8px;border-radius:5px",
+                  "font:600 9px 'IBM Plex Mono',monospace;color:var(--warn-text);background:rgba(192,137,47,0.16);border:1px solid rgba(192,137,47,0.34);padding:3px 8px;border-radius:5px",
                 )}
               >
                 {'PLANNED'}
@@ -657,7 +685,7 @@ export function SystemList({ view }) {
             </div>
             <div
               style={css(
-                "font:400 11px 'IBM Plex Sans';color:#9aa8b4;margin-top:4px;line-height:1.45",
+                "font:400 11px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t3);margin-top:4px;line-height:1.45",
               )}
             >
               {view.sensorsPlanned}
@@ -686,14 +714,14 @@ export function SystemList({ view }) {
                   <div style={css('flex:1;min-width:0')}>
                     <div
                       style={css(
-                        "font:500 12px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                        "font:500 12px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                       )}
                     >
                       {s.name}
                     </div>
                     <div
                       style={css(
-                        "font:400 10.5px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                        "font:400 10.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                       )}
                     >
                       {s.mount}
@@ -701,7 +729,7 @@ export function SystemList({ view }) {
                   </div>
                   <div
                     style={css(
-                      "font:600 8.5px 'IBM Plex Mono',monospace;color:#8a94a0;flex-shrink:0",
+                      "font:600 8.5px 'IBM Plex Mono',monospace;color:var(--t4);flex-shrink:0",
                     )}
                   >
                     {s.badge}
@@ -717,7 +745,7 @@ export function SystemList({ view }) {
         <>
           <div
             style={css(
-              'padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0',
+              'padding:14px 16px 12px;border-bottom:1px solid var(--lift-08);flex-shrink:0',
             )}
           >
             <div
@@ -725,12 +753,16 @@ export function SystemList({ view }) {
                 'display:flex;align-items:center;justify-content:space-between',
               )}
             >
-              <div style={css("font:600 13px 'IBM Plex Sans'")}>
+              <div
+                style={css(
+                  "font:600 13px 'Inter',system-ui,'Segoe UI',sans-serif",
+                )}
+              >
                 {'Replacements'}
               </div>
               <div
                 style={css(
-                  "font:400 10.5px 'IBM Plex Mono',monospace;color:#8a94a0",
+                  "font:400 10.5px 'IBM Plex Mono',monospace;color:var(--t4)",
                 )}
               >
                 {view.upTotal}
@@ -742,12 +774,12 @@ export function SystemList({ view }) {
                 <Fragment key={s.id ?? s.key ?? s.label ?? index}>
                   <div
                     style={css(
-                      'flex:1;text-align:center;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);border-radius:6px;padding:7px 4px',
+                      'flex:1;text-align:center;background:var(--lift-04);border:1px solid var(--lift-08);border-radius:6px;padding:7px 4px',
                     )}
                   >
                     <div
                       style={css(
-                        "font:600 16px 'IBM Plex Sans';color:" +
+                        "font:600 16px 'Inter',system-ui,'Segoe UI',sans-serif;color:" +
                           (s.color ?? '') +
                           ';line-height:1',
                       )}
@@ -756,7 +788,7 @@ export function SystemList({ view }) {
                     </div>
                     <div
                       style={css(
-                        "font:400 8.5px 'IBM Plex Mono',monospace;color:#8a94a0;margin-top:3px;letter-spacing:0.03em",
+                        "font:400 8.5px 'IBM Plex Mono',monospace;color:var(--t4);margin-top:3px;letter-spacing:0.03em",
                       )}
                     >
                       {s.label}
@@ -787,14 +819,14 @@ export function SystemList({ view }) {
                     <div style={css('flex:1;min-width:0')}>
                       <div
                         style={css(
-                          "font:500 12px 'IBM Plex Sans';color:#e8edf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                          "font:500 12px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                         )}
                       >
                         {u.kind}
                       </div>
                       <div
                         style={css(
-                          "font:400 10px 'IBM Plex Sans';color:#8a94a0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+                          "font:400 10px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
                         )}
                       >
                         {u.device}
@@ -812,7 +844,7 @@ export function SystemList({ view }) {
                   </div>
                   <div
                     style={css(
-                      'height:5px;border-radius:3px;background:#e6ebef;margin-top:8px;overflow:hidden',
+                      'height:5px;border-radius:3px;background:var(--track);margin-top:8px;overflow:hidden',
                     )}
                   >
                     <div

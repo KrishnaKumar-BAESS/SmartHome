@@ -9,7 +9,7 @@ export function SceneLegend({ view }) {
           <div style={css(view.legendPanelStyle)}>
             <div
               style={css(
-                "font:500 8.5px 'IBM Plex Mono',monospace;color:#8a98a6;letter-spacing:0.12em;margin-bottom:1px",
+                "font:500 8.5px 'IBM Plex Mono',monospace;color:var(--t4);letter-spacing:0.12em;margin-bottom:1px",
               )}
             >
               {view.legendTitle}
@@ -20,7 +20,7 @@ export function SceneLegend({ view }) {
                   <span style={css(l.swatch)}></span>
                   <span
                     style={css(
-                      "font:400 10.5px 'IBM Plex Mono',monospace;color:#c4d0db",
+                      "font:400 10.5px 'IBM Plex Mono',monospace;color:var(--t2)",
                     )}
                   >
                     {l.label}

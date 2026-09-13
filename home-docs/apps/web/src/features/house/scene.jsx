@@ -247,7 +247,7 @@ export function renderScene(house, opt = {}) {
       RE('path', {
         key: k(),
         d: polyD(gPts),
-        fill: 'rgba(0,0,0,0.4)',
+        fill: opt.light ? 'rgba(35,50,65,0.2)' : 'rgba(0,0,0,0.4)',
         filter: 'url(#groundShadow)',
         style: { pointerEvents: 'none' },
       }),
@@ -434,7 +434,7 @@ export function renderScene(house, opt = {}) {
             y: c.sy.toFixed(1),
             textAnchor: 'middle',
             style: {
-              font: `600 9px 'IBM Plex Sans'`,
+              font: `600 9px 'Inter',system-ui,'Segoe UI',sans-serif`,
               fill: sel ? '#11202c' : '#3c4a54',
               paintOrder: 'stroke',
               stroke: '#ffffffea',
@@ -476,7 +476,7 @@ export function renderScene(house, opt = {}) {
     });
     if (minSx === 1e9) return;
     const label = house.floorLabels[f];
-    // 10px IBM Plex Mono: ~6px advance per char plus 0.05em letter-spacing.
+    // 10px monospace: ~6px advance per char plus 0.05em letter-spacing.
     const labelW = label.length * 6.5;
     // Anchor is the text end; keep the whole label right of the overlaid
     // left panel (opt.floorLabelMinX, in viewBox units) and the view edge.
@@ -502,9 +502,17 @@ export function renderScene(house, opt = {}) {
           textAnchor: 'end',
           style: {
             font: "600 10px 'IBM Plex Mono',monospace",
-            fill: opt.onFloorClick ? '#c8d8ea' : '#aeb9c4',
+            fill: opt.light
+              ? opt.onFloorClick
+                ? '#3d5d80'
+                : '#5c6b79'
+              : opt.onFloorClick
+                ? '#c8d8ea'
+                : '#aeb9c4',
             paintOrder: 'stroke',
-            stroke: 'rgba(16,23,30,0.85)',
+            stroke: opt.light
+              ? 'rgba(255,255,255,0.88)'
+              : 'rgba(16,23,30,0.85)',
             strokeWidth: 3,
             strokeLinejoin: 'round',
             letterSpacing: '0.05em',

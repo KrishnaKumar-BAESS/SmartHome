@@ -18,7 +18,11 @@ export function CameraViewer({ view }) {
               )}
             >
               <div>
-                <div style={css("font:600 15px 'IBM Plex Sans';color:#eef3f8")}>
+                <div
+                  style={css(
+                    "font:600 15px 'Inter',system-ui,'Segoe UI',sans-serif;color:#eef3f8",
+                  )}
+                >
                   {view.bigFeed.name}
                   {' · Review'}
                 </div>
@@ -33,7 +37,7 @@ export function CameraViewer({ view }) {
               <div
                 onClick={view.closeExpand}
                 style={css(
-                  "font:500 11.5px 'IBM Plex Sans';color:#cdd6df;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:8px 14px;border-radius:8px;cursor:pointer",
+                  "font:500 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:#cdd6df;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:8px 14px;border-radius:8px;cursor:pointer",
                 )}
                 role="button"
                 tabIndex={0}
@@ -65,7 +69,7 @@ export function CameraViewer({ view }) {
                   ></div>
                   <div
                     style={css(
-                      "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 40px 'IBM Plex Sans';color:rgba(255,255,255,0.05);letter-spacing:0.07em;text-align:center;padding:0 20px",
+                      "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 40px 'Inter',system-ui,'Segoe UI',sans-serif;color:rgba(255,255,255,0.05);letter-spacing:0.07em;text-align:center;padding:0 20px",
                     )}
                   >
                     {view.bigFeed.watermark}
@@ -231,7 +235,7 @@ export function CameraViewer({ view }) {
                           ></div>
                           <div
                             style={css(
-                              "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 12px 'IBM Plex Sans';color:rgba(255,255,255,0.06);letter-spacing:0.05em;text-align:center;padding:0 8px",
+                              "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 12px 'Inter',system-ui,'Segoe UI',sans-serif;color:rgba(255,255,255,0.06);letter-spacing:0.05em;text-align:center;padding:0 8px",
                             )}
                           >
                             {t.watermark}

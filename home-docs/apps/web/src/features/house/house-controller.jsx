@@ -17,6 +17,18 @@ import {
 import { renderScene } from './scene';
 import { HouseView } from './house-view';
 
+const THEME_KEY = 'housedocs-theme';
+
+function initialTheme() {
+  try {
+    const saved = window.localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark') return saved;
+  } catch {
+    // storage unavailable (private mode etc.) — fall through
+  }
+  return 'light';
+}
+
 /** Owns model interaction and derives the eight documentation views. */
 export class HouseController extends Component {
   boxes = boxes;
@@ -71,11 +83,13 @@ export class HouseController extends Component {
     showRoomLabels: true,
     sliderFocused: false,
     viewOptsOpen: false,
+    theme: typeof window === 'undefined' ? 'light' : initialTheme(),
   };
 
   SOUND = '#7b5cd6';
 
   stColor(s) {
+    // Hex only: results can feed hexA()/mix() in the scene renderer.
     return s === 'ok'
       ? '#5a9c6e'
       : s === 'soon'
@@ -332,18 +346,29 @@ export class HouseController extends Component {
           : p.t === 'height'
             ? '#3f9a8c'
             : p.t === 'seat'
-              ? '#8a94a0'
+              ? 'var(--t4)'
               : '#3b6fb0';
       const sz = p.t === 'seat' ? 16 : 13;
       return {
         key: `${p.t}-${i}`,
         label: p.t === 'seat' ? '' : p.l,
-        style: `position:absolute;left:${p.x}%;top:${p.y}%;transform:translate(-50%,-50%);width:${sz}px;height:${sz}px;border-radius:${p.t === 'seat' ? '50%' : '2px'};background:${p.t === 'seat' ? 'transparent' : col};border:${p.t === 'seat' ? '1.5px solid #8a94a0' : 'none'};display:flex;align-items:center;justify-content:center;font:600 7px 'IBM Plex Mono',monospace;color:#fff;`,
+        style: `position:absolute;left:${p.x}%;top:${p.y}%;transform:translate(-50%,-50%);width:${sz}px;height:${sz}px;border-radius:${p.t === 'seat' ? '50%' : '2px'};background:${p.t === 'seat' ? 'transparent' : col};border:${p.t === 'seat' ? '1.5px solid var(--t4)' : 'none'};display:flex;align-items:center;justify-content:center;font:600 7px 'IBM Plex Mono',monospace;color:#fff;`,
       };
     });
   }
 
+  setTheme(theme) {
+    this.setState({ theme });
+    document.documentElement.dataset.theme = theme;
+    try {
+      window.localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      // persistence is best-effort
+    }
+  }
+
   componentDidMount() {
+    document.documentElement.dataset.theme = this.state.theme;
     this._tick = setInterval(() => {
       if (this.state.mode === 'security') this.forceUpdate();
     }, 1000);
@@ -458,7 +483,7 @@ export class HouseController extends Component {
       out.push({
         idx: i,
         type: t,
-        color: tcol[t] || '#8a94a0',
+        color: tcol[t] || 'var(--t4)',
         time: `${String(hh).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
         day,
         dur: `${Math.floor(4 + rng(i + 7) * 38)}s`,
@@ -522,15 +547,17 @@ export class HouseController extends Component {
     // Ambient stage backdrop tinted by the active mode's accent, so
     // switching systems recolors the whole scene, not just the chrome.
     const accent = modeAccent[S.mode] || '#3b6fb0';
-    const baseGrad =
-      tone === 'ink'
-        ? ['#262d37', '#171c23', '#0f1318']
-        : tone === 'navy'
-          ? ['#26384c', '#1a293a', '#132030']
-          : ['#33414f', '#232e38', '#1a232c'];
+    const light = S.theme === 'light';
+    const stage =
+      tone === 'ink' ? 'stage1' : tone === 'navy' ? 'stage2' : 'stage3';
+    const baseGrad = [
+      `var(--${stage}-hi)`,
+      `var(--${stage}-mid)`,
+      `var(--${stage}-lo)`,
+    ];
     const stageGrad =
-      `radial-gradient(85% 65% at 82% -4%,${this.hexA(accent, 0.2)} 0%,transparent 58%),` +
-      `radial-gradient(70% 58% at 8% 104%,${this.hexA(accent, 0.12)} 0%,transparent 55%),` +
+      `radial-gradient(85% 65% at 82% -4%,${this.hexA(accent, light ? 0.13 : 0.2)} 0%,transparent 58%),` +
+      `radial-gradient(70% 58% at 8% 104%,${this.hexA(accent, light ? 0.08 : 0.12)} 0%,transparent 55%),` +
       `radial-gradient(125% 120% at 50% 0%,${baseGrad[0]} 0%,${baseGrad[1]} 55%,${baseGrad[2]} 100%)`;
 
     const modes = modeDef.map(([key, label]) => ({
@@ -538,10 +565,10 @@ export class HouseController extends Component {
       label,
       onClick: () => set({ mode: key }),
       style:
-        `padding:6px 12px;border-radius:7px;cursor:pointer;font:500 11.5px 'IBM Plex Sans';transition:background .15s;white-space:nowrap;` +
+        `padding:6px 12px;border-radius:7px;cursor:pointer;font:500 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;transition:background .15s;white-space:nowrap;` +
         (S.mode === key
           ? `background:${modeAccent[key]};color:#fff;`
-          : `background:transparent;color:#aab6c1;`),
+          : `background:transparent;color:var(--t3);`),
     }));
     const isOverview = S.mode === 'overview',
       isElectrical = S.mode === 'electrical',
@@ -566,13 +593,13 @@ export class HouseController extends Component {
         active: on,
         style: narrow
           ? `display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:10px;cursor:pointer;user-select:none;flex-shrink:0;white-space:nowrap;transition:background .15s,color .15s,box-shadow .15s;` +
-            (on ? activeGlow : `background:transparent;color:#7f8d9a;`)
+            (on ? activeGlow : `background:transparent;color:var(--t5);`)
           : `display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 3px;border-radius:12px;cursor:pointer;user-select:none;transition:background .15s,color .15s,box-shadow .15s;` +
-            (on ? activeGlow : `background:transparent;color:#7f8d9a;`),
+            (on ? activeGlow : `background:transparent;color:var(--t5);`),
       };
     });
     const navLabelStyle = narrow
-      ? `font:600 12px 'IBM Plex Sans'`
+      ? `font:600 12px 'Inter',system-ui,'Segoe UI',sans-serif`
       : `font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.02em`;
 
     // --- global search across every documented thing ---
@@ -729,7 +756,7 @@ export class HouseController extends Component {
       active: i === searchSel,
       rowStyle:
         'display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;cursor:pointer' +
-        (i === searchSel ? ';background:rgba(255,255,255,0.09)' : ''),
+        (i === searchSel ? ';background:var(--lift-08)' : ''),
       label: it.label,
       sub: it.sub,
       cat: it.cat,
@@ -806,18 +833,18 @@ export class HouseController extends Component {
     // --- responsive layout style strings (one template, JS-driven layout) ---
     // Shared "floating glass" chrome recipe for every piece of UI over the stage.
     const glass =
-      'background:rgba(15,21,28,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.085)';
-    const glassShadow = 'box-shadow:0 20px 50px -20px rgba(0,0,0,0.72)';
+      'background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--lift-08)';
+    const glassShadow = 'box-shadow:0 20px 50px -20px var(--shadow-1)';
     const topbarStyle = narrow
-      ? `position:absolute;top:0;left:0;right:0;height:56px;z-index:34;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:0 14px;background:rgba(15,21,28,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.08)`
+      ? `position:absolute;top:0;left:0;right:0;height:56px;z-index:34;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:0 14px;background:var(--glass-strong);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--lift-08)`
       : `position:absolute;top:10px;left:10px;right:10px;height:54px;z-index:34;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:0 14px;${glass};border-radius:16px;${glassShadow}`;
     const railStyle = narrow
-      ? `position:absolute;top:56px;left:0;right:0;height:52px;z-index:26;display:flex;flex-direction:row;align-items:center;gap:3px;padding:0 8px;overflow-x:auto;overflow-y:hidden;background:rgba(13,19,25,0.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.06)`
+      ? `position:absolute;top:56px;left:0;right:0;height:52px;z-index:26;display:flex;flex-direction:row;align-items:center;gap:3px;padding:0 8px;overflow-x:auto;overflow-y:hidden;background:var(--glass-strong);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--lift-06)`
       : `position:absolute;top:74px;left:10px;bottom:10px;width:72px;z-index:26;display:flex;flex-direction:column;gap:4px;padding:10px 8px;overflow-y:auto;${glass};border-radius:16px;${glassShadow}`;
     const listPanelStyle =
       (narrow
-        ? `position:absolute;left:8px;right:8px;top:118px;height:42vh;z-index:18;display:flex;flex-direction:column;background:rgba(17,23,30,0.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.09);border-radius:14px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:hidden`
-        : `position:absolute;left:90px;top:74px;bottom:10px;width:316px;z-index:18;display:flex;flex-direction:column;background:rgba(17,23,30,0.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.085);border-radius:16px;${glassShadow};color:#e8edf2;overflow:hidden`) +
+        ? `position:absolute;left:8px;right:8px;top:118px;height:42vh;z-index:18;display:flex;flex-direction:column;background:var(--panel-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--lift-08);border-radius:14px;box-shadow:0 22px 54px -16px var(--shadow-2);color:var(--t1);overflow:hidden`
+        : `position:absolute;left:90px;top:74px;bottom:10px;width:316px;z-index:18;display:flex;flex-direction:column;background:var(--panel);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--lift-08);border-radius:16px;${glassShadow};color:var(--t1);overflow:hidden`) +
       (narrow
         ? (S.leftHidden ? ';transform:translateY(calc(-100% - 120px))' : '') +
           ';transition:transform .28s cubic-bezier(0.4,0,0.2,1)'
@@ -825,23 +852,23 @@ export class HouseController extends Component {
           ';transition:transform .28s cubic-bezier(0.4,0,0.2,1)');
     const detailPanelStyle =
       (narrow
-        ? `position:absolute;left:8px;right:8px;bottom:8px;max-height:40vh;z-index:19;display:flex;flex-direction:column;background:rgba(17,23,30,0.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.09);border-radius:14px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:auto`
-        : `position:absolute;right:10px;top:74px;bottom:10px;width:340px;z-index:18;display:flex;flex-direction:column;background:rgba(17,23,30,0.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.085);border-radius:16px;${glassShadow};color:#e8edf2;overflow:auto`) +
+        ? `position:absolute;left:8px;right:8px;bottom:8px;max-height:40vh;z-index:19;display:flex;flex-direction:column;background:var(--panel-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--lift-08);border-radius:14px;box-shadow:0 22px 54px -16px var(--shadow-2);color:var(--t1);overflow:auto`
+        : `position:absolute;right:10px;top:74px;bottom:10px;width:340px;z-index:18;display:flex;flex-direction:column;background:var(--panel);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--lift-08);border-radius:16px;${glassShadow};color:var(--t1);overflow:auto`) +
       (narrow
         ? (S.rightHidden ? ';transform:translateY(calc(100% + 20px))' : '') +
           ';transition:transform .28s cubic-bezier(0.4,0,0.2,1)'
         : (S.rightHidden ? ';transform:translateX(calc(100% + 16px))' : '') +
           ';transition:transform .28s cubic-bezier(0.4,0,0.2,1)');
     const idBoxStyle = `display:flex;align-items:center;gap:10px;min-width:0`;
-    const idSubStyle = `font:400 9.5px 'IBM Plex Mono',monospace;color:#8a98a6;margin-top:2px;${narrow ? 'display:none' : ''}`;
-    const searchWrapStyle = `position:relative;width:100%;max-width:${narrow ? '100%' : '560px'};margin:0 auto;display:flex;align-items:center;gap:9px;height:38px;padding:0 11px;background:${S.searchFocus ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.06)'};border:1px solid ${S.searchFocus ? this.hexA(accent, 0.55) : 'rgba(255,255,255,0.13)'};${S.searchFocus ? `box-shadow:0 0 0 3px ${this.hexA(accent, 0.14)};` : ''}border-radius:12px;transition:background .15s,border-color .15s,box-shadow .15s`;
-    const searchInputStyle = `flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;color:#e8edf2;font:500 13px 'IBM Plex Sans'`;
+    const idSubStyle = `font:400 9.5px 'IBM Plex Mono',monospace;color:var(--t4);margin-top:2px;${narrow ? 'display:none' : ''}`;
+    const searchWrapStyle = `position:relative;width:100%;max-width:${narrow ? '100%' : '560px'};margin:0 auto;display:flex;align-items:center;gap:9px;height:38px;padding:0 11px;background:${S.searchFocus ? 'var(--lift-10)' : 'var(--lift-06)'};border:1px solid ${S.searchFocus ? this.hexA(accent, 0.55) : 'var(--lift-12)'};${S.searchFocus ? `box-shadow:0 0 0 3px ${this.hexA(accent, 0.14)};` : ''}border-radius:12px;transition:background .15s,border-color .15s,box-shadow .15s`;
+    const searchInputStyle = `flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;color:var(--t1);font:500 13px 'Inter',system-ui,'Segoe UI',sans-serif`;
     const searchPlaceholder = narrow
       ? 'Search the house…'
       : 'Search the house — a breaker, room, light, router, camera…';
     const resultsStyle = narrow
-      ? `position:absolute;top:50px;left:0;right:0;max-height:58vh;overflow:auto;z-index:42;background:rgba(18,24,30,0.985);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 26px 60px -14px rgba(0,0,0,0.62);color:#e8edf2;padding:7px`
-      : `position:absolute;top:50px;left:0;right:0;max-height:64vh;overflow:auto;z-index:42;background:rgba(18,24,30,0.985);border:1px solid rgba(255,255,255,0.09);border-radius:12px;box-shadow:0 26px 60px -14px rgba(0,0,0,0.62);color:#e8edf2;padding:7px`;
+      ? `position:absolute;top:50px;left:0;right:0;max-height:58vh;overflow:auto;z-index:42;background:var(--popover);border:1px solid var(--lift-08);border-radius:12px;box-shadow:0 26px 60px -14px var(--shadow-2);color:var(--t1);padding:7px`
+      : `position:absolute;top:50px;left:0;right:0;max-height:64vh;overflow:auto;z-index:42;background:var(--popover);border:1px solid var(--lift-08);border-radius:12px;box-shadow:0 26px 60px -14px var(--shadow-2);color:var(--t1);padding:7px`;
     const controlsWrapStyle = `display:flex;align-items:center;gap:7px;justify-self:end;${narrow ? 'overflow-x:auto;max-width:38vw' : ''}`;
 
     // ---- shared dashboard data ----
@@ -923,10 +950,10 @@ export class HouseController extends Component {
       label,
       onClick: () => set({ etype: key }),
       style:
-        `padding:5px 11px;border-radius:6px;cursor:pointer;font:500 11px 'IBM Plex Sans';` +
+        `padding:5px 11px;border-radius:6px;cursor:pointer;font:500 11px 'Inter',system-ui,'Segoe UI',sans-serif;` +
         (etype === key
-          ? `background:#28323b;color:#fff;`
-          : `background:rgba(255,255,255,0.05);color:#aab6c1;border:1px solid rgba(255,255,255,0.12);`),
+          ? `background:var(--sel-bg);color:var(--sel-text);`
+          : `background:var(--lift-05);color:var(--t3);border:1px solid var(--lift-12);`),
     }));
     const matches = (c) => etype === 'all' || c.type === etype;
     const circGroups = this.boxes
@@ -947,11 +974,13 @@ export class HouseController extends Component {
               onClick: () => set({ selCirc: isSel ? null : c.id }),
               rowStyle:
                 `display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:2px;` +
-                (isSel ? `background:#28323b;` : `background:transparent;`),
-              dotStyle: `width:9px;height:9px;border-radius:2px;flex-shrink:0;background:${this.typeColor(c.type)};${isSel ? 'box-shadow:0 0 0 2px rgba(255,255,255,.25);' : ''}`,
-              tagStyle: `font:600 10px 'IBM Plex Mono',monospace;width:42px;flex-shrink:0;color:${isSel ? '#e8edf2' : '#9aa8b4'}`,
-              labelStyle: `font:500 11.5px 'IBM Plex Sans';flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${isSel ? '#fff' : '#cfd8e0'}`,
-              ampStyle: `font:500 10px 'IBM Plex Mono',monospace;flex-shrink:0;color:${isSel ? '#9aa8b4' : '#8a94a0'}`,
+                (isSel
+                  ? `background:var(--sel-bg);`
+                  : `background:transparent;`),
+              dotStyle: `width:9px;height:9px;border-radius:2px;flex-shrink:0;background:${this.typeColor(c.type)};${isSel ? 'box-shadow:0 0 0 2px var(--lift-22);' : ''}`,
+              tagStyle: `font:600 10px 'IBM Plex Mono',monospace;width:42px;flex-shrink:0;color:${isSel ? 'var(--t1)' : 'var(--t3)'}`,
+              labelStyle: `font:500 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${isSel ? 'var(--sel-text)' : 'var(--t2)'}`,
+              ampStyle: `font:500 10px 'IBM Plex Mono',monospace;flex-shrink:0;color:${isSel ? 'var(--t3)' : 'var(--t4)'}`,
             };
           }),
       }))
@@ -993,7 +1022,11 @@ export class HouseController extends Component {
 
     // ---- LIGHTING ----
     const lsum = [
-      { label: 'TOTAL', val: String(this.bulbs.length), color: '#28323b' },
+      {
+        label: 'TOTAL',
+        val: String(this.bulbs.length),
+        color: 'var(--sel-bg)',
+      },
       {
         label: 'OK',
         val: String(this.bulbs.filter((b) => b.st === 'ok').length),
@@ -1021,10 +1054,10 @@ export class HouseController extends Component {
       label,
       onClick: () => set({ lf: key }),
       style:
-        `padding:5px 10px;border-radius:6px;cursor:pointer;font:500 11px 'IBM Plex Sans';` +
+        `padding:5px 10px;border-radius:6px;cursor:pointer;font:500 11px 'Inter',system-ui,'Segoe UI',sans-serif;` +
         (S.lf === key
           ? `background:#e0a043;color:#fff;`
-          : `background:rgba(255,255,255,0.05);color:#aab6c1;border:1px solid rgba(255,255,255,0.12);`),
+          : `background:var(--lift-05);color:var(--t3);border:1px solid var(--lift-12);`),
     }));
     const allRooms = [...new Set(this.bulbs.map((b) => b.room))];
     const lroomOpts = [
@@ -1050,8 +1083,8 @@ export class HouseController extends Component {
       rowStyle:
         `display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:7px;cursor:pointer;margin-bottom:3px;` +
         (S.bulb === b.id
-          ? 'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px #e0a043;'
-          : 'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);'),
+          ? 'background:var(--lift-06);box-shadow:inset 0 0 0 1.5px #e0a043;'
+          : 'background:var(--lift-04);border:1px solid var(--lift-08);'),
       onClick: () => set({ bulb: b.id }),
     }));
     const lcount = `${filtered.length} of ${this.bulbs.length}`;
@@ -1129,8 +1162,8 @@ export class HouseController extends Component {
         rowStyle:
           `display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:7px;cursor:pointer;margin-bottom:3px;` +
           (isSel
-            ? 'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px #3b6fb0;'
-            : 'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);'),
+            ? 'background:var(--lift-06);box-shadow:inset 0 0 0 1.5px #3b6fb0;'
+            : 'background:var(--lift-04);border:1px solid var(--lift-08);'),
       };
     });
     const snd = this.nodes.find((n) => n.id === S.selNode) || gw;
@@ -1203,10 +1236,10 @@ export class HouseController extends Component {
         cardStyle:
           `padding:13px 14px;border-radius:8px;cursor:pointer;margin-bottom:9px;` +
           (isSel
-            ? 'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px ' +
+            ? 'background:var(--lift-06);box-shadow:inset 0 0 0 1.5px ' +
               this.SOUND +
               ';'
-            : 'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);'),
+            : 'background:var(--lift-04);border:1px solid var(--lift-08);'),
       };
     });
     const sz = zoneData.find((z) => z.id === S.selZone) || zoneData[0];
@@ -1221,7 +1254,7 @@ export class HouseController extends Component {
     };
 
     // ---- SECURITY (cameras + live feeds) ----
-    const camStatusCol = (s) => (s === 'online' ? '#5a9c6e' : '#8a94a0');
+    const camStatusCol = (s) => (s === 'online' ? '#5a9c6e' : 'var(--t4)');
     const camFilter = S.camFilter || 'all';
     const camFilterDef = [
       ['all', 'All'],
@@ -1234,10 +1267,10 @@ export class HouseController extends Component {
       label,
       onClick: () => set({ camFilter: key }),
       style:
-        `padding:5px 10px;border-radius:6px;cursor:pointer;font:500 11px 'IBM Plex Sans';` +
+        `padding:5px 10px;border-radius:6px;cursor:pointer;font:500 11px 'Inter',system-ui,'Segoe UI',sans-serif;` +
         (camFilter === key
           ? `background:#c0573b;color:#fff;`
-          : `background:rgba(255,255,255,0.05);color:#aab6c1;border:1px solid rgba(255,255,255,0.12);`),
+          : `background:var(--lift-05);color:var(--t3);border:1px solid var(--lift-12);`),
     }));
     const camMatch = (c) =>
       camFilter === 'all' ||
@@ -1255,8 +1288,8 @@ export class HouseController extends Component {
       rowStyle:
         `display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:7px;cursor:pointer;margin-bottom:3px;` +
         (S.selCam === c.id
-          ? 'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px #c0573b;'
-          : 'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);'),
+          ? 'background:var(--lift-06);box-shadow:inset 0 0 0 1.5px #c0573b;'
+          : 'background:var(--lift-04);border:1px solid var(--lift-08);'),
     }));
     const camOnline = this.cameras.filter((c) => c.status === 'online').length;
     const camTotal = this.cameras.length;
@@ -1278,7 +1311,7 @@ export class HouseController extends Component {
       type: sc.type,
       statusColor: camStatusCol(sc.status),
       offline: !scOnline,
-      liveColor: scOnline ? '#e5544a' : '#8a94a0',
+      liveColor: scOnline ? '#e5544a' : 'var(--t4)',
       liveLabel: scOnline ? 'LIVE' : 'OFFLINE',
       res: sc.res,
       time: feedTime,
@@ -1302,7 +1335,7 @@ export class HouseController extends Component {
         name: c.name,
         sub: `${c.type} · ${c.room}`,
         offline: !on,
-        liveColor: on ? '#e5544a' : '#8a94a0',
+        liveColor: on ? '#e5544a' : 'var(--t4)',
         liveLabel: on ? 'LIVE' : 'OFFLINE',
         res: c.res,
         time: feedTime,
@@ -1329,7 +1362,8 @@ export class HouseController extends Component {
       room: sc.room,
       res: sc.res,
       watermark: sc.room.toUpperCase(),
-      liveColor: histSel === 0 ? (scOnline ? '#e5544a' : '#8a94a0') : '#e0b46b',
+      liveColor:
+        histSel === 0 ? (scOnline ? '#e5544a' : 'var(--t4)') : '#e0b46b',
       liveLabel: histSel === 0 ? (scOnline ? 'LIVE' : 'OFFLINE') : 'REVIEW',
       time: histActive ? `${histActive.day} ${histActive.time}` : feedTime,
       eventLabel: histActive
@@ -1345,12 +1379,12 @@ export class HouseController extends Component {
         idx: 0,
         label: 'Live view',
         sub: scOnline ? 'streaming now' : 'offline',
-        color: scOnline ? '#e5544a' : '#8a94a0',
+        color: scOnline ? '#e5544a' : 'var(--t4)',
         time: scOnline ? 'LIVE' : 'OFF',
         watermark: sc.room.toUpperCase(),
         onClick: () => selectHist(0),
-        dotStyle: `position:absolute;top:50%;transform:translate(-50%,-50%);width:${histSel === 0 ? 12 : 9}px;height:${histSel === 0 ? 12 : 9}px;border-radius:50%;background:${scOnline ? '#e5544a' : '#8a94a0'};border:1.5px solid #0b1015;cursor:pointer;left:4%`,
-        wrapStyle: `cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid ${histSel === 0 ? '#c0573b' : 'rgba(255,255,255,0.06)'};flex-shrink:0`,
+        dotStyle: `position:absolute;top:50%;transform:translate(-50%,-50%);width:${histSel === 0 ? 12 : 9}px;height:${histSel === 0 ? 12 : 9}px;border-radius:50%;background:${scOnline ? '#e5544a' : 'var(--t4)'};border:1.5px solid var(--marker-ring);cursor:pointer;left:4%`,
+        wrapStyle: `cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid ${histSel === 0 ? '#c0573b' : 'var(--lift-06)'};flex-shrink:0`,
       },
       ...camHist.map((hv, i) => ({
         idx: i + 1,
@@ -1360,8 +1394,8 @@ export class HouseController extends Component {
         time: hv.time,
         watermark: sc.room.toUpperCase(),
         onClick: () => selectHist(i + 1),
-        dotStyle: `position:absolute;top:50%;transform:translate(-50%,-50%);width:${histSel === i + 1 ? 12 : 9}px;height:${histSel === i + 1 ? 12 : 9}px;border-radius:50%;background:${hv.color};border:1.5px solid #0b1015;cursor:pointer;left:${12 + i * 11}%`,
-        wrapStyle: `cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid ${histSel === i + 1 ? '#c0573b' : 'rgba(255,255,255,0.06)'};flex-shrink:0`,
+        dotStyle: `position:absolute;top:50%;transform:translate(-50%,-50%);width:${histSel === i + 1 ? 12 : 9}px;height:${histSel === i + 1 ? 12 : 9}px;border-radius:50%;background:${hv.color};border:1.5px solid var(--marker-ring);cursor:pointer;left:${12 + i * 11}%`,
+        wrapStyle: `cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid ${histSel === i + 1 ? '#c0573b' : 'var(--lift-06)'};flex-shrink:0`,
       })),
     ];
 
@@ -1373,14 +1407,14 @@ export class HouseController extends Component {
       id: s.id,
       name: s.name,
       mount: s.mount,
-      dot: s.status === 'online' ? '#3f9a8c' : '#8a94a0',
+      dot: s.status === 'online' ? '#3f9a8c' : 'var(--t4)',
       badge: s.status === 'online' ? 'LIVE' : 'PLANNED',
       onClick: () => set({ selSensor: s.id }),
       rowStyle:
         `display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:7px;cursor:pointer;margin-bottom:3px;` +
         (S.selSensor === s.id
-          ? 'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px #3f9a8c;'
-          : 'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);'),
+          ? 'background:var(--lift-06);box-shadow:inset 0 0 0 1.5px #3f9a8c;'
+          : 'background:var(--lift-04);border:1px solid var(--lift-08);'),
     }));
     const ssn =
       this.sensors.find((x) => x.id === S.selSensor) || this.sensors[0];
@@ -1417,8 +1451,8 @@ export class HouseController extends Component {
       rowStyle:
         `padding:10px 11px;border-radius:7px;cursor:pointer;margin-bottom:4px;` +
         (S.selUp === u.id
-          ? 'background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1.5px #b07b3b;'
-          : 'background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.085);'),
+          ? 'background:var(--lift-06);box-shadow:inset 0 0 0 1.5px #b07b3b;'
+          : 'background:var(--lift-04);border:1px solid var(--lift-08);'),
     }));
     const upSummary = [
       {
@@ -1552,6 +1586,7 @@ export class HouseController extends Component {
 
     let sceneOpt = {
       layer: S.mode,
+      light,
       onRoomClick,
       onFloorClick,
       onPanelClick: () => set({ mode: 'electrical', selCirc: null }),
@@ -1622,7 +1657,7 @@ export class HouseController extends Component {
 
     // ---- prompt / legend / hint ----
     const showPrompt = (isElectrical && !selC) || (isLighting && !sb);
-    const promptStyle = `position:absolute;top:${narrow ? 64 : 76}px;left:50%;transform:translateX(-50%);z-index:16;font:500 11.5px 'IBM Plex Sans';color:#c4d0db;background:rgba(15,21,28,0.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:8px 16px;border:1px solid rgba(255,255,255,0.10);border-radius:20px;white-space:nowrap;animation:floatIn .3s ease both`;
+    const promptStyle = `position:absolute;top:${narrow ? 64 : 76}px;left:50%;transform:translateX(-50%);z-index:16;font:500 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t2);background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:8px 16px;border:1px solid var(--lift-10);border-radius:20px;white-space:nowrap;animation:floatIn .3s ease both`;
     const promptText = isElectrical
       ? 'Click a circuit in the list — or click a room in the model'
       : isLighting
@@ -1637,7 +1672,7 @@ export class HouseController extends Component {
       legendItems = [
         {
           label: 'Breaker panel',
-          swatch: `width:14px;height:10px;border-radius:2px;background:#e8edf2;border:1px solid #9aa4ad;flex-shrink:0`,
+          swatch: `width:14px;height:10px;border-radius:2px;background:#e9eef2;border:1px solid #9fadb9;flex-shrink:0`,
         },
         { label: 'Flagged bulb', swatch: sw('#c0892f') },
         { label: 'Mesh node', swatch: sw('#3b6fb0', true) },
@@ -1675,16 +1710,16 @@ export class HouseController extends Component {
       legendTitle = 'SECURITY';
       legendItems = [
         { label: 'Camera + coverage', swatch: sw('#c0573b', true) },
-        { label: 'Offline camera', swatch: sw('#8a94a0', true) },
+        { label: 'Offline camera', swatch: sw('var(--t4)', true) },
       ];
     } else if (isClimate) {
       legendTitle = 'CLIMATE';
       legendItems = [
         {
           label: 'Sensor (planned)',
-          swatch: `width:10px;height:10px;background:#8a94a022;border:1px dashed #8a94a0;transform:rotate(45deg);flex-shrink:0`,
+          swatch: `width:10px;height:10px;background:var(--t4)22;border:1px dashed var(--t4);transform:rotate(45deg);flex-shrink:0`,
         },
-        { label: 'Disconnected', swatch: sw('#8a94a0', true) },
+        { label: 'Disconnected', swatch: sw('var(--t4)', true) },
       ];
     } else if (isUpkeep) {
       legendTitle = 'REPLACEMENTS';
@@ -1717,23 +1752,23 @@ export class HouseController extends Component {
     const sliderFocused = !!S.sliderFocused;
     const _db =
       'position:absolute;left:50%;transform:translateX(-50%);border-radius:50%;pointer-events:none;z-index:1;width:5px;height:5px;transition:background .15s';
-    const sliderDot2Style = `${_db};top:4px;background:${explodeIdx === 2 ? '#e0a043' : 'rgba(255,255,255,0.22)'}`;
-    const sliderDot1Style = `${_db};top:37px;background:${explodeIdx === 1 ? '#e0a043' : 'rgba(255,255,255,0.22)'}`;
-    const sliderDot0Style = `${_db};bottom:4px;background:${explodeIdx === 0 ? '#e0a043' : 'rgba(255,255,255,0.22)'}`;
+    const sliderDot2Style = `${_db};top:4px;background:${explodeIdx === 2 ? '#e0a043' : 'var(--lift-22)'}`;
+    const sliderDot1Style = `${_db};top:37px;background:${explodeIdx === 1 ? '#e0a043' : 'var(--lift-22)'}`;
+    const sliderDot0Style = `${_db};bottom:4px;background:${explodeIdx === 0 ? '#e0a043' : 'var(--lift-22)'}`;
     const sliderPopupStyle =
-      'position:absolute;right:38px;top:50%;transform:translateY(-50%);z-index:30;display:flex;flex-direction:column;gap:1px;padding:7px 10px;background:rgba(13,19,26,0.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.13);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.55);animation:floatIn .18s ease both;pointer-events:none;white-space:nowrap';
+      'position:absolute;right:38px;top:50%;transform:translateY(-50%);z-index:30;display:flex;flex-direction:column;gap:1px;padding:7px 10px;background:var(--popover);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--lift-12);border-radius:8px;box-shadow:0 6px 20px var(--shadow-3);animation:floatIn .18s ease both;pointer-events:none;white-space:nowrap';
     const sliderStops = [
       {
         label: 'EXPLODED',
-        style: `font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.07em;color:${explodeIdx === 2 ? '#e0a043' : '#5a6877'};padding:2px 0`,
+        style: `font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.07em;color:${explodeIdx === 2 ? '#e0a043' : 'var(--t6)'};padding:2px 0`,
       },
       {
         label: 'FLOORS',
-        style: `font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.07em;color:${explodeIdx === 1 ? '#e0a043' : '#5a6877'};padding:2px 0`,
+        style: `font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.07em;color:${explodeIdx === 1 ? '#e0a043' : 'var(--t6)'};padding:2px 0`,
       },
       {
         label: 'STACKED',
-        style: `font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.07em;color:${explodeIdx === 0 ? '#e0a043' : '#5a6877'};padding:2px 0`,
+        style: `font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:0.07em;color:${explodeIdx === 0 ? '#e0a043' : 'var(--t6)'};padding:2px 0`,
       },
     ];
     const leftHidden = !!S.leftHidden;
@@ -1756,8 +1791,8 @@ export class HouseController extends Component {
       });
     const mapRight = narrow ? 8 : rightHidden ? 20 : 366;
     const clusterRight = narrow ? 8 : mapRight + 16;
-    const isoPanelStyle = `position:absolute;top:${narrow ? 114 : 74}px;right:${mapRight}px;z-index:30;width:236px;max-width:calc(100% - 16px);max-height:calc(100dvh - ${narrow ? 132 : 94}px);display:flex;flex-direction:column;background:rgba(17,23,30,0.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.09);border-radius:14px;box-shadow:0 22px 54px -16px rgba(0,0,0,0.6);color:#e8edf2;overflow:hidden;animation:floatIn .25s ease both;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
-    const legendPanelStyle = `position:absolute;right:${narrow ? 8 : clusterRight + 185}px;bottom:${narrow ? 68 : 18}px;max-width:calc(100% - 16px);z-index:16;display:flex;flex-direction:column;gap:6px;padding:10px 13px;background:rgba(13,19,26,0.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.10);border-radius:12px;animation:floatIn .3s ease both;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
+    const isoPanelStyle = `position:absolute;top:${narrow ? 114 : 74}px;right:${mapRight}px;z-index:30;width:236px;max-width:calc(100% - 16px);max-height:calc(100dvh - ${narrow ? 132 : 94}px);display:flex;flex-direction:column;background:var(--panel-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--lift-08);border-radius:14px;box-shadow:0 22px 54px -16px var(--shadow-2);color:var(--t1);overflow:hidden;animation:floatIn .25s ease both;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
+    const legendPanelStyle = `position:absolute;right:${narrow ? 8 : clusterRight + 185}px;bottom:${narrow ? 68 : 18}px;max-width:calc(100% - 16px);z-index:16;display:flex;flex-direction:column;gap:6px;padding:10px 13px;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--lift-10);border-radius:12px;animation:floatIn .3s ease both;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
     const labelsOn = S.showRoomLabels !== false;
     const toggleLabels = () =>
       set((s) => ({ showRoomLabels: !s.showRoomLabels }));
@@ -1765,7 +1800,7 @@ export class HouseController extends Component {
       set({ yaw: 35, pitch: 58, zoom: 1, panX: 0, panY: 0 });
     const autoRotate = !!S.autoRotate;
     const autoBtnLabel = autoRotate ? 'Spinning' : 'Auto-spin';
-    const autoOrbitColor = autoRotate ? '#f0c060' : '#6a7a8a';
+    const autoOrbitColor = autoRotate ? '#f0c060' : 'var(--t5)';
     const toggleLegend = () => set((s) => ({ legend: !s.legend }));
     const zoomIn = () => set((s) => ({ zoom: Math.min(4, s.zoom * 1.15) }));
     const zoomOut = () => set((s) => ({ zoom: Math.max(0.4, s.zoom * 0.87) }));
@@ -1788,36 +1823,35 @@ export class HouseController extends Component {
     };
     const _exBase =
       "flex:1;text-align:center;padding:5px 4px;border-radius:6px;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:0.06em;cursor:pointer;user-select:none;border:1px solid;transition:background .12s,color .12s";
-    const explodeBtn0Style = `${_exBase};${explodeIdx === 0 ? 'border-color:rgba(224,160,67,.55);background:rgba(224,160,67,.15);color:#e0a043' : 'border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#6e7e8c'}`;
-    const explodeBtn1Style = `${_exBase};${explodeIdx === 1 ? 'border-color:rgba(224,160,67,.55);background:rgba(224,160,67,.15);color:#e0a043' : 'border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#6e7e8c'}`;
-    const explodeBtn2Style = `${_exBase};${explodeIdx === 2 ? 'border-color:rgba(224,160,67,.55);background:rgba(224,160,67,.15);color:#e0a043' : 'border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#6e7e8c'}`;
+    const explodeBtn0Style = `${_exBase};${explodeIdx === 0 ? 'border-color:rgba(224,160,67,.55);background:rgba(224,160,67,.15);color:#e0a043' : 'border-color:var(--lift-12);background:var(--lift-04);color:var(--t5)'}`;
+    const explodeBtn1Style = `${_exBase};${explodeIdx === 1 ? 'border-color:rgba(224,160,67,.55);background:rgba(224,160,67,.15);color:#e0a043' : 'border-color:var(--lift-12);background:var(--lift-04);color:var(--t5)'}`;
+    const explodeBtn2Style = `${_exBase};${explodeIdx === 2 ? 'border-color:rgba(224,160,67,.55);background:rgba(224,160,67,.15);color:#e0a043' : 'border-color:var(--lift-12);background:var(--lift-04);color:var(--t5)'}`;
     const _voRow =
-      "display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;user-select:none;font:400 12px 'IBM Plex Sans',sans-serif";
-    const voResetRowStyle = `${_voRow};color:#c4d0db;background:rgba(255,255,255,0.04)`;
-    const voAutoRowStyle = `${_voRow};color:${autoRotate ? '#e3b264' : '#c4d0db'};background:${autoRotate ? 'rgba(224,160,67,.10)' : 'rgba(255,255,255,0.04)'}`;
-    const voLabelsRowStyle = `${_voRow};color:${labelsOn ? '#9cc0ee' : '#c4d0db'};background:${labelsOn ? 'rgba(59,111,176,.10)' : 'rgba(255,255,255,0.04)'}`;
-    const voLegendRowStyle = `${_voRow};color:${S.legend ? '#9cc0ee' : '#c4d0db'};background:${S.legend ? 'rgba(59,111,176,.10)' : 'rgba(255,255,255,0.04)'}`;
+      "display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;user-select:none;font:400 12px 'Inter',system-ui,'Segoe UI',sans-serif,sans-serif";
+    const voResetRowStyle = `${_voRow};color:var(--t2);background:var(--lift-04)`;
+    const voAutoRowStyle = `${_voRow};color:${autoRotate ? 'var(--warn-text)' : 'var(--t2)'};background:${autoRotate ? 'rgba(224,160,67,.10)' : 'var(--lift-04)'}`;
+    const voLabelsRowStyle = `${_voRow};color:${labelsOn ? 'var(--acc-text)' : 'var(--t2)'};background:${labelsOn ? 'var(--acc-soft)' : 'var(--lift-04)'}`;
+    const voLegendRowStyle = `${_voRow};color:${S.legend ? 'var(--acc-text)' : 'var(--t2)'};background:${S.legend ? 'var(--acc-soft)' : 'var(--lift-04)'}`;
     const voIconCellStyle =
       'width:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;line-height:1';
     const _dot8 = 'width:7px;height:7px;border-radius:50%;flex-shrink:0';
-    const voAutoToggleStyle = `${_dot8};background:${autoRotate ? '#e0a043' : 'rgba(255,255,255,0.18)'}`;
-    const voLabelsToggleStyle = `${_dot8};background:${labelsOn ? '#6ea0e0' : 'rgba(255,255,255,0.18)'}`;
-    const voLegendToggleStyle = `${_dot8};background:${S.legend ? '#6ea0e0' : 'rgba(255,255,255,0.18)'}`;
+    const voAutoToggleStyle = `${_dot8};background:${autoRotate ? '#e0a043' : 'var(--lift-18)'}`;
+    const voLabelsToggleStyle = `${_dot8};background:${labelsOn ? 'var(--acc-dot)' : 'var(--lift-18)'}`;
+    const voLegendToggleStyle = `${_dot8};background:${S.legend ? 'var(--acc-dot)' : 'var(--lift-18)'}`;
     const voDrawerStyle =
-      'display:flex;flex-direction:column;gap:2px;padding:10px 10px 8px;border-bottom:1px solid rgba(255,255,255,0.07)';
+      'display:flex;flex-direction:column;gap:2px;padding:10px 10px 8px;border-bottom:1px solid var(--lift-06)';
     const voSectionLabelStyle =
-      "font:500 8px 'IBM Plex Mono',monospace;color:#5a6877;letter-spacing:0.12em;margin-bottom:4px";
-    const voDivStyle =
-      'height:1px;background:rgba(255,255,255,0.07);margin:4px 0';
+      "font:500 8px 'IBM Plex Mono',monospace;color:var(--t6);letter-spacing:0.12em;margin-bottom:4px";
+    const voDivStyle = 'height:1px;background:var(--lift-06);margin:4px 0';
     const zoomBarStyle =
       'display:flex;align-items:center;gap:3px;padding:6px 7px';
     const zoomBtnStyle =
-      "width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;user-select:none;font:400 19px 'IBM Plex Sans',sans-serif;color:#cdd6df;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);line-height:1;flex-shrink:0";
+      "width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;user-select:none;font:400 19px 'Inter',system-ui,'Segoe UI',sans-serif,sans-serif;color:var(--t2);background:var(--lift-06);border:1px solid var(--lift-10);line-height:1;flex-shrink:0";
     const zoomPctStyle =
-      "width:38px;text-align:center;font:600 10px 'IBM Plex Mono',monospace;color:#8a98a6;letter-spacing:0.04em;flex-shrink:0";
-    const viewOptsBtnStyle = `width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;user-select:none;flex-shrink:0;border:1px solid ${viewOptsOpen ? 'rgba(110,160,224,.5)' : 'rgba(255,255,255,0.10)'};background:${viewOptsOpen ? 'rgba(59,111,176,.18)' : 'rgba(255,255,255,0.06)'};color:${viewOptsOpen ? '#9cc0ee' : '#cdd6df'}`;
+      "width:38px;text-align:center;font:600 10px 'IBM Plex Mono',monospace;color:var(--t4);letter-spacing:0.04em;flex-shrink:0";
+    const viewOptsBtnStyle = `width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;user-select:none;flex-shrink:0;border:1px solid ${viewOptsOpen ? 'var(--acc-border)' : 'var(--lift-10)'};background:${viewOptsOpen ? 'var(--acc-bg)' : 'var(--lift-06)'};color:${viewOptsOpen ? 'var(--acc-text)' : 'var(--t2)'}`;
     // right controls cluster
-    const ctrlClusterStyle = `position:absolute;bottom:18px;right:${clusterRight}px;z-index:22;display:flex;flex-direction:column;align-items:stretch;background:rgba(13,19,26,0.91);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.10);border-radius:13px;box-shadow:0 12px 36px -8px rgba(0,0,0,.62);transition:right .28s cubic-bezier(.4,0,.2,1);overflow:hidden`;
+    const ctrlClusterStyle = `position:absolute;bottom:18px;right:${clusterRight}px;z-index:22;display:flex;flex-direction:column;align-items:stretch;background:var(--glass-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--lift-10);border-radius:13px;box-shadow:0 12px 36px -8px var(--shadow-2);transition:right .28s cubic-bezier(.4,0,.2,1);overflow:hidden`;
 
     // ---- ISOLATION (single floor / single room / group of rooms) ----
     const isoFloor = S.isoFloor || 'all';
@@ -1841,10 +1875,10 @@ export class HouseController extends Component {
         label,
         onClick: () => set({ isoFloor: key, isoRooms: [] }),
         style:
-          `flex:1;text-align:center;padding:5px 4px;border-radius:6px;cursor:pointer;font:500 11px 'IBM Plex Sans';white-space:nowrap;` +
+          `flex:1;text-align:center;padding:5px 4px;border-radius:6px;cursor:pointer;font:500 11px 'Inter',system-ui,'Segoe UI',sans-serif;white-space:nowrap;` +
           (on
             ? 'background:#3b6fb0;color:#fff;'
-            : 'background:rgba(255,255,255,0.05);color:#aab6c1;border:1px solid rgba(255,255,255,0.12);'),
+            : 'background:var(--lift-05);color:var(--t3);border:1px solid var(--lift-12);'),
       };
     });
     const floorOrder = ['second', 'main', 'basement'];
@@ -1866,10 +1900,10 @@ export class HouseController extends Component {
                   return { isoRooms: [...cur], isoFloor: 'all' };
                 }),
               style:
-                `padding:4px 9px;border-radius:13px;cursor:pointer;font:500 10.5px 'IBM Plex Sans';` +
+                `padding:4px 9px;border-radius:13px;cursor:pointer;font:500 10.5px 'Inter',system-ui,'Segoe UI',sans-serif;` +
                 (on
                   ? 'background:#3b6fb0;color:#fff;border:1px solid #3b6fb0;'
-                  : 'background:rgba(255,255,255,0.05);color:#aab6c1;border:1px solid rgba(255,255,255,0.12);'),
+                  : 'background:var(--lift-05);color:var(--t3);border:1px solid var(--lift-12);'),
             };
           }),
       }));
@@ -1882,7 +1916,7 @@ export class HouseController extends Component {
     const isoClearLabel = isoActive ? 'Clear' : '';
     const isoTopLabel = isoActive ? `Isolate · ${isoVisCount}` : 'Isolate';
     const isoOn = isoActive || S.isoPanel;
-    const isoBtnTopStyle = `pointer-events:auto;padding:7px 12px;border-radius:8px;font:500 11.5px 'IBM Plex Sans';cursor:pointer;user-select:none;border:1px solid ${isoOn ? 'rgba(110,160,224,0.5)' : 'rgba(255,255,255,0.10)'};background:${isoOn ? 'rgba(110,160,224,0.18)' : 'rgba(22,30,38,0.0)'};color:${isoOn ? '#a9c8f0' : '#cdd6df'}`;
+    const isoBtnTopStyle = `pointer-events:auto;padding:7px 12px;border-radius:8px;font:500 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;cursor:pointer;user-select:none;border:1px solid ${isoOn ? 'var(--acc-border)' : 'var(--lift-10)'};background:${isoOn ? 'var(--acc-bg)' : 'rgba(22,30,38,0.0)'};color:${isoOn ? 'var(--acc-text)' : 'var(--t2)'}`;
 
     return {
       narrow,
@@ -1991,10 +2025,10 @@ export class HouseController extends Component {
       toggleRight,
       leftTabStyle: narrow
         ? 'display:none'
-        : `position:absolute;top:50%;margin-top:-24px;z-index:20;cursor:pointer;left:${S.leftHidden ? 90 : 406}px;transition:left .28s cubic-bezier(0.4,0,0.2,1);width:14px;height:48px;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-left:none;border-radius:0 6px 6px 0;display:flex;align-items:center;justify-content:center;color:#6a7a88;font-size:10px`,
+        : `position:absolute;top:50%;margin-top:-24px;z-index:20;cursor:pointer;left:${S.leftHidden ? 90 : 406}px;transition:left .28s cubic-bezier(0.4,0,0.2,1);width:14px;height:48px;background:var(--tab);border:1px solid var(--lift-08);border-left:none;border-radius:0 6px 6px 0;display:flex;align-items:center;justify-content:center;color:var(--t5);font-size:10px`,
       rightTabStyle: narrow
         ? 'display:none'
-        : `position:absolute;top:50%;margin-top:-24px;z-index:20;cursor:pointer;right:${S.rightHidden ? 9 : 349}px;transition:right .28s cubic-bezier(0.4,0,0.2,1);width:14px;height:48px;background:rgba(20,27,34,0.97);border:1px solid rgba(255,255,255,0.09);border-right:none;border-radius:6px 0 0 6px;display:flex;align-items:center;justify-content:center;color:#6a7a88;font-size:10px`,
+        : `position:absolute;top:50%;margin-top:-24px;z-index:20;cursor:pointer;right:${S.rightHidden ? 9 : 349}px;transition:right .28s cubic-bezier(0.4,0,0.2,1);width:14px;height:48px;background:var(--tab);border:1px solid var(--lift-08);border-right:none;border-radius:6px 0 0 6px;display:flex;align-items:center;justify-content:center;color:var(--t5);font-size:10px`,
       leftTabChevron: S.leftHidden ? '›' : '‹',
       rightTabChevron: S.rightHidden ? '‹' : '›',
       isoFloors,
@@ -2006,6 +2040,12 @@ export class HouseController extends Component {
       isoClearLabel,
       isoTopLabel,
       isoBtnTopStyle,
+      themeBtn: {
+        onClick: () => this.setTheme(light ? 'dark' : 'light'),
+        isLight: light,
+        title: light ? 'Switch to dark theme' : 'Switch to light theme',
+        style: `flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;user-select:none;background:var(--lift-06);border:1px solid var(--lift-12);color:var(--t2);transition:background .15s`,
+      },
       showPrompt,
       promptStyle,
       promptText,

@@ -1,3 +1,120 @@
+/* Theme tokens. Light is the default; index.html applies the persisted
+   choice to <html data-theme> before the app mounts, and the controller's
+   theme toggle keeps it in sync. Mode accents and status colors are shared
+   by both themes and stay hard-coded next to the data they describe. */
+:root {
+  color-scheme: light;
+  /* app background + stage gradient stops (ink / navy / slate tones) */
+  --bg: #e9edf1;
+  --stage1-hi: #f0f3f6;
+  --stage1-mid: #e4e9ee;
+  --stage1-lo: #d8dfe6;
+  --stage2-hi: #edf2f8;
+  --stage2-mid: #dfe7f0;
+  --stage2-lo: #d2dce8;
+  --stage3-hi: #eef2f5;
+  --stage3-mid: #e1e7ec;
+  --stage3-lo: #d4dce3;
+  --vignette: rgba(70, 90, 110, 0.18);
+  /* text ramp, brightest to faintest */
+  --t1: #1c2733;
+  --t2: #3b4a58;
+  --t3: #52626f;
+  --t4: #6b7a87;
+  --t5: #8494a1;
+  --t6: #9aa7b2;
+  --placeholder: #8c99a5;
+  /* neutral lifts: subtle fills, hovers and hairline borders */
+  --lift-04: rgba(24, 38, 52, 0.045);
+  --lift-05: rgba(24, 38, 52, 0.055);
+  --lift-06: rgba(24, 38, 52, 0.07);
+  --lift-08: rgba(24, 38, 52, 0.1);
+  --lift-10: rgba(24, 38, 52, 0.12);
+  --lift-12: rgba(24, 38, 52, 0.15);
+  --lift-18: rgba(24, 38, 52, 0.22);
+  --lift-22: rgba(24, 38, 52, 0.28);
+  /* floating surfaces */
+  --glass: rgba(255, 255, 255, 0.78);
+  --glass-strong: rgba(253, 254, 255, 0.92);
+  --panel: rgba(255, 255, 255, 0.84);
+  --panel-strong: rgba(255, 255, 255, 0.94);
+  --popover: rgba(255, 255, 255, 0.985);
+  --tab: rgba(251, 252, 253, 0.97);
+  --shadow-1: rgba(30, 45, 60, 0.3);
+  --shadow-2: rgba(30, 45, 60, 0.22);
+  --shadow-3: rgba(30, 45, 60, 0.18);
+  /* selection + interactive accents */
+  --sel-bg: #dbe5ee;
+  --sel-text: #16222d;
+  --track: #d5dce3;
+  --marker-ring: #ffffff;
+  --acc-text: #2c619c;
+  --acc-dot: #3b6fb0;
+  --acc-soft: rgba(59, 111, 176, 0.1);
+  --acc-bg: rgba(59, 111, 176, 0.14);
+  --acc-border: rgba(59, 111, 176, 0.5);
+  /* status text over its matching tinted wash */
+  --warn-text: #8f6a1c;
+  --alert-text: #a8442a;
+  --ring-text: #6247b8;
+  --teal-text: #257c6d;
+  --scrollbar: rgba(30, 45, 60, 0.28);
+  --scrollbar-hover: rgba(30, 45, 60, 0.45);
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f1318;
+  --stage1-hi: #262d37;
+  --stage1-mid: #171c23;
+  --stage1-lo: #0f1318;
+  --stage2-hi: #26384c;
+  --stage2-mid: #1a293a;
+  --stage2-lo: #132030;
+  --stage3-hi: #33414f;
+  --stage3-mid: #232e38;
+  --stage3-lo: #1a232c;
+  --vignette: rgba(8, 12, 16, 0.62);
+  --t1: #e8edf2;
+  --t2: #cdd6df;
+  --t3: #aab6c1;
+  --t4: #8a94a0;
+  --t5: #6e7e8c;
+  --t6: #5a6877;
+  --placeholder: #7c8a97;
+  --lift-04: rgba(255, 255, 255, 0.045);
+  --lift-05: rgba(255, 255, 255, 0.05);
+  --lift-06: rgba(255, 255, 255, 0.06);
+  --lift-08: rgba(255, 255, 255, 0.085);
+  --lift-10: rgba(255, 255, 255, 0.1);
+  --lift-12: rgba(255, 255, 255, 0.12);
+  --lift-18: rgba(255, 255, 255, 0.18);
+  --lift-22: rgba(255, 255, 255, 0.22);
+  --glass: rgba(15, 21, 28, 0.82);
+  --glass-strong: rgba(15, 21, 28, 0.92);
+  --panel: rgba(17, 23, 30, 0.88);
+  --panel-strong: rgba(17, 23, 30, 0.94);
+  --popover: rgba(18, 24, 30, 0.985);
+  --tab: rgba(20, 27, 34, 0.97);
+  --shadow-1: rgba(0, 0, 0, 0.72);
+  --shadow-2: rgba(0, 0, 0, 0.6);
+  --shadow-3: rgba(0, 0, 0, 0.55);
+  --sel-bg: #28323b;
+  --sel-text: #ffffff;
+  --track: #e6ebef;
+  --marker-ring: #0b1015;
+  --acc-text: #9cc0ee;
+  --acc-dot: #6ea0e0;
+  --acc-soft: rgba(59, 111, 176, 0.1);
+  --acc-bg: rgba(110, 160, 224, 0.18);
+  --acc-border: rgba(110, 160, 224, 0.5);
+  --warn-text: #e3b264;
+  --alert-text: #e08a72;
+  --ring-text: #b49af0;
+  --teal-text: #7fc7b8;
+  --scrollbar: rgba(255, 255, 255, 0.14);
+  --scrollbar-hover: rgba(255, 255, 255, 0.26);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -11,13 +128,13 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--scrollbar);
   border-radius: 6px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.26);
+  background: var(--scrollbar-hover);
   background-clip: padding-box;
 }
 ::selection {
@@ -27,7 +144,7 @@ input {
   font-family: inherit;
 }
 input::placeholder {
-  color: #7c8a97;
+  color: var(--placeholder);
   opacity: 1;
 }
 @keyframes pulseDot {
@@ -100,7 +217,7 @@ input::placeholder {
 .vsl::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--lift-18);
 }
 .vsl::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -122,7 +239,7 @@ input::placeholder {
 .vsl::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--lift-18);
 }
 .vsl::-moz-range-thumb {
   width: 12px;
@@ -135,7 +252,7 @@ input::placeholder {
 
 body {
   min-width: 320px;
-  background: #0f1318;
+  background: var(--bg);
 }
 button,
 input,
@@ -148,8 +265,8 @@ select {
   text-align: inherit;
 }
 .nav-button:not(.is-active):hover {
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: #c6d0da !important;
+  background: var(--lift-06) !important;
+  color: var(--t2) !important;
 }
 :focus-visible {
   outline: 2px solid #e0a043;
@@ -160,7 +277,7 @@ select {
 }
 .hover-0:hover,
 .hover-0:focus-visible {
-  background: rgba(255, 255, 255, 0.07) !important;
+  background: var(--lift-06) !important;
 }
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -173,10 +290,10 @@ select {
 }
 
 .panel-toggle {
-  color: #cdd6df;
+  color: var(--t2);
   background: transparent;
   border: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--lift-10);
   padding: 9px 12px;
   cursor: pointer;
   font-size: 12px;

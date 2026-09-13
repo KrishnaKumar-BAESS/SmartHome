@@ -231,7 +231,7 @@ export function ViewControls({ view }) {
           </div>
           <div
             style={css(
-              'width:1px;height:16px;background:rgba(255,255,255,0.12);margin:0 3px;flex-shrink:0',
+              'width:1px;height:16px;background:var(--lift-12);margin:0 3px;flex-shrink:0',
             )}
           ></div>
           <div

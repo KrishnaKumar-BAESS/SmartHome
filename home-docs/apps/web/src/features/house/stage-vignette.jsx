@@ -5,7 +5,7 @@ export function StageVignette() {
     <>
       <div
         style={css(
-          'position:absolute;inset:0;pointer-events:none;background:radial-gradient(125% 95% at 50% 42%,transparent 52%,rgba(8,12,16,0.62) 100%)',
+          'position:absolute;inset:0;pointer-events:none;background:radial-gradient(125% 95% at 50% 42%,transparent 52%,var(--vignette) 100%)',
         )}
       ></div>
     </>

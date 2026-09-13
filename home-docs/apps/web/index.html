@@ -3,7 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1b242d" />
+    <meta name="theme-color" content="#e9edf1" />
+    <script>
+      // Apply the saved theme before first paint to avoid a flash.
+      try {
+        var housedocsTheme = localStorage.getItem('housedocs-theme');
+        document.documentElement.dataset.theme =
+          housedocsTheme === 'dark' ? 'dark' : 'light';
+      } catch (e) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    </script>
     <meta
       name="description"
       content="Explore your home's rooms, circuits, lighting, network, and maintenance in an interactive house model."

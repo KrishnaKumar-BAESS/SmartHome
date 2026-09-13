@@ -10,7 +10,7 @@ export function IsolationPanel({ view }) {
           <div style={css(view.isoPanelStyle)}>
             <div
               style={css(
-                'padding:12px 13px 11px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0',
+                'padding:12px 13px 11px;border-bottom:1px solid var(--lift-08);flex-shrink:0',
               )}
             >
               <div
@@ -18,7 +18,11 @@ export function IsolationPanel({ view }) {
                   'display:flex;align-items:center;justify-content:space-between',
                 )}
               >
-                <div style={css("font:600 12.5px 'IBM Plex Sans'")}>
+                <div
+                  style={css(
+                    "font:600 12.5px 'Inter',system-ui,'Segoe UI',sans-serif",
+                  )}
+                >
                   {'Isolate view'}
                 </div>
                 <div
@@ -35,7 +39,7 @@ export function IsolationPanel({ view }) {
               </div>
               <div
                 style={css(
-                  "font:400 10.5px 'IBM Plex Sans';color:#9aa8b4;margin-top:3px",
+                  "font:400 10.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t3);margin-top:3px",
                 )}
               >
                 {view.isoCountLabel}
@@ -59,7 +63,7 @@ export function IsolationPanel({ view }) {
             <div style={css('overflow:auto;padding:9px 12px 13px')}>
               <div
                 style={css(
-                  "font:500 9px 'IBM Plex Mono',monospace;color:#8a94a0;letter-spacing:0.1em;margin:1px 1px 2px",
+                  "font:500 9px 'IBM Plex Mono',monospace;color:var(--t4);letter-spacing:0.1em;margin:1px 1px 2px",
                 )}
               >
                 {'OR PICK ROOMS'}
@@ -68,7 +72,7 @@ export function IsolationPanel({ view }) {
                 <Fragment key={g.id ?? g.key ?? g.label ?? index}>
                   <div
                     style={css(
-                      "font:600 9.5px 'IBM Plex Mono',monospace;color:#9aa4ad;letter-spacing:0.04em;margin:11px 1px 6px",
+                      "font:600 9.5px 'IBM Plex Mono',monospace;color:var(--t4);letter-spacing:0.04em;margin:11px 1px 6px",
                     )}
                   >
                     {g.label}

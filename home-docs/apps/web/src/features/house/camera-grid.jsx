@@ -18,7 +18,11 @@ export function CameraGrid({ view }) {
               )}
             >
               <div>
-                <div style={css("font:600 15px 'IBM Plex Sans';color:#eef3f8")}>
+                <div
+                  style={css(
+                    "font:600 15px 'Inter',system-ui,'Segoe UI',sans-serif;color:#eef3f8",
+                  )}
+                >
                   {'Live Feeds · Security Network'}
                 </div>
                 <div
@@ -32,7 +36,7 @@ export function CameraGrid({ view }) {
               <div
                 onClick={view.closeGrid}
                 style={css(
-                  "font:500 11.5px 'IBM Plex Sans';color:#cdd6df;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:8px 14px;border-radius:8px;cursor:pointer",
+                  "font:500 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:#cdd6df;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:8px 14px;border-radius:8px;cursor:pointer",
                 )}
                 role="button"
                 tabIndex={0}
@@ -72,7 +76,7 @@ export function CameraGrid({ view }) {
                       ></div>
                       <div
                         style={css(
-                          "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 16px 'IBM Plex Sans';color:rgba(255,255,255,0.06);letter-spacing:0.05em;text-align:center;padding:0 10px",
+                          "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 16px 'Inter',system-ui,'Segoe UI',sans-serif;color:rgba(255,255,255,0.06);letter-spacing:0.05em;text-align:center;padding:0 10px",
                         )}
                       >
                         {t.watermark}

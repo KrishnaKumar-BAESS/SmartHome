@@ -21,7 +21,7 @@ export function HouseView({ view }) {
     <main
       aria-label="Home documentation"
       style={css(
-        "position:relative;height:100dvh;width:100%;overflow:hidden;background:#0f1318;font-family:'IBM Plex Sans',sans-serif;color:#e8edf2;-webkit-font-smoothing:antialiased",
+        "position:relative;height:100dvh;width:100%;overflow:hidden;background:var(--bg);font-family:'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased",
       )}
     >
       <StageBackground view={view} />
