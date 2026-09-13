@@ -169,6 +169,14 @@ export class SignalingConnection {
       throw new Error('Camera connection is not ready.');
     if (type !== 'answer' && type !== 'candidate')
       throw new Error('Only playback negotiation is supported.');
+    if (type === 'candidate') {
+      // The app's outgoing payload uses a string; incoming candidates use an object.
+      const candidate = (payload as { candidate?: { candidate?: unknown } })
+        ?.candidate?.candidate;
+      if (typeof candidate !== 'string' || !candidate.startsWith('candidate:'))
+        throw new Error('Invalid ICE candidate.');
+      payload = { candidate };
+    }
     this.socket.send(
       `5:::${JSON.stringify({ name: 'message', args: [{ to: this.peerId, type, payload }] })}`,
     );

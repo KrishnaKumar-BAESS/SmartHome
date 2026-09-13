@@ -38,6 +38,8 @@ states and are not descriptions of the current application layout.
 
 ### Fixed
 
+- Match the camera prototype's outgoing ICE candidate payload to the Xfinity Android app protocol.
+
 - Keep home-docs floor labels legible: clamp them clear of the list panel and halo them against room faces.
 - Clear and dismiss the home-docs search field with the Escape key.
 - Give home-docs speaker-layout markers unique React keys, silencing console errors in Sound views.

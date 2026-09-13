@@ -10,8 +10,56 @@ const session = {
   streamName: 'stream2',
   expires: Date.now() + 60_000,
 };
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 describe('signaling boundary', () => {
+  it('sends browser ICE candidates in the Android app’s string payload format', async () => {
+    const send = vi.fn();
+    class TestSocket {
+      static OPEN = 1;
+      static instance: TestSocket;
+      readyState = 1;
+      send = send;
+      close = vi.fn();
+      onmessage?: (event: { data: string }) => void;
+      constructor() {
+        TestSocket.instance = this;
+      }
+    }
+    vi.stubGlobal('WebSocket', TestSocket);
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('test-session:60:60:websocket'),
+    );
+    const connection = new SignalingConnection(
+      session,
+      new Set([session.host]),
+      () => {},
+    );
+    try {
+      await connection.connect();
+      TestSocket.instance.onmessage?.({
+        data: '5:::{"name":"message","args":[{"type":"offer","from":"camera-peer","payload":{"sdp":"test"}}]}',
+      });
+      const candidate = 'candidate:1 1 udp 2122260223 192.0.2.2 50000 typ host';
+      connection.send('candidate', {
+        candidate: { candidate, sdpMid: 'video', sdpMLineIndex: 1 },
+      });
+      expect(JSON.parse(decodePacket(send.mock.calls[0][0]).body)).toEqual({
+        name: 'message',
+        args: [
+          { to: 'camera-peer', type: 'candidate', payload: { candidate } },
+        ],
+      });
+      expect(() => connection.send('candidate', { candidate: {} })).toThrow(
+        'Invalid ICE candidate',
+      );
+      expect(send).toHaveBeenCalledTimes(1);
+    } finally {
+      connection.close();
+    }
+  });
   it('preserves the legacy protocol framing and join acknowledgment request', () => {
     const packet = decodePacket(joinPacket(session));
     expect(packet.type).toBe('5');
