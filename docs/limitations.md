@@ -21,6 +21,15 @@ Use them when assessing a change or deciding what the application can support.
 
 ## Consequences for day-to-day use
 
+The [follow-up UI audit](../home-docs/docs/ui-audit-follow-up.md) records additional
+workflow and presentation limits: repeated keyboard searches can stop showing
+results; filters can leave an excluded record selected; collapsed panels retain
+keyboard stops; and camera overlays do not contain background shortcuts.
+Room-level upkeep markers can conceal a more urgent record, and the Side Gate
+camera's floor and room mappings disagree. Treat displayed locations, power
+references, and maintenance totals as recorded information requiring the
+qualifications in that audit, not verified installation instructions.
+
 Reloading resets selections and model state. Camera status is not a device-health
 check. Upkeep status is recorded data, not an automatically advancing maintenance
 schedule. Placeholder hardware descriptions in the inventory are unverified

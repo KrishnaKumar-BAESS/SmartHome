@@ -2,6 +2,13 @@
 
 Audit date: 2026-09-12. Branch `codex/modernize-smarthome` at commit `ee6e477`.
 
+**Start with the [follow-up audit](ui-audit-follow-up.md)** for 41 additional
+findings, 8 optional improvements, wider workflow/viewport checks, and
+[corrections to this initial audit](ui-audit-follow-up.md#corrections-to-the-original-audit).
+The initial observations below are retained for traceability; the follow-up
+supersedes inaccurate claims, including L-08, A-16, the unrendered slider,
+reduced-motion behavior, and panel-isolation visibility.
+
 This is a findings log, not a roadmap. Each item records what is lacking today,
 where the behaviour lives in source, and what addressing it would take. Nothing
 here is fixed by the audit itself; remove or update an entry in the same change
@@ -25,7 +32,10 @@ them as indicative until a production benchmark exists (see P-01).
 Severity scale: **High** blocks or misleads a class of users; **Medium** degrades
 a common task; **Low** is polish or a missed opportunity.
 
-## Summary
+## Initial audit summary
+
+These counts describe the original 65-row catalog, not a deduplicated count of
+verified open defects. Consult the follow-up before turning entries into work.
 
 | Area                      | High | Medium | Low | Total |
 | ------------------------- | ---: | -----: | --: | ----: |
