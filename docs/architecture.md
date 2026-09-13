@@ -1,9 +1,11 @@
 # Architecture
 
 SmartHome separates home subsystems by ownership while sharing repository-level
-tooling. The only implemented application is the static house atlas in
-`home-docs/apps/web/`. There is no backend, device integration, shared database,
-or cross-repository runtime dependency.
+tooling. The static house atlas lives in `home-docs/apps/web/`. A separate local
+camera prototype in `security/apps/camera-viewer/` adds a localhost Node server,
+ADB session import, and browser WebRTC playback. There is no shared database or
+cross-repository runtime dependency. See [its decision](decisions/0003-local-camera-prototype.md)
+for the authentication boundary and live-validation requirements.
 
 ## System context
 
@@ -29,12 +31,12 @@ event demonstrations do not establish a connection to a camera.
 | --------------- | ------------------------------------------------------------------- | --------------------------------------------------- |
 | Root            | pnpm workspace, lockfile, common lint/format tools, CI, shared docs | Application state or a shared runtime service       |
 | `home-docs/`    | Web app, inventory, geometry, app tests, source references          | Live automation or editing backend                  |
-| `security/`     | Reserved destination for a future deliberate integration            | KumarSec code or services                           |
+| `security/`     | Local camera playback prototype                                     | Independent account login or remote hosting         |
 | `platforms/`    | Reserved location for platform configurations                       | Installed Home Assistant or other running platforms |
 | `docs/archive/` | Preserved pre-migration source                                      | Maintained production code                          |
 
 KumarSec and FamSecDash remain separate repositories. Root workspace discovery
-currently includes only `home-docs/apps/*`. A shared toolchain change can affect
+includes `home-docs/apps/*` and `security/apps/*`. A shared toolchain change can affect
 all workspace packages even though subsystem runtimes are independent.
 
 ## Browser execution

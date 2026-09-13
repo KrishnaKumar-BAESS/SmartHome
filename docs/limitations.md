@@ -3,6 +3,9 @@
 These are current implementation constraints, not promised roadmap dates.
 Use them when assessing a change or deciding what the application can support.
 
+The table describes the home atlas. The separate [camera prototype](../security/apps/camera-viewer/README.md)
+has its own phone dependency, credential handling, and live-validation requirements.
+
 | Area             | Current boundary                                                                                                                                                           | What addressing it requires                                                                         |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Live device data | Inventory/status fields are recorded; no polling, streaming, or device API exists                                                                                          | Deliberate integration design with authentication, failure states, and provenance                   |

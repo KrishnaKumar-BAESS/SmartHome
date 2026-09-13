@@ -10,7 +10,8 @@ Documentation navigation: [docs/README.md](docs/README.md).
 - `home-docs/apps/web/`: React 19 / Vite 8 application.
 - `home-docs/apps/web/src/data/house.ts`: inventory and floor geometry.
 - `home-docs/apps/web/src/features/house/`: native React views, controller, renderer.
-- `security/` and `platforms/`: reserved; no integration exists yet.
+- `security/apps/camera-viewer/`: local Xfinity playback prototype; live validation pending.
+- `platforms/`: reserved; no integration exists yet.
 - `docs/archive/`: immutable historical reference, excluded from builds and formatting.
 - `home-docs/reference/`: source workbook; preserve its contents.
 

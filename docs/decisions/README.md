@@ -11,6 +11,9 @@ implemented state.
 
 ## Create or evolve a decision
 
+[0003 — Local camera prototype](0003-local-camera-prototype.md) records the ADB
+credential source, localhost boundary, and real-camera validation requirements.
+
 Use the next unused sequential number and a short kebab-case filename. Include:
 
 - **Date and status:** proposed, accepted, superseded, or deprecated as appropriate.

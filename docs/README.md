@@ -32,7 +32,7 @@ earlier decisions and are not setup instructions.
 ## Subsystems and history
 
 - [Home documentation](../home-docs/README.md): active application and its guides.
-- [Security](../security/README.md): reserved integration boundary.
+- [Security](../security/README.md): local camera playback prototype and its validation status.
 - [Platforms](../platforms/README.md): reserved platform configuration boundary.
 - [Architecture decisions](decisions/README.md): accepted decisions and their evolution.
 - [Changelog](../CHANGELOG.md): notable changes; unreleased work is not a release.

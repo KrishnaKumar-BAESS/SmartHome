@@ -54,7 +54,9 @@ with an exception for `.env.example`. When a subsystem requires environment
 variables, commit a template with names, purpose, and harmless example values.
 Document how that subsystem receives production secrets.
 
-The current app needs no environment variables. Browser-bundled values are
+The home atlas needs no environment variables. The camera prototype documents
+its local server configuration in its [README](../security/apps/camera-viewer/README.md).
+Browser-bundled values are
 readable by viewers and cannot store secrets. See [security and privacy](security.md).
 
 Treat `docs/archive/` as immutable. Preserve the contents of

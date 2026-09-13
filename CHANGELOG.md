@@ -11,6 +11,8 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
+- Add a local security camera prototype with ADB session import, restricted Xfinity signaling, WebRTC playback, and explicit live-validation requirements.
+
 - Add a dated home-docs UI audit logging performance, accessibility, usability, responsive, motion, and visual findings with source references.
 - Add a light/dark theme toggle to the home-docs top bar; the choice persists in `localStorage` and is applied before first paint to avoid flashes.
 - Add home-docs keyboard shortcuts (`/` search, `1`–`8` views, `+`/`-` zoom, `0` reset, Escape closes overlays), arrow-key navigation in search results, and a hover highlight on clickable rooms in the model.

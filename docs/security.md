@@ -1,5 +1,11 @@
 # Security and privacy boundaries
 
+The [camera prototype](../security/apps/camera-viewer/README.md) has a separate
+[localhost and credential boundary](decisions/0003-local-camera-prototype.md).
+It reads authorized Xfinity app logs, holds short-lived tokens in server memory,
+and supports a WebRTC viewer. The static-atlas description below applies to
+`home-docs`, not that separate service.
+
 SmartHome currently renders versioned home documentation in the browser.
 This page describes the implemented boundary and contributor handling rules;
 it is not a claim of a completed security audit.
@@ -70,5 +76,5 @@ artifacts, or previous deployments. Coordinate any history cleanup with the owne
 Before introducing live cameras, telemetry, remote editing, or automation, record
 authentication, authorization, secret storage, retention, error behavior, and
 operational ownership in an [ADR](decisions/README.md).
-The reserved [security subsystem](../security/README.md) does not supply these
-controls today.
+The [security subsystem](../security/README.md) contains a local prototype;
+remote exposure and independent account authentication remain outside its scope.

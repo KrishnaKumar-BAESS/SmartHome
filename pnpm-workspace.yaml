@@ -1,5 +1,6 @@
 packages:
   - home-docs/apps/*
+  - security/apps/*
 
 minimumReleaseAge: 1440
 strictPeerDependencies: true

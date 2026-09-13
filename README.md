@@ -5,9 +5,13 @@ subsystems. Its active application, **HOUSE.SYS**, is an interactive house atlas
 explore floor geometry, find equipment, and inspect recorded electrical, lighting,
 network, sound, security, climate, and upkeep information.
 
-**Current scope:** a static, read-only documentation app. Device statuses are
+**Home atlas scope:** a static, read-only documentation app. Device statuses are
 recorded data; camera feeds and event history are demonstrations. There is no live
 telemetry, device control, backend authentication, or persistent editing.
+
+A separate [local camera prototype](security/apps/camera-viewer/README.md) uses an
+authorized Android phone for viewing credentials. It does not turn the atlas
+demonstrations into live telemetry.
 
 ## Start locally
 
@@ -50,7 +54,7 @@ If Corepack is unavailable or its shims cannot be enabled, see
 | ---------------------------------------------------- | -------------------------------------------------- | ------------------------------ |
 | [home-docs/apps/web](home-docs/apps/web/README.md)   | React application, inventory, SVG model, and tests | Active                         |
 | [home-docs/reference](home-docs/reference/README.md) | Preserved source workbook                          | Reference; no automatic import |
-| [security](security/README.md)                       | Reserved for a deliberate KumarSec migration       | No implementation              |
+| [security](security/README.md)                       | Local Xfinity camera playback prototype            | Live validation required       |
 | [platforms](platforms/README.md)                     | Reserved for automation platform configurations    | No implementation              |
 | [docs](docs/README.md)                               | Shared guides and architecture decisions           | Maintained                     |
 | [docs/archive](docs/archive/README.md)               | Original DC prototype and generated runtime        | Immutable historical reference |

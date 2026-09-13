@@ -9,11 +9,12 @@
   "scripts": {
     "dev": "pnpm --filter @smarthome/home-docs dev",
     "preview": "pnpm --filter @smarthome/home-docs preview",
+    "camera:start": "pnpm --filter @smarthome/camera-viewer start",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "build": "pnpm -r build",
-    "test:e2e": "pnpm --filter @smarthome/home-docs test:e2e",
+    "test:e2e": "pnpm -r --if-present test:e2e",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
