@@ -33,6 +33,8 @@ On Linux, browser setup may also require system packages:
 
 A fresh install needs access to the package registry and browser download host.
 There is no required `.env`, database, container, device, or external service.
+An optional `home-docs/apps/web/.env.local` with `VITE_SHOW_ADDRESS=true` shows
+the street address in the atlas (copy `.env.example`).
 Do not disable frozen-lockfile checks to work around an unexplained mismatch.
 
 ## Run and preview

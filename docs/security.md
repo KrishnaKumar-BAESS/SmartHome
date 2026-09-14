@@ -21,7 +21,10 @@ it is not a claim of a completed security audit.
 The production JavaScript bundle contains inventory and floor geometry. Display
 content also includes home-identifying details, network descriptions, device
 locations, and maintenance records. Anyone who can retrieve the assets can
-inspect that data, including records not currently visible in the UI.
+inspect that data, including records not currently visible in the UI. The
+street address and plat are rendered only when the build sets
+`VITE_SHOW_ADDRESS=true` (see `home-docs/apps/web/.env.example`); the strings
+still ship in the bundle, so the flag limits display, not exposure.
 
 The original workbook and historical prototype contain additional reference
 material. They are outside the active Vite application root and must stay outside

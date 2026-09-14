@@ -11,6 +11,10 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
+- Remediate every finding in the home-docs UI audit and its follow-up: keyboard-operable model (focusable stage, arrow-key rotate/tilt/pan, named room and marker buttons), combobox search with a shared keyboard model for results and suggestions, category chips, exact-identifier ranking, and "show more"; `aria-selected` record rows with live announcements; native dialogs for camera review and help; URL-hash state for mode, selection, isolation, and separation; room summaries and cross-system related-record links; unverified circuit-reference badges, floor-mapping notices, snapshot labels, and schematic labels for recorded data; CSV export and copy buttons; a help sheet with a single-key shortcut toggle; System/Light/Dark theme; orientation presets, fit, and tap-only nudge controls; pinch and two-finger pan; print inventory tables; startup and render-failure fallbacks; a gzip bundle budget in `pnpm build` with font preloads; and five new browser scenarios.
+- Add `VITE_SHOW_ADDRESS` (see `home-docs/apps/web/.env.example`) to opt in to showing the street address; it is hidden by default.
+- Add a `home-docs-dev` Claude Code launch configuration for the Vite dev server.
+
 - Add a checked-in Claude Code `launch.json` that previews the built security service on port 4319 without Xfinity configuration.
 
 - Add Windows account sign-in, encrypted credential persistence, automatic renewal, and camera reconnection to Security; keep ADB import as an optional diagnostic fallback.
@@ -31,6 +35,9 @@ states and are not descriptions of the current application layout.
 - Introduce the original home-documentation prototype with an interactive model and eight documentation modes; its former `home-docs/app/` sources are now preserved under `docs/archive/home-documentation/`.
 
 ### Changed
+
+- Rework the home-docs layout and rendering: the model is fitted to the stage area left free by the panels, narrow viewports start model-first with a details sheet, one side panel opens at a time below 1000 px, panels are memoised apart from camera state, the demo clock is a leaf component, the search index is built once, text sizes and contrast tokens meet the audited floor, hover/active/focus states are shared, and motion (mode cross-fade, theme transition, face transitions, exit animations, inertia) honours reduced motion.
+- Convert the home-docs UI audit and follow-up into resolution logs and update the limitations, user guide, and testing documentation accordingly.
 
 - Restyle the Security live-camera player and its overlay to match the house atlas: shared Inter/IBM Plex Mono typography, the dark feed treatment, terracotta actions, one-click camera tiles in place of the dropdown and Connect button, a LIVE/CONNECTING/RETRYING feed tag, and Escape closing the overlay from inside the player. Remove the superseded demonstration camera grid.
 

@@ -51,10 +51,10 @@ all workspace packages. Integrated Security hosting requires both app builds.
 flowchart TD
   Entry["index.html → main.tsx → App"] --> Controller["HouseController"]
   Data["data/house.ts"] --> Controller
-  Controller --> Values["renderVals: derived data and callbacks"]
-  Controller --> Scene["renderScene: SVG elements"]
-  Scene --> Values
+  Controller --> Values["deriveView: cached panel data and callbacks"]
+  Controller --> Scene["deriveScene: SVG elements per camera change"]
   Values --> View["HouseView"]
+  Scene --> View
   View --> Shell["Navigation, search, lists, details"]
   View --> Stage["HouseStage and model controls"]
   View --> Cameras["Camera demonstration panels"]
@@ -69,19 +69,24 @@ global CSS, creates a React root in Strict Mode, and mounts
 
 [HouseController](../home-docs/apps/web/src/features/house/house-controller.jsx)
 owns selections, mode filters, search, isolation, panel visibility, model
-orientation, and animation state. `renderVals()` derives the view object,
-including event callbacks and the scene. Native React components consume that
-object through [HouseView](../home-docs/apps/web/src/features/house/house-view.jsx).
+orientation, animation state, and the URL-hash view. `deriveView()` derives the
+panel view object (cached until a non-camera state key changes) and
+`deriveScene()` projects the SVG; native React components consume both through
+[HouseView](../home-docs/apps/web/src/features/house/house-view.jsx), whose
+panels are memoised on the view reference.
 
-The controller also contains presentation content, sound-zone definitions,
-room-name mappings, and camera-history generation. Inventory is extracted, but
-domain/presentation separation is not complete. See the
+The controller still contains overview copy and camera-history generation;
+sound zones, room aliases, the glossary, circuit-reference resolution, and
+related-record lookups live in
+[catalog.ts](../home-docs/apps/web/src/features/house/catalog.ts). Inventory is
+extracted, but domain/presentation separation is not complete. See the
 [web app reference](../home-docs/apps/web/README.md) before changing those paths.
 
 ## Geometry and interaction
 
 [renderScene](../home-docs/apps/web/src/features/house/scene.jsx) projects room
-polygons into the stage's `960 × 600` SVG coordinate space. It applies floor
+polygons into an SVG coordinate space that matches the stage in CSS pixels,
+fitting the model to the area left free by the side panels. It applies floor
 elevation, separation, room offsets, yaw, pitch, zoom, and pan; sorts visible
 faces by depth; and adds overlays for the selected documentation mode.
 

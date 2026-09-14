@@ -20,14 +20,14 @@ Run all three before committing, including for documentation changes.
 
 ## What each gate checks
 
-| Gate             | Configuration or source                                                                                                 | Evidence and limits                                                                     |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Formatting       | [.prettierignore](../.prettierignore), [.prettierrc.json](../.prettierrc.json)                                          | Maintained-file formatting; excludes archived sources and generated output              |
-| TypeScript       | [tsconfig.json](../home-docs/apps/web/tsconfig.json)                                                                    | Strict TS/TSX and configuration/test inputs; JSX allowed with `checkJs: false`          |
-| ESLint           | [eslint.config.mjs](../eslint.config.mjs)                                                                               | JS/TS recommended rules, hook usage/dependencies, component export rules; zero warnings |
-| Unit tests       | [house.test.ts](../home-docs/apps/web/src/data/house.test.ts), [css.test.ts](../home-docs/apps/web/src/lib/css.test.ts) | Two inventory tests and one CSS-helper test                                             |
-| Production build | [vite.config.ts](../home-docs/apps/web/vite.config.ts)                                                                  | Bundle generation succeeds; output still needs runtime and hosting checks               |
-| Browser tests    | [house.spec.ts](../home-docs/apps/web/e2e/house.spec.ts)                                                                | Five scenarios across two Chromium projects, ten cases total                            |
+| Gate             | Configuration or source                                                                                                      | Evidence and limits                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Formatting       | [.prettierignore](../.prettierignore), [.prettierrc.json](../.prettierrc.json)                                               | Maintained-file formatting; excludes archived sources and generated output              |
+| TypeScript       | [tsconfig.json](../home-docs/apps/web/tsconfig.json)                                                                         | Strict TS/TSX and configuration/test inputs; JSX allowed with `checkJs: false`          |
+| ESLint           | [eslint.config.mjs](../eslint.config.mjs)                                                                                    | JS/TS recommended rules, hook usage/dependencies, component export rules; zero warnings |
+| Unit tests       | [house.test.ts](../home-docs/apps/web/src/data/house.test.ts), [css.test.ts](../home-docs/apps/web/src/lib/css.test.ts)      | Two inventory tests and one CSS-helper test                                             |
+| Production build | [vite.config.ts](../home-docs/apps/web/vite.config.ts), [bundle-budget.mjs](../home-docs/apps/web/scripts/bundle-budget.mjs) | Bundle generation succeeds and gzip JS/CSS plus shipped font faces stay within budget   |
+| Browser tests    | [house.spec.ts](../home-docs/apps/web/e2e/house.spec.ts)                                                                     | Ten scenarios across two Chromium projects, twenty cases total                          |
 
 ### Inventory preservation and integrity
 
@@ -55,19 +55,33 @@ prefix, and gradient. It does not validate arbitrary CSS syntax.
 
 Both projects exercise:
 
-1. All eight modes, active navigation state, attached SVG geometry, no page errors
-   or external requests during that navigation, and no horizontal page overflow.
+1. All eight modes, active navigation state (`aria-pressed` and `aria-current`),
+   attached SVG geometry, no page errors, console errors, or external requests
+   during that navigation, and no horizontal page overflow.
 2. Searching for Front Doorbell, switching to Security, clearing the query, and
-   finding its displayed name.
-3. Enter-key activation of Security, live-camera setup on a static host, and panel dismissal.
-4. Model zoom changing a projected path; the mobile case first hides side panels.
-5. Floor isolation reducing visible paths, restoring all floors, and switching
-   to Stacked changing geometry.
+   finding its heading.
+3. Two consecutive keyboard searches: ArrowUp selecting the last result,
+   ArrowDown the first, Enter choosing it, `/` refocusing search, and a second
+   query resolving to Upkeep.
+4. Enter-key activation of Security, live-camera setup on a static host, and
+   Escape closing the dialog.
+5. The camera review dialog: a background shortcut (`1`) does not change the
+   mode, next-camera navigation works, Escape closes it, focus returns to the
+   opener, and no console errors (for example duplicate React keys) occur.
+6. Selected rows expose `aria-selected`; an excluding filter shows a notice
+   with a one-click reset.
+7. A URL hash restores mode, selection, and floor isolation; collapsed panels
+   carry `inert`.
+8. Model zoom changing a projected path (wheel on desktop, the Zoom in button on
+   mobile).
+9. Floor isolation reducing visible faces, restoring all floors, closing the
+   panel, and switching to Stacked changing geometry.
+10. Keyboard model operation: ArrowRight on the focused stage rotates, and a
+    room button selects the room summary.
 
 The external-request assertion applies to the navigation scenario, not every
-possible interaction. Camera-history review, exhaustive search/filters, pan and
-rotation, screen-reader behavior, and full keyboard navigation are not exhaustively
-covered.
+possible interaction. Drag inertia, pinch, print output, screen-reader behavior,
+and the full filter matrix are not covered by automation.
 
 ## Browser matrix and lifecycle
 

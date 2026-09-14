@@ -17,11 +17,14 @@ app runs through the local security service. There is no persistent editing.
 3. Open **Isolate**, select **Basement**, and inspect the reduced model.
    Choose **All** to restore all rooms.
 4. Open **View options** and try **Stacked**, **Floors**, and **Exploded**.
-5. Use **Reset view** to restore orientation and zoom. If rooms are still hidden,
-   clear isolation separately.
+5. Use **View options → Reset orientation** to restore orientation and zoom, or
+   **Reset everything** to also clear isolation and separation.
+6. Press **?** (or the help button in the top bar) for controls, shortcuts, the
+   recorded-versus-demonstration boundary, and how to request a correction.
 
-On a narrow screen, choose **Show model** to hide the side panels and reach the
-model controls. Choose **Show panels** to return to the inventory and details.
+On a narrow screen the model shows first with the details as a bottom sheet.
+The controls cluster offers **List**, **Details**, and **Show model / Show
+panels** toggles.
 
 ## Documentation modes
 
@@ -42,36 +45,45 @@ save changes to the inventory.
 
 ## Search
 
-Search is global across rooms, circuits, panels, lights, network nodes, servers,
-cameras, climate sensors, and upkeep items. Try an item name, `gateway`, or
+Search is global across rooms, circuits, panels, fixture records, networks and
+nodes, servers, sound zones, cameras, climate sensors, and upkeep items,
+including amperage, wattage, lumens, colour temperature, SSIDs, and camera
+power or storage text. Try an item name, `gateway`, or
 `projector`. Queries are case-insensitive; all words must appear in a result's
 indexed text. Results include contextual labels and can switch the active mode.
 
-The dropdown shows up to 16 matching results. Refine a broad query to locate a
-specific item. Selecting a room isolates it in the model. Selecting other types
-can leave existing floor/room isolation active; if an expected highlight is
-missing, use **Isolate → All** or **Clear**.
+The dropdown shows the first 16 matches with category chips and a **Show n
+more** control; exact identifiers such as `MP·20`, SSIDs, and names rank first.
+With the field empty, **Jump to** suggestions accept the same arrow-key and Enter
+navigation. Selecting a room opens its summary and isolates it in the model. If
+another selection would be hidden by an active isolation, the app clears the
+isolation and says so; the details panel also shows "Isolation hides this item"
+with a **Show all rooms** action.
 
 Search is not a workbook search and does not query devices or the internet.
 
 ## Model controls
 
-| Action               | Control                                              | Result                                     |
-| -------------------- | ---------------------------------------------------- | ------------------------------------------ |
-| Rotate               | Drag the model                                       | Change yaw and pitch                       |
-| Pan on desktop       | Shift-drag, middle-button drag, or right-button drag | Move the projected model                   |
-| Zoom                 | Mouse wheel over the model, or **+ / −** controls    | Adjust scale within 40–400%                |
-| Reset orientation    | **View options → Reset view**                        | Restore yaw, pitch, zoom, and pan          |
-| Stack floors         | **View options → Stacked**                           | Bring floors to their stacked arrangement  |
-| Separate floors      | **View options → Floors**                            | Separate floor levels vertically           |
-| Spread rooms         | **View options → Exploded**                          | Separate floors and spread rooms outward   |
-| Rotate automatically | **View options → Auto-spin**                         | Toggle automatic rotation                  |
-| Labels and key       | **View options → Room labels / Legend**              | Toggle labels or the current mode's legend |
+| Action                      | Control                                                                              | Result                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| Rotate                      | Drag the model                                                                       | Change yaw and pitch                                       |
+| Pan on desktop              | Shift-drag, middle-button drag, or right-button drag                                 | Move the projected model                                   |
+| Zoom                        | Mouse wheel toward the pointer, pinch, or **+ / −**                                  | Adjust scale within 40–400%; buttons disable at the bounds |
+| Pan on touch                | Two-finger drag                                                                      | Move the projected model                                   |
+| Reset orientation           | **View options → Reset orientation**, or **0** / **r**                               | Restore yaw, pitch, zoom, and pan; stops auto-spin         |
+| Fit / presets               | **View options → Fit visible, Isometric, Plan, North up, Elevation**                 | Recentre or jump to a preset orientation                   |
+| Rotate, tilt, pan by button | **View options** arrow buttons, or arrow keys with the model focused (Shift for pan) | Tap- and keyboard-operable camera moves                    |
+| Stack floors                | **View options → Stacked**                                                           | Bring floors to their stacked arrangement                  |
+| Separate floors             | **View options → Floors**                                                            | Separate floor levels vertically                           |
+| Spread rooms                | **View options → Exploded**                                                          | Separate floors and spread rooms outward                   |
+| Rotate automatically        | **View options → Auto-spin**                                                         | Toggle automatic rotation                                  |
+| Labels and key              | **View options → Room labels / Legend**                                              | Toggle labels or the current mode's legend                 |
 
-Reset view does not reset selections, isolation, separation mode, or all other
-options. Reloading the page resets the whole in-memory session.
-On touch devices, use the explicit zoom buttons; pinch zoom is not an implemented
-model gesture.
+**Reset orientation** does not touch selections, isolation, or separation;
+**Reset everything** clears isolation and separation too. The address bar tracks
+mode, selection, isolation, and separation, so reloading or sharing the link
+restores that view. Theme (System / Light / Dark), the single-key shortcut
+toggle, and the first-run hint persist in the browser.
 
 ## Isolate floors or rooms
 
@@ -79,8 +91,10 @@ Open **Isolate**. Choose **Basement**, **Main**, or **2nd** for a whole floor.
 Alternatively, choose room chips to show a selected group. Choosing a floor clears
 the room selection; choosing rooms switches to room-based isolation.
 
-Use **All** or **Clear** to restore the entire house. Isolation controls the model,
-while each mode's inventory filters remain separate.
+Use **All**, **Clear**, or the **×** beside the Isolate pill to restore the
+entire house. The pill names the isolated floor or room count. Isolation controls
+the model only; lists and totals stay complete, and a selected item hidden by
+isolation is flagged in its details.
 
 ## Security cameras
 
@@ -105,28 +119,36 @@ implemented; see the [player guide](../../security/apps/camera-viewer/README.md)
 
 ## Keyboard and layout
 
-Use Tab to move through focusable controls and Enter or Space to activate
-buttons and preserved clickable panels. Navigation indicates the active mode.
-The UI has some keyboard support, but full keyboard-only model manipulation and
-screen-reader coverage have not been verified. See
-[known limitations](../../docs/limitations.md) and the logged
-[UI audit findings](ui-audit.md).
+Tab reaches every control, list row, and model marker; Enter or Space activates
+them, and arrow keys move between rows in a list. With the model focused, the
+arrow keys rotate and tilt and Shift + arrows pan. A skip link jumps to the model.
+Single-key shortcuts (`1`–`8`, `/`, `+`, `−`, `0`, `r`) can be turned off in
+View options or the help sheet if they conflict with speech or switch input;
+`?` and Escape always work. Selection changes and search counts are announced
+to assistive technology. Screen-reader output on real devices is still
+unverified; see [known limitations](../../docs/limitations.md) and the
+[UI audit resolution log](ui-audit.md).
 
-Below 900 pixels wide the app uses its narrow layout. The navigation can scroll
-horizontally. **Show model / Show panels** toggles the side panels; desktop views
-also have individual list/detail toggles.
+Below 760 pixels wide the app uses its narrow layout with a horizontally
+scrolling navigation rail and a details sheet. Between 760 and 1000 pixels one
+side panel is open at a time. Printing produces inventory tables instead of the
+interactive stage.
+
+Each list has a **CSV** export of the visible rows; circuit tags and camera
+names have copy buttons.
 
 ## When something looks wrong
 
-| Observation                           | Next step                                                           |
-| ------------------------------------- | ------------------------------------------------------------------- |
-| A room/device highlight is missing    | Clear model isolation and review the active mode's filters          |
-| Model is off-center or too small      | Use Reset view; inspect isolation separately                        |
-| Side panels obscure the mobile model  | Select Show model                                                   |
-| Search has too many results           | Add a more specific name or keyword                                 |
-| Status/date/specification seems stale | Treat it as recorded data and report a correction to the maintainer |
-| A camera does not show real video     | Expected: camera views are demonstrations                           |
-| Reload loses selections               | Expected: state is not persisted                                    |
+| Observation                           | Next step                                                                          |
+| ------------------------------------- | ---------------------------------------------------------------------------------- |
+| A room/device highlight is missing    | Clear model isolation and review the active mode's filters                         |
+| Model is off-center or too small      | Use Fit visible or Reset orientation; inspect isolation separately                 |
+| Side panels obscure the mobile model  | Select Show model                                                                  |
+| Search has too many results           | Add a more specific name or keyword                                                |
+| Status/date/specification seems stale | Treat it as recorded data and report a correction to the maintainer                |
+| A camera does not show real video     | Expected: camera views are demonstrations                                          |
+| A value is marked UNVERIFIED          | The recorded reference does not match a documented circuit; report it              |
+| Reload loses a setting                | Mode, selection, and isolation live in the URL; other settings persist per browser |
 
 Inventory corrections follow the [data editing workflow](data-model.md#intentional-inventory-changes);
 there is no in-app editor.

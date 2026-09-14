@@ -17,17 +17,17 @@ earlier decisions and are not setup instructions.
 
 ## Understand and operate
 
-| Guide                                                         | Audience and purpose                                                                        |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| [Architecture](architecture.md)                               | System boundaries, runtime flow, and extension points                                       |
-| [Web app reference](../home-docs/apps/web/README.md)          | Source map, controller, renderer, and migration constraints                                 |
-| [Data model](../home-docs/docs/data-model.md)                 | Inventory relationships, coordinates, and intentional updates                               |
-| [Deployment](deployment.md)                                   | Build, private hosting, acceptance checks, and rollback                                     |
-| [Security and privacy](security.md)                           | Trust boundaries, bundled data, credentials, and reporting                                  |
-| [Known limitations](limitations.md)                           | Current gaps and criteria for addressing them                                               |
-| [UI audit](../home-docs/docs/ui-audit.md)                     | Dated findings log for speed, accessibility, usability, polish                              |
-| [UI audit follow-up](../home-docs/docs/ui-audit-follow-up.md) | Missed workflows, record inconsistencies, expanded viewport evidence, and audit corrections |
-| [Glossary](glossary.md)                                       | Terms used by the repository and application                                                |
+| Guide                                                         | Audience and purpose                                                                           |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [Architecture](architecture.md)                               | System boundaries, runtime flow, and extension points                                          |
+| [Web app reference](../home-docs/apps/web/README.md)          | Source map, controller, renderer, and migration constraints                                    |
+| [Data model](../home-docs/docs/data-model.md)                 | Inventory relationships, coordinates, and intentional updates                                  |
+| [Deployment](deployment.md)                                   | Build, private hosting, acceptance checks, and rollback                                        |
+| [Security and privacy](security.md)                           | Trust boundaries, bundled data, credentials, and reporting                                     |
+| [Known limitations](limitations.md)                           | Current gaps and criteria for addressing them                                                  |
+| [UI audit](../home-docs/docs/ui-audit.md)                     | Resolution log for the 2026-09-12 speed, accessibility, usability, layout, and polish findings |
+| [UI audit follow-up](../home-docs/docs/ui-audit-follow-up.md) | Resolution log for the follow-up workflow, record-accuracy, and layout findings                |
+| [Glossary](glossary.md)                                       | Terms used by the repository and application                                                   |
 
 ## Subsystems and history
 
