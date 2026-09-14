@@ -80,7 +80,7 @@ test('keyboard navigation opens live cameras with static-host setup guidance', a
       name: 'Open SmartHome with its local camera service',
     }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Close live cameras' }).click();
+  await page.getByRole('button', { name: 'Close ✕' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 

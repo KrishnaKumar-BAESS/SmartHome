@@ -67,10 +67,11 @@ See the [integration decision](../../../docs/decisions/0004-security-live-camera
    browser. Return to the player; it loads the account's cameras.
 2. Subsequent launches reuse `account.local`, encrypted with Windows DPAPI for
    the same Windows user. Keep the service running; no phone connection is needed.
-3. Select a camera and **Connect**. This sends its viewing token to the configured
-   Comcast signaling host and attempts an additional viewing session.
-4. Verify increasing **Decoded frames**, nonzero resolution, and visible video.
-   A connected signaling socket alone is not proof of playback.
+3. Choose a camera in the **Cameras** rail. This sends its viewing token to the
+   configured Comcast signaling host and attempts an additional viewing session.
+   Choosing another camera switches the session.
+4. Verify the **LIVE** tag, increasing **Decoded frames**, nonzero resolution,
+   and visible video. A connected signaling socket alone is not proof of playback.
 5. Select **Stop** to close this viewing session and cancel automatic retries.
 
 Audio starts muted; use the player controls to enable it. Account access is

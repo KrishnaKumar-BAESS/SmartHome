@@ -30,6 +30,8 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- Restyle the Security live-camera player and its overlay to match the house atlas: shared Inter/IBM Plex Mono typography, the dark feed treatment, terracotta actions, one-click camera tiles in place of the dropdown and Connect button, a LIVE/CONNECTING/RETRYING feed tag, and Escape closing the overlay from inside the player. Remove the superseded demonstration camera grid.
+
 - Expand the home-docs UI audit with 41 additional findings, 8 optional improvements, wider workflow and viewport evidence, and corrections to the initial audit.
 
 - Replace the home-docs hard-coded dark palette with a token-driven theme system; a clean light theme is now the default and the dark palette is preserved as a selectable theme. Security camera feeds intentionally stay dark in both themes.

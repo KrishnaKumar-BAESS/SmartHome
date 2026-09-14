@@ -702,15 +702,35 @@ export function SystemDetails({ view }) {
           <>
             <button
               type="button"
-              className="security-live-launch"
               onClick={view.openGrid}
+              style={css(
+                "display:flex;align-items:center;gap:9px;width:100%;appearance:none;font:600 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:#fff;background:#c0573b;border:0;border-radius:7px;padding:10px 12px;cursor:pointer;text-align:left",
+              )}
             >
-              Open live cameras
+              <span
+                aria-hidden="true"
+                style={css(
+                  'width:7px;height:7px;border-radius:50%;background:#fff;flex-shrink:0;animation:pulseDot 1.4s ease-in-out infinite',
+                )}
+              ></span>
+              {'Open live cameras'}
+              <span
+                style={css(
+                  "margin-left:auto;font:600 9px 'IBM Plex Mono',monospace;letter-spacing:0.1em;opacity:0.8",
+                )}
+              >
+                {'XFINITY'}
+              </span>
             </button>
-            <p className="security-recorded-note">
-              Documented camera details below. Preview and history are
-              demonstrations.
-            </p>
+            <div
+              style={css(
+                "font:400 11px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t3);margin:8px 0 12px;line-height:1.5",
+              )}
+            >
+              {
+                'Documented camera details below. Preview and history are demonstrations.'
+              }
+            </div>
             <div
               style={css(
                 'position:relative;width:100%;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:#0b1015;border:1px solid #20303c;box-shadow:inset 0 0 60px rgba(0,0,0,0.6)',
@@ -866,24 +886,13 @@ export function SystemDetails({ view }) {
               <div
                 onClick={view.openExpand}
                 style={css(
-                  "flex:1;text-align:center;font:600 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:#fff;background:#c0573b;border-radius:7px;padding:10px;cursor:pointer",
+                  "flex:1;text-align:center;font:600 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:#c0573b;background:rgba(192,87,59,0.14);border:1px solid rgba(192,87,59,0.34);border-radius:7px;padding:10px;cursor:pointer",
                 )}
                 role="button"
                 tabIndex={0}
                 onKeyDown={activateOnKey}
               >
                 {'⛶ Review demo history'}
-              </div>
-              <div
-                onClick={view.openGrid}
-                style={css(
-                  "flex-shrink:0;text-align:center;font:600 11.5px 'Inter',system-ui,'Segoe UI',sans-serif;color:#c0573b;background:rgba(192,87,59,0.14);border:1px solid rgba(192,87,59,0.34);border-radius:7px;padding:10px 13px;cursor:pointer",
-                )}
-                role="button"
-                tabIndex={0}
-                onKeyDown={activateOnKey}
-              >
-                {'Live cameras'}
               </div>
             </div>
           </>

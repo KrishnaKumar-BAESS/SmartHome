@@ -402,7 +402,8 @@ export class HouseController extends Component {
       } else if (e.key === '0' || e.key === 'r') {
         this.setState({ yaw: 35, pitch: 58, zoom: 1, panX: 0, panY: 0 });
       } else if (e.key === 'Escape') {
-        if (this.state.camExpanded) this.setState({ camExpanded: false });
+        if (this.state.feedGrid) this.setState({ feedGrid: false });
+        else if (this.state.camExpanded) this.setState({ camExpanded: false });
         else if (this.state.viewOptsOpen)
           this.setState({ viewOptsOpen: false });
         else if (this.state.isoPanel) this.setState({ isoPanel: false });
@@ -1328,26 +1329,9 @@ export class HouseController extends Component {
         { k: 'Status', v: scOnline ? 'Online' : 'Offline — check PoE' },
       ],
     };
-    const feedTiles = this.cameras.map((c) => {
-      const on = c.status === 'online';
-      return {
-        id: c.id,
-        name: c.name,
-        sub: `${c.type} · ${c.room}`,
-        offline: !on,
-        liveColor: on ? '#e5544a' : 'var(--t4)',
-        liveLabel: 'DEMO PREVIEW',
-        res: c.res,
-        time: feedTime,
-        watermark: c.room.toUpperCase(),
-        onClick: () => set({ selCam: c.id, feedGrid: false }),
-        wrapStyle: `cursor:pointer;border-radius:9px;overflow:hidden;border:2px solid ${c.id === S.selCam ? '#c0573b' : 'transparent'}`,
-      };
-    });
     const openGrid = () => set({ feedGrid: true });
     const closeGrid = () => set({ feedGrid: false });
     const showGrid = !!S.feedGrid;
-    const feedGridSub = `${camTotal} documented cameras · demonstration previews`;
 
     // ---- expanded camera + history review ----
     const openExpand = () => set({ camExpanded: true, histIdx: 0 });
@@ -2090,11 +2074,9 @@ export class HouseController extends Component {
       camOnline,
       camTotal,
       camDet,
-      feedTiles,
       openGrid,
       closeGrid,
       showGrid,
-      feedGridSub,
       openExpand,
       closeExpand,
       showCamExpanded,

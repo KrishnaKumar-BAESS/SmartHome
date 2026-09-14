@@ -1,7 +1,24 @@
+import '@fontsource/inter/latin-400.css';
+import '@fontsource/inter/latin-500.css';
+import '@fontsource/inter/latin-600.css';
+import '@fontsource/inter/latin-700.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '@fontsource/ibm-plex-mono/latin-600.css';
 import './style.css';
 
-if (new URLSearchParams(window.location.search).get('embedded') === '1')
+const embedded =
+  new URLSearchParams(window.location.search).get('embedded') === '1';
+if (embedded) {
   document.body.classList.add('embedded');
+  // Let Escape close the Security overlay even while the player has focus.
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape')
+      window.parent.postMessage(
+        { type: 'smarthome:close-live-cameras' },
+        window.location.origin,
+      );
+  });
+}
 
 interface Camera {
   id: string;
@@ -24,11 +41,12 @@ const element = <T extends HTMLElement>(id: string) =>
 const importButton = element<HTMLButtonElement>('import');
 const loginButton = element<HTMLButtonElement>('login');
 const refreshButton = element<HTMLButtonElement>('refresh');
-const connectButton = element<HTMLButtonElement>('connect');
 const stopButton = element<HTMLButtonElement>('stop');
-const select = element<HTMLSelectElement>('camera');
+const tiles = element<HTMLDivElement>('cameras');
+const viewer = element<HTMLDivElement>('viewer');
 const video = element<HTMLVideoElement>('video');
 let cameras: Camera[] = [];
+let selectedCamera: string | undefined;
 let sessionId: string | undefined;
 let events: EventSource | undefined;
 let peer: RTCPeerConnection | undefined;
@@ -49,6 +67,32 @@ function status(message: string, error = false) {
   element('status').classList.toggle('error', error);
 }
 
+type LiveState = 'idle' | 'connecting' | 'live' | 'error';
+const liveLabels: Record<LiveState, string> = {
+  idle: 'STANDBY',
+  connecting: 'CONNECTING',
+  live: 'LIVE',
+  error: 'RETRYING',
+};
+const placeholderLabels: Record<LiveState, string> = {
+  idle: 'No camera connected',
+  connecting: 'Connecting…',
+  live: 'Live',
+  error: 'Reconnecting…',
+};
+function setLive(state: LiveState) {
+  element('live').dataset.state = state;
+  element('live-label').textContent = liveLabels[state];
+  element('placeholder-label').textContent = placeholderLabels[state];
+  element('placeholder-hint').hidden = state !== 'idle';
+  viewer.classList.toggle('is-live', state === 'live');
+  tiles.dataset.state = state;
+}
+
+function selectedLabel() {
+  return cameras.find((camera) => camera.id === selectedCamera)?.label;
+}
+
 async function api(path: string, value?: unknown) {
   const response = await fetch(
     path,
@@ -65,26 +109,68 @@ async function api(path: string, value?: unknown) {
   return data;
 }
 
-function showCameras(value: Camera[]) {
-  const selected = select.value;
-  cameras = value;
-  select.replaceChildren(
-    ...value.map((camera) => new Option(camera.label, camera.id)),
-  );
-  if (value.some((camera) => camera.id === selected)) select.value = selected;
-  select.disabled = !value.length || !!desiredCamera;
-  connectButton.disabled = !value.length || !!desiredCamera;
+function tile(camera: Camera) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'tile';
+  button.dataset.camera = camera.id;
+  const dot = document.createElement('span');
+  dot.className = 'tile-dot';
+  dot.setAttribute('aria-hidden', 'true');
+  const text = document.createElement('span');
+  text.className = 'tile-text';
+  const name = document.createElement('span');
+  name.className = 'tile-name';
+  name.textContent = camera.label;
+  const sub = document.createElement('span');
+  sub.className = 'tile-sub';
+  sub.textContent = camera.renewable
+    ? 'Renews automatically'
+    : `Expires ${new Date(camera.expires!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  text.append(name, sub);
+  button.append(dot, text);
+  button.addEventListener('click', () => {
+    if (desiredCamera === camera.id) return;
+    attempts = 0;
+    selectedCamera = camera.id;
+    desiredCamera = camera.id;
+    markSelected();
+    void connectCamera(camera.id);
+  });
+  return button;
+}
+
+function markSelected() {
+  for (const button of tiles.querySelectorAll<HTMLButtonElement>('.tile'))
+    button.setAttribute(
+      'aria-pressed',
+      String(button.dataset.camera === selectedCamera),
+    );
+  const label = selectedLabel();
+  element('camera-name').textContent = label || 'No camera selected';
+  element('watermark').textContent = (label || 'Security').toUpperCase();
   updateExpiry();
 }
 
+function showCameras(value: Camera[]) {
+  cameras = value;
+  if (!value.some((camera) => camera.id === selectedCamera))
+    selectedCamera = undefined;
+  element('cameras-empty').hidden = value.length > 0;
+  tiles.replaceChildren(
+    element('cameras-empty'),
+    ...value.map((camera) => tile(camera)),
+  );
+  markSelected();
+}
+
 function updateExpiry() {
-  const camera = cameras.find((camera) => camera.id === select.value);
+  const camera = cameras.find((camera) => camera.id === selectedCamera);
   if (camera)
     element('expiry').textContent = camera.renewable
       ? 'SmartHome requests fresh viewing credentials automatically. No phone connection is required.'
       : `Credentials for ${camera.label} expire at ${new Date(camera.expires!).toLocaleTimeString()}. A new connection needs unexpired credentials.`;
 }
-select.addEventListener('change', updateExpiry);
 
 async function release() {
   generation++;
@@ -97,12 +183,13 @@ async function release() {
   clearInterval(statsTimer);
   clearTimeout(watchdog);
   video.srcObject = null;
+  video.controls = false;
   element('placeholder').hidden = false;
   element('playback').textContent = 'Stopped';
   element('connection').textContent = '—';
-  connectButton.disabled = !cameras.length;
+  element('resolution').textContent = '—';
+  setLive('idle');
   stopButton.disabled = true;
-  select.disabled = !cameras.length;
   if (oldId) await api(`/api/sessions/${oldId}/stop`, {}).catch(() => {});
 }
 
@@ -125,9 +212,8 @@ async function retry(message: string) {
   if (desiredCamera !== camera) return;
   const delay = Math.min(30_000, 2000 * 2 ** Math.min(attempts++, 4));
   status(`${message} Retrying in ${delay / 1000} seconds…`, true);
+  setLive('error');
   stopButton.disabled = false;
-  connectButton.disabled = true;
-  select.disabled = true;
   retryTimer = setTimeout(() => {
     retryTimer = undefined;
     if (desiredCamera === camera) void connectCamera(camera);
@@ -214,6 +300,7 @@ async function receive(event: SignalEvent, current: number) {
         : new MediaStream();
     stream.addTrack(event.track);
     video.srcObject = stream;
+    video.controls = true;
     void video
       .play()
       .catch(() => status('Press Play on the video to begin playback.'));
@@ -270,9 +357,8 @@ async function receive(event: SignalEvent, current: number) {
             ) {
               element('placeholder').hidden = true;
               element('playback').textContent = 'Live';
-              status(
-                `Playing ${cameras.find((camera) => camera.id === select.value)?.label || 'camera'}.`,
-              );
+              setLive('live');
+              status(`Playing ${selectedLabel() || 'camera'}.`);
             }
           }
         });
@@ -288,7 +374,7 @@ importButton.addEventListener('click', () => {
     .then((data) => {
       showCameras(data.cameras);
       status(
-        `Imported ${data.cameras.length} camera sessions. Select a camera and connect.`,
+        `Imported ${data.cameras.length} camera sessions. Choose a camera to start a live session.`,
       );
     })
     .catch((error) => status(error.message, true))
@@ -302,8 +388,7 @@ async function connectCamera(camera: string) {
     await release();
     if (desiredCamera !== camera) return;
     const current = generation;
-    connectButton.disabled = true;
-    select.disabled = true;
+    setLive('connecting');
     element('frames').textContent = '0';
     element('resolution').textContent = '—';
     iceServers = [];
@@ -343,11 +428,6 @@ async function connectCamera(camera: string) {
       );
   }
 }
-connectButton.addEventListener('click', () => {
-  attempts = 0;
-  desiredCamera = select.value;
-  void connectCamera(desiredCamera);
-});
 stopButton.addEventListener('click', () => {
   void stop().then(() => status('Viewer stopped.'));
 });
@@ -372,7 +452,7 @@ async function loadCameras() {
       else if (!desiredCamera)
         status(
           data.cameras.length
-            ? 'Select a camera and connect.'
+            ? 'Choose a camera to start a live session.'
             : 'Sign in to Xfinity to load your cameras.',
         );
     })

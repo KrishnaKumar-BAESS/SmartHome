@@ -3,89 +3,112 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Home cameras · Local prototype</title>
+    <meta name="theme-color" content="#0b1015" />
+    <title>SmartHome · Live cameras</title>
     <script type="module" src="/src/main.ts"></script>
   </head>
   <body>
-    <main>
-      <header>
+    <main class="app">
+      <header class="masthead">
         <div>
-          <p class="eyebrow">SmartHome / Security</p>
-          <h1>Home cameras</h1>
+          <p class="eyebrow">SmartHome · Security</p>
+          <h1>Live cameras</h1>
+          <p class="masthead-sub">
+            Xfinity cameras through the local security service · sign in once on
+            this computer and SmartHome renews access automatically
+          </p>
         </div>
-        <span class="badge">Local prototype</span>
+        <span class="badge">Local service</span>
       </header>
-      <p class="intro">
-        Live viewing through your existing Xfinity pairing. Sign in once on this
-        computer to let SmartHome renew access automatically.
-      </p>
-      <section class="toolbar" aria-label="Camera controls">
-        <button id="login" hidden>Sign in to Xfinity</button>
-        <button id="refresh" class="secondary" hidden>Refresh cameras</button>
-        <label for="camera"
-          >Camera
-          <select id="camera" disabled>
-            <option>No sessions imported</option>
-          </select></label
-        >
-        <button id="connect" disabled>Connect</button>
-        <button id="stop" class="secondary" disabled>Stop</button>
-      </section>
-      <p id="status" role="status" aria-live="polite">
-        Checking account connection…
-      </p>
-      <p id="account-status" class="note"></p>
-      <section class="viewer" aria-label="Live camera video">
-        <video id="video" autoplay muted playsinline controls></video>
-        <div id="placeholder">
-          <span class="camera-icon" aria-hidden="true">◉</span>
-          <h2>No camera connected</h2>
-          <p>Video appears here after a live session connects.</p>
-        </div>
-      </section>
-      <dl class="metrics">
-        <div>
-          <dt>Playback</dt>
-          <dd id="playback">Stopped</dd>
-        </div>
-        <div>
-          <dt>Decoded frames</dt>
-          <dd id="frames">0</dd>
-        </div>
-        <div>
-          <dt>Resolution</dt>
-          <dd id="resolution">—</dd>
-        </div>
-        <div>
-          <dt>Connection</dt>
-          <dd id="connection">—</dd>
-        </div>
-      </dl>
-      <p id="expiry" class="note">
-        Viewing credentials stay on this laptop’s server. Video is muted
-        initially; use the player controls to enable sound.
-      </p>
-      <details>
-        <summary>Setup and troubleshooting</summary>
-        <p>
-          Configure the verified Xfinity signaling hosts in
-          <code>.env.local</code> and register the Windows sign-in callback as
-          described in the camera viewer README. Account credentials are
-          encrypted for this Windows user. If Xfinity revokes the session, sign
-          in again here. A connected phone is not needed for account mode.
-        </p>
-        <p>
-          This service runs locally on this computer. Remote dashboard access is
-          not implemented. Connection status alone does not prove video is
-          playing; decoded frames and resolution come from the browser’s media
-          statistics.
-        </p>
-        <button id="import" class="secondary">Import from phone</button>
-        <p>
-          Diagnostic fallback only: imports temporary viewing credentials from
-          an authorized ADB phone. These cannot renew themselves.
-        </p>
-      </details>
+      <div class="stage">
+        <section class="feed" aria-label="Live camera video">
+          <div class="viewer" id="viewer">
+            <div class="viewer-backdrop" aria-hidden="true"></div>
+            <div class="viewer-floor" aria-hidden="true"></div>
+            <div class="viewer-watermark" id="watermark" aria-hidden="true">
+              SECURITY
+            </div>
+            <video id="video" autoplay muted playsinline></video>
+            <div class="chrome chrome-top">
+              <div class="live-tag" id="live" data-state="idle">
+                <span class="live-dot" aria-hidden="true"></span>
+                <span id="live-label">STANDBY</span>
+              </div>
+              <div class="chrome-meta" id="resolution">—</div>
+            </div>
+            <div class="chrome chrome-bottom">
+              <div class="chrome-name" id="camera-name">No camera selected</div>
+              <div class="chrome-meta" id="connection">—</div>
+            </div>
+            <div id="placeholder">
+              <h2 id="placeholder-label">No camera connected</h2>
+              <p id="placeholder-hint">
+                Choose a camera to start a live session.
+              </p>
+            </div>
+          </div>
+          <div class="strip">
+            <dl class="metrics">
+              <div>
+                <dt>Playback</dt>
+                <dd id="playback">Stopped</dd>
+              </div>
+              <div>
+                <dt>Decoded frames</dt>
+                <dd id="frames">0</dd>
+              </div>
+            </dl>
+            <button id="stop" class="neutral" disabled>Stop</button>
+          </div>
+          <p id="status" role="status" aria-live="polite">
+            Checking account connection…
+          </p>
+        </section>
+        <aside class="rail" aria-label="Camera controls">
+          <section class="rail-section">
+            <h2 class="rail-title">Account</h2>
+            <p id="account-status" class="note"></p>
+            <div class="actions">
+              <button id="login" hidden>Sign in to Xfinity</button>
+              <button id="refresh" class="secondary" hidden>
+                Refresh cameras
+              </button>
+            </div>
+          </section>
+          <section class="rail-section rail-cameras">
+            <h2 class="rail-title">Cameras</h2>
+            <div id="cameras" class="tiles" role="group" aria-label="Cameras">
+              <p class="tiles-empty" id="cameras-empty">No cameras loaded.</p>
+            </div>
+            <p id="expiry" class="note">
+              Viewing credentials stay on this computer’s service. Video is
+              muted initially; use the player controls to enable sound.
+            </p>
+          </section>
+          <details class="rail-section">
+            <summary>Setup and troubleshooting</summary>
+            <p>
+              Configure the verified Xfinity signaling hosts in
+              <code>.env.local</code> and register the Windows sign-in callback
+              as described in the camera viewer README. Account credentials are
+              encrypted for this Windows user. If Xfinity revokes the session,
+              sign in again here. A connected phone is not needed for account
+              mode.
+            </p>
+            <p>
+              This service runs locally on this computer. Remote dashboard
+              access is not implemented. Connection status alone does not prove
+              video is playing; decoded frames and resolution come from the
+              browser’s media statistics.
+            </p>
+            <button id="import" class="secondary">Import from phone</button>
+            <p>
+              Diagnostic fallback only: imports temporary viewing credentials
+              from an authorized ADB phone. These cannot renew themselves.
+            </p>
+          </details>
+        </aside>
+      </div>
     </main>
   </body>
 </html>

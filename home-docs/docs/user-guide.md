@@ -91,9 +91,9 @@ setup guidance instead of claiming a working camera connection.
 
 Follow the [player setup guide](../../security/apps/camera-viewer/README.md) to
 configure account access on Windows. Choose **Sign in to Xfinity** once, then
-select a camera and **Connect**. Later launches reuse the encrypted account session.
-The player reports **Live** only after decoding video. **Stop** or closing the
-panel ends playback and cancels retries. Credentials renew automatically;
+choose a camera to start its session. Later launches reuse the encrypted account
+session. The player reports **LIVE** only after decoding video. **Stop**, closing
+the overlay, or pressing Escape ends playback and cancels retries. Credentials renew automatically;
 Xfinity may require another sign-in if it revokes the session. The existing
 Xfinity app remains paired. ADB import is a temporary troubleshooting fallback.
 

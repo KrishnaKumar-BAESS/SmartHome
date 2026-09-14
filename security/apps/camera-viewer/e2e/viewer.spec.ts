@@ -31,22 +31,28 @@ test('SmartHome Security embeds the real player and closes it with the panel', a
   ).toBeVisible();
   await expect(player.locator('#frames')).toHaveText('0');
   await expect(player.locator('#playback')).toHaveText('Stopped');
-  await page.getByRole('button', { name: 'Close live cameras' }).click();
+  // Focus is inside the player after expanding its details; Escape still closes.
+  await page.keyboard.press('Escape');
   await expect(page.locator('iframe')).toHaveCount(0);
   await expect(
     page.getByRole('button', { name: '▦ Live cameras', exact: true }),
   ).toBeFocused();
+  await page
+    .getByRole('button', { name: '▦ Live cameras', exact: true })
+    .click();
+  await expect(player.locator('#live-label')).toHaveText('STANDBY');
+  await page.getByRole('button', { name: 'Close ✕' }).click();
+  await expect(page.locator('iframe')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
 test('explains setup without claiming a live feed', async ({ page }) => {
   await page.goto('/');
   await expect(
-    page.getByRole('heading', { name: 'Home cameras' }),
+    page.getByRole('heading', { name: 'Live cameras' }),
   ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: 'Connect', exact: true }),
-  ).toBeDisabled();
+  await expect(page.getByText('No cameras loaded.')).toBeVisible();
+  await expect(page.locator('#live-label')).toHaveText('STANDBY');
   await expect(page.locator('#playback')).toHaveText('Stopped');
   await expect(page.locator('#frames')).toHaveText('0');
   await expect(page.locator('#status')).toContainText('Configure verified');
@@ -88,12 +94,10 @@ test('shows import errors and imported metadata without starting cloud signaling
     }),
   );
   await page.getByRole('button', { name: 'Import from phone' }).click();
-  await expect(page.getByRole('combobox', { name: 'Camera' })).toHaveValue(
-    'AABBCCDDEEFF',
-  );
-  await expect(
-    page.getByRole('button', { name: 'Connect', exact: true }),
-  ).toBeEnabled();
+  const tile = page.getByRole('button', { name: 'Test camera' });
+  await expect(tile).toHaveAttribute('aria-pressed', 'false');
+  await expect(tile).toContainText('Expires');
+  await expect(page.locator('#camera-name')).toHaveText('No camera selected');
   await expect(page.locator('#playback')).toHaveText('Stopped');
 });
 
@@ -135,16 +139,22 @@ test('account cameras load without ADB and Stop cancels automatic reconnection',
   await expect(page.locator('#account-status')).toContainText(
     'automatic renewal enabled',
   );
+  const tile = page.getByRole('button', { name: 'Front' });
+  await expect(tile).toContainText('Renews automatically');
+  await tile.click();
+  await expect(tile).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#camera-name')).toHaveText('Front');
   await expect(page.locator('#expiry')).toContainText(
     'No phone connection is required',
   );
-  await page.getByRole('button', { name: 'Connect', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Retrying in 2 seconds');
+  await expect(page.locator('#live-label')).toHaveText('RETRYING');
   await page.clock.fastForward(2100);
   await expect.poll(() => starts).toBe(2);
   await expect(page.getByRole('status')).toContainText('Retrying in 4 seconds');
   await page.getByRole('button', { name: 'Stop', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Viewer stopped.');
+  await expect(page.locator('#live-label')).toHaveText('STANDBY');
   await page.clock.fastForward(35_000);
   expect(starts).toBe(2);
   expect(imports).toBe(0);
