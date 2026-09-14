@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
-    "build": "vite build",
+    "build": "vite build && node scripts/bundle-budget.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

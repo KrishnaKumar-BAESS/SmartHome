@@ -56,6 +56,13 @@ export function LiveCameras({ onClose }: { onClose: () => void }) {
         event.preventDefault();
         onClose();
       }}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }
+      }}
     >
       <header className="live-cameras-heading">
         <div>

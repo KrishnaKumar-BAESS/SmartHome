@@ -10,6 +10,21 @@
         "$env:PORT='4319'; $env:XFINITY_SIGNALING_HOSTS=''; $env:CAMERA_NAMES='{}'; node security/apps/camera-viewer/dist/server/index.js"
       ],
       "port": 4319
+    },
+    {
+      "name": "home-docs-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@smarthome/home-docs",
+        "exec",
+        "vite",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5174"
+      ],
+      "port": 5174
     }
   ]
 }

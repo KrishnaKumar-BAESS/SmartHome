@@ -1,7 +1,13 @@
 /* Theme tokens. Light is the default; index.html applies the persisted
-   choice to <html data-theme> before the app mounts, and the controller's
-   theme toggle keeps it in sync. Mode accents and status colors are shared
-   by both themes and stay hard-coded next to the data they describe. */
+   choice (or the OS preference) to <html data-theme> before the app mounts,
+   and the controller's theme setting keeps it in sync. Mode accents and
+   status colors are shared by both themes and stay hard-coded next to the
+   data they describe.
+
+   Text ramp contrast (against the lightest panel composite, ~#fbfcfd):
+   t1 14.9:1 · t2 9.3:1 · t3 6.5:1 · t4 5.6:1 · t5 4.9:1 · t6 4.5:1.
+   Dark ramp against #11171e: t1 15:1 · t2 11:1 · t3 8.2:1 · t4 5.9:1 ·
+   t5 4.9:1 · t6 4.5:1. Nothing a user must read sits below t5. */
 :root {
   color-scheme: light;
   /* app background + stage gradient stops (ink / navy / slate tones) */
@@ -19,11 +25,12 @@
   /* text ramp, brightest to faintest */
   --t1: #1c2733;
   --t2: #3b4a58;
-  --t3: #52626f;
-  --t4: #6b7a87;
-  --t5: #8494a1;
-  --t6: #9aa7b2;
-  --placeholder: #8c99a5;
+  --t3: #4e5e6b;
+  --t4: #5b6a77;
+  --t5: #62717e;
+  --t6: #687785;
+  --placeholder: #62717e;
+  --t4-soft: rgba(91, 106, 119, 0.14);
   /* neutral lifts: subtle fills, hovers and hairline borders */
   --lift-04: rgba(24, 38, 52, 0.045);
   --lift-05: rgba(24, 38, 52, 0.055);
@@ -48,18 +55,25 @@
   --sel-text: #16222d;
   --track: #d5dce3;
   --marker-ring: #ffffff;
+  --panel-marker: #e9eef2;
+  --panel-marker-bd: #9fadb9;
   --acc-text: #2c619c;
   --acc-dot: #3b6fb0;
   --acc-soft: rgba(59, 111, 176, 0.1);
   --acc-bg: rgba(59, 111, 176, 0.14);
   --acc-border: rgba(59, 111, 176, 0.5);
   /* status text over its matching tinted wash */
-  --warn-text: #8f6a1c;
-  --alert-text: #a8442a;
-  --ring-text: #6247b8;
-  --teal-text: #257c6d;
+  --warn-text: #7f5c12;
+  --alert-text: #9a3d24;
+  --ring-text: #5a3fb0;
+  --teal-text: #1f6f61;
   --scrollbar: rgba(30, 45, 60, 0.28);
   --scrollbar-hover: rgba(30, 45, 60, 0.45);
+  /* two-tone focus ring readable on any accent surface */
+  --focus: #1c2733;
+  --focus-halo: #ffffff;
+  --hover-b: 0.96;
+  --active-b: 0.92;
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
@@ -76,11 +90,12 @@
   --vignette: rgba(8, 12, 16, 0.62);
   --t1: #e8edf2;
   --t2: #cdd6df;
-  --t3: #aab6c1;
-  --t4: #8a94a0;
-  --t5: #6e7e8c;
-  --t6: #5a6877;
-  --placeholder: #7c8a97;
+  --t3: #b3bec9;
+  --t4: #98a4b0;
+  --t5: #8b97a4;
+  --t6: #85919e;
+  --placeholder: #8b97a4;
+  --t4-soft: rgba(152, 164, 176, 0.16);
   --lift-04: rgba(255, 255, 255, 0.045);
   --lift-05: rgba(255, 255, 255, 0.05);
   --lift-06: rgba(255, 255, 255, 0.06);
@@ -100,19 +115,25 @@
   --shadow-3: rgba(0, 0, 0, 0.55);
   --sel-bg: #28323b;
   --sel-text: #ffffff;
-  --track: #e6ebef;
+  --track: #3a4652;
   --marker-ring: #0b1015;
+  --panel-marker: #2a3540;
+  --panel-marker-bd: #6b7986;
   --acc-text: #9cc0ee;
   --acc-dot: #6ea0e0;
   --acc-soft: rgba(59, 111, 176, 0.1);
   --acc-bg: rgba(110, 160, 224, 0.18);
   --acc-border: rgba(110, 160, 224, 0.5);
-  --warn-text: #e3b264;
-  --alert-text: #e08a72;
-  --ring-text: #b49af0;
-  --teal-text: #7fc7b8;
+  --warn-text: #e8bb6d;
+  --alert-text: #e69279;
+  --ring-text: #bda6f2;
+  --teal-text: #8ad0c1;
   --scrollbar: rgba(255, 255, 255, 0.14);
   --scrollbar-hover: rgba(255, 255, 255, 0.26);
+  --focus: #ffffff;
+  --focus-halo: #0f1318;
+  --hover-b: 1.16;
+  --active-b: 1.28;
 }
 
 * {
@@ -182,6 +203,24 @@ input::placeholder {
     transform: none;
   }
 }
+@keyframes floatOut {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 @keyframes feedScan {
   0% {
     top: -22%;
@@ -190,64 +229,28 @@ input::placeholder {
     top: 104%;
   }
 }
-@keyframes feedFlicker {
-  0%,
-  100% {
-    opacity: 0.5;
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
   }
-  50% {
-    opacity: 0.62;
-  }
-}
-@keyframes spin {
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: none;
   }
 }
-.vsl {
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  outline: none;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  border: none;
+.float-in {
+  animation: floatIn 0.22s ease both;
 }
-.vsl::-webkit-slider-runnable-track {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--lift-18);
+.float-out {
+  animation: floatOut 0.18s ease both;
+  pointer-events: none;
 }
-.vsl::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
-  background: #e0a043;
-  clip-path: polygon(0 35%, 60% 35%, 60% 0, 100% 50%, 60% 100%, 60% 65%, 0 65%);
-  margin-top: -5px;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    filter 0.15s;
+.mode-fade {
+  animation: fadeIn 0.22s ease both;
 }
-.vsl:active::-webkit-slider-thumb,
-.vsl:focus::-webkit-slider-thumb {
-  background: #f5c466;
-  filter: drop-shadow(0 0 5px rgba(224, 160, 67, 0.65));
-}
-.vsl::-moz-range-track {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--lift-18);
-}
-.vsl::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border: none;
-  background: #e0a043;
-  border-radius: 2px;
-  cursor: pointer;
+.count-up {
+  animation: countUp 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 body {
@@ -259,6 +262,9 @@ input,
 select {
   font: inherit;
 }
+button {
+  color: inherit;
+}
 .nav-button {
   border: 0;
   appearance: none;
@@ -268,17 +274,286 @@ select {
   background: var(--lift-06) !important;
   color: var(--t2) !important;
 }
+/* Narrow rail: no permanent scrollbar, edge fades show the overflow. */
+.nav-rail-row {
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 14px,
+    #000 calc(100% - 14px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 14px,
+    #000 calc(100% - 14px),
+    transparent 100%
+  );
+}
+.nav-rail-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* Focus: outline in the text colour plus a halo in the surface colour, so
+   the ring stays visible on amber chips and dark feeds alike. */
 :focus-visible {
-  outline: 2px solid #e0a043;
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--focus-halo);
+}
+svg [tabindex]:focus-visible {
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
+}
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 60;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--popover);
+  color: var(--t1);
+  font:
+    500 12px 'Inter',
+    system-ui,
+    'Segoe UI',
+    sans-serif;
+  border: 1px solid var(--lift-12);
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 12px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Shared interactive states: brightness keeps inline backgrounds intact. */
+.ia {
+  transition:
+    filter 0.12s,
+    transform 0.12s,
+    background 0.12s;
+}
+.ia:hover {
+  filter: brightness(var(--hover-b));
+}
+.ia:active {
+  filter: brightness(var(--active-b));
+  transform: translateY(0.5px);
+}
+.ia:disabled,
+.ia[aria-disabled='true'] {
+  filter: none;
+  transform: none;
+  cursor: default;
 }
 .hover-0 {
   transition: background 0.12s;
 }
 .hover-0:hover,
 .hover-0:focus-visible {
-  background: var(--lift-06) !important;
+  background: var(--lift-06);
 }
+.icon-button {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  border: 1px solid var(--lift-10);
+  background: var(--lift-05);
+  color: var(--t2);
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.link-button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 4px;
+  color: var(--acc-text);
+  font:
+    500 12px 'Inter',
+    system-ui,
+    'Segoe UI',
+    sans-serif;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.chip-button {
+  appearance: none;
+  border: 1px solid var(--acc-border);
+  background: var(--acc-bg);
+  color: var(--acc-text);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font:
+    500 11px 'Inter',
+    system-ui,
+    'Segoe UI',
+    sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.row-button {
+  appearance: none;
+  border: 0;
+  width: 100%;
+}
+.panel-tab {
+  padding: 0;
+  opacity: 0.75;
+}
+.panel-tab:hover,
+.panel-tab:focus-visible {
+  opacity: 1;
+}
+.panel-toggle {
+  color: var(--t2);
+  background: transparent;
+  border: 0;
+  padding: 9px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.panel-toggle + .panel-toggle {
+  border-left: 1px solid var(--lift-10);
+}
+.stat-card {
+  font: inherit;
+}
+.dialog-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font:
+    500 12px 'Inter',
+    system-ui,
+    'Segoe UI',
+    sans-serif;
+  color: #cdd6df;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.dialog-button:focus-visible {
+  --focus: #ffffff;
+  --focus-halo: #0b1015;
+}
+
+/* Native dialogs: camera review (dark sheet) and help (themed sheet). */
+.camera-review,
+.help-sheet {
+  box-sizing: border-box;
+  margin: 0;
+  border: 0;
+  max-width: none;
+  max-height: none;
+}
+.camera-review {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  padding: 20px 26px;
+  background: rgba(7, 11, 15, 0.93);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+  color: #eef3f8;
+  overflow: hidden;
+  animation: floatIn 0.25s ease both;
+  --focus: #ffffff;
+  --focus-halo: #0b1015;
+}
+.camera-review[open] {
+  display: flex;
+  flex-direction: column;
+}
+.camera-review::backdrop,
+.help-sheet::backdrop {
+  background: transparent;
+}
+.help-sheet {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 20px 22px 22px;
+  border-radius: 16px;
+  background: var(--popover);
+  color: var(--t1);
+  border: 1px solid var(--lift-10);
+  box-shadow: 0 30px 80px -20px var(--shadow-1);
+  animation: floatIn 0.22s ease both;
+}
+.help-sheet::backdrop {
+  background: rgba(7, 11, 15, 0.45);
+}
+.help-sheet a {
+  color: var(--acc-text);
+}
+@media (max-width: 600px) {
+  .camera-review {
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Room faces ease between selection states; geometry itself never animates. */
+.face {
+  transition:
+    fill 0.25s ease,
+    stroke 0.25s ease,
+    opacity 0.25s ease;
+}
+main[data-dragging='true'] .face {
+  transition: none;
+}
+/* Compositor relief while the model is being dragged. */
+main[data-dragging='true'] [style*='backdrop-filter'] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Decorative loops pause when the tab is hidden. */
+html[data-hidden='true'] * {
+  animation-play-state: paused !important;
+}
+/* Theme switches cross-fade the main surfaces for a moment. */
+html.theme-transition,
+html.theme-transition * {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    fill 0.25s ease !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -289,12 +564,63 @@ select {
   }
 }
 
-.panel-toggle {
-  color: var(--t2);
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--lift-10);
-  padding: 9px 12px;
-  cursor: pointer;
-  font-size: 12px;
+@media (forced-colors: active) {
+  .ia,
+  .icon-button,
+  .chip-button {
+    forced-color-adjust: none;
+    border: 1px solid ButtonText;
+  }
+  :focus-visible {
+    outline: 3px solid Highlight;
+    box-shadow: none;
+  }
+}
+
+/* Print: the interactive stage cannot paginate; print the inventory tables. */
+.print-only {
+  display: none;
+}
+@media print {
+  main {
+    display: none !important;
+  }
+  .print-only {
+    display: block;
+    color: #000;
+    background: #fff;
+    font:
+      11px/1.4 'Inter',
+      system-ui,
+      sans-serif;
+    padding: 12mm;
+  }
+  .print-only h1 {
+    font-size: 18px;
+    margin: 0 0 6px;
+  }
+  .print-only table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px;
+    page-break-inside: auto;
+  }
+  .print-only caption {
+    text-align: left;
+    font-weight: 600;
+    padding: 4px 0;
+  }
+  .print-only th,
+  .print-only td {
+    border: 1px solid #888;
+    padding: 3px 5px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .print-only tr {
+    page-break-inside: avoid;
+  }
+  .print-only thead {
+    display: table-header-group;
+  }
 }

@@ -2,14 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <meta name="theme-color" content="#e9edf1" />
     <script>
-      // Apply the saved theme before first paint to avoid a flash.
+      // Apply the saved theme before first paint to avoid a flash. "system"
+      // (the default) follows the OS preference.
       try {
         var housedocsTheme = localStorage.getItem('housedocs-theme');
-        document.documentElement.dataset.theme =
-          housedocsTheme === 'dark' ? 'dark' : 'light';
+        var housedocsDark =
+          housedocsTheme === 'dark' ||
+          (housedocsTheme !== 'light' &&
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = housedocsDark
+          ? 'dark'
+          : 'light';
       } catch (e) {
         document.documentElement.dataset.theme = 'light';
       }
@@ -19,9 +29,97 @@
       content="Explore your home's rooms, circuits, lighting, network, and maintenance in an interactive house model."
     />
     <title>SmartHome · House documentation</title>
+    <style>
+      .boot-fallback {
+        font-family: system-ui, sans-serif;
+        max-width: 520px;
+        margin: 12vh auto;
+        padding: 0 20px;
+        color: #1c2733;
+        line-height: 1.5;
+      }
+      [data-theme='dark'] .boot-fallback {
+        color: #e8edf2;
+      }
+      .boot-fallback h1 {
+        font-size: 18px;
+      }
+      .boot-fallback pre {
+        white-space: pre-wrap;
+        font-size: 12px;
+        opacity: 0.8;
+      }
+      .boot-fallback button {
+        font: inherit;
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: 1px solid #8494a1;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+      }
+      #boot[data-failed] .boot-wait {
+        display: none;
+      }
+      #boot:not([data-failed]) .boot-failed {
+        display: none;
+      }
+    </style>
   </head>
   <body>
+    <noscript>
+      <div class="boot-fallback">
+        <h1>HOUSE.SYS needs JavaScript</h1>
+        <p>
+          The interactive house atlas renders its model and inventory in the
+          browser. Enable JavaScript for this site and reload. The recorded
+          inventory itself lives in the repository at
+          <code>home-docs/apps/web/src/data/house.ts</code>.
+        </p>
+      </div>
+    </noscript>
+    <div id="boot" class="boot-fallback" aria-live="polite">
+      <p class="boot-wait">Loading the house atlas…</p>
+      <div class="boot-failed" role="alert">
+        <h1>The house atlas did not start</h1>
+        <p>
+          Its script bundle failed to load or run. Check the connection or the
+          hosted build, then reload. Nothing is cached offline.
+        </p>
+        <p>
+          <button type="button" onclick="window.location.reload()">
+            Reload
+          </button>
+        </p>
+      </div>
+    </div>
     <div id="root"></div>
+    <script>
+      // If the module bundle never mounts (blocked asset, load error), show a
+      // readable failure instead of a permanent "Loading…".
+      (function () {
+        var boot = document.getElementById('boot');
+        function failed() {
+          var b = document.getElementById('boot');
+          if (b) b.setAttribute('data-failed', '');
+        }
+        window.addEventListener(
+          'error',
+          function (e) {
+            if (e && e.target && e.target.tagName === 'SCRIPT') failed();
+          },
+          true,
+        );
+        setTimeout(function () {
+          if (
+            document.getElementById('boot') === boot &&
+            boot &&
+            boot.isConnected
+          )
+            failed();
+        }, 8000);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
