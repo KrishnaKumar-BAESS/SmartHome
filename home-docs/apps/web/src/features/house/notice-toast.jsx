@@ -14,7 +14,7 @@ export function NoticeToast({ view }) {
       role="status"
       className={exiting ? 'float-out' : 'float-in'}
       style={css(
-        `position:absolute;left:50%;bottom:calc(${bottom}px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;max-width:calc(100% - 32px);display:flex;align-items:center;gap:12px;padding:10px 12px 10px 14px;border-radius:12px;background:var(--popover);border:1px solid var(--lift-10);box-shadow:0 18px 44px -14px var(--shadow-2);color:var(--t1);font:500 12px 'Inter',system-ui,'Segoe UI',sans-serif`,
+        `position:absolute;left:0;right:0;margin:0 auto;width:fit-content;bottom:calc(${bottom}px + env(safe-area-inset-bottom));z-index:40;max-width:calc(100% - 32px);display:flex;align-items:center;gap:12px;padding:10px 12px 10px 14px;border-radius:12px;background:var(--popover);border:1px solid var(--lift-10);box-shadow:0 18px 44px -14px var(--shadow-2);color:var(--t1);font:500 12px 'Inter',system-ui,'Segoe UI',sans-serif`,
       )}
     >
       <span style={css('min-width:0')}>{n.text}</span>

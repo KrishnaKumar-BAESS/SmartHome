@@ -498,11 +498,13 @@ svg [tabindex]:focus-visible {
   background: transparent;
 }
 .help-sheet {
+  /* Centred by auto margins: an entry animation that ends in
+     `transform: none` cannot displace it. */
   position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  margin: auto;
   width: min(560px, calc(100vw - 24px));
+  height: fit-content;
   max-height: calc(100dvh - 24px);
   overflow: auto;
   padding: 20px 22px 22px;
@@ -511,7 +513,7 @@ svg [tabindex]:focus-visible {
   color: var(--t1);
   border: 1px solid var(--lift-10);
   box-shadow: 0 30px 80px -20px var(--shadow-1);
-  animation: floatIn 0.22s ease both;
+  animation: fadeIn 0.22s ease both;
 }
 .help-sheet::backdrop {
   background: rgba(7, 11, 15, 0.45);
