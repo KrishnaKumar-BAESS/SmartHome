@@ -11,6 +11,8 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
+- Add a checked-in Claude Code `launch.json` that previews the built security service on port 4319 without Xfinity configuration.
+
 - Add Windows account sign-in, encrypted credential persistence, automatic renewal, and camera reconnection to Security; keep ADB import as an optional diagnostic fallback.
 
 - Integrate verified Xfinity playback into SmartHome's Security view through the local security service; preserve the existing Xfinity app connection and clearly label inventory previews/history as demonstrations.

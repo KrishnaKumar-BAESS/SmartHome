@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "security-preview",
+      "runtimeExecutable": "pwsh",
+      "runtimeArgs": [
+        "-NoProfile",
+        "-Command",
+        "$env:PORT='4319'; $env:XFINITY_SIGNALING_HOSTS=''; $env:CAMERA_NAMES='{}'; node security/apps/camera-viewer/dist/server/index.js"
+      ],
+      "port": 4319
+    }
+  ]
+}
