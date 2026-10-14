@@ -61,6 +61,8 @@ states and are not descriptions of the current application layout.
 
 ### Fixed
 
+- Keep home-docs single-finger rotation active when touch capture transfers from the house SVG to the stage, and clear the dragging cursor on release.
+
 - Allow SmartHome access from Tailscale clients through an explicit second listener while retaining LAN access and Host/origin checks.
 
 - Accept and safely encode Comcast's routed signaling session IDs in the camera prototype; verify real video from all three household cameras with existing Xfinity app access preserved.

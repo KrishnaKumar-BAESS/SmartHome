@@ -653,6 +653,9 @@ export class HouseController extends Component {
   onPointerUp = (e) => this.endPointer(e);
   onPointerCancel = (e) => this.endPointer(e);
   onLostPointerCapture = (e) => {
+    // Touch starts with implicit capture on the SVG target. Transferring it
+    // to the stage bubbles a lost-capture event from that old target.
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) return;
     if (this.pointers.has(e.pointerId)) this.endPointer(e);
   };
 
@@ -1485,7 +1488,7 @@ export class HouseController extends Component {
   deriveScene(view) {
     const S = this.state;
     const c = this._sceneCache;
-    const camKey = `${S.yaw}|${S.pitch}|${S.zoom}|${S.panX}|${S.panY}|${S.explodeT}|${S.hoverRoom}`;
+    const camKey = `${S.yaw}|${S.pitch}|${S.zoom}|${S.panX}|${S.panY}|${S.explodeT}|${S.hoverRoom}|${S.dragging}`;
     if (c && c.opt === view.sceneOpt && c.camKey === camKey) return c.scene;
     const scene = {
       els: renderScene(this, view.sceneOpt),

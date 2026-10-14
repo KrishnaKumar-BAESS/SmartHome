@@ -7,6 +7,48 @@ const navButton = (page: Page, name: string) =>
     .getByRole('navigation', { name: 'Documentation views' })
     .getByRole('button', { name, exact: true });
 
+test('single-finger rotation continues after capture moves from SVG to stage', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const stage = page.getByTestId('house-stage');
+  const svg = stage.locator('svg');
+  await expect(svg.locator('path').first()).toBeAttached();
+  const point = await stage.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    for (let y = rect.top + 100; y < rect.bottom - 100; y += 20) {
+      for (let x = rect.left + 100; x < rect.right - 100; x += 20) {
+        if (document.elementFromPoint(x, y) instanceof SVGElement)
+          return { x, y };
+      }
+    }
+    throw new Error('No exposed SVG touch target');
+  });
+  const session = await page.context().newCDPSession(page);
+  await session.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ ...point, id: 1 }],
+  });
+  const before = await svg.innerHTML();
+  for (const offset of [20, 40, 60]) {
+    const previous = await svg.innerHTML();
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: point.x + offset, y: point.y + offset, id: 1 }],
+    });
+    await expect.poll(() => svg.innerHTML()).not.toBe(previous);
+  }
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchEnd',
+    touchPoints: [],
+  });
+  expect(await svg.innerHTML()).not.toBe(before);
+  await expect(stage).toHaveCSS('cursor', 'grab');
+  await session.detach();
+});
+
 test('all eight documentation views work without external runtime requests', async ({
   page,
 }) => {
