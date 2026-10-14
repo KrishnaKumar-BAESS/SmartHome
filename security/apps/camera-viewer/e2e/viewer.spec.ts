@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { createHash } from 'node:crypto';
 
 test('SmartHome Security embeds the real player and closes it with the panel', async ({
   page,
@@ -9,7 +10,15 @@ test('SmartHome Security embeds the real player and closes it with the panel', a
   const atlas = await page.request.get('/house/');
   const policy = atlas.headers()['content-security-policy'];
   expect(policy).toContain("frame-ancestors 'none'");
-  expect(policy).toMatch(/script-src 'self' 'sha256-[^']+';/);
+  const inlineScripts = [
+    ...(await atlas.text()).matchAll(/<script>([\s\S]*?)<\/script>/g),
+  ];
+  expect(inlineScripts.length).toBeGreaterThan(0);
+  const hashes = inlineScripts.map(
+    (script) =>
+      `'sha256-${createHash('sha256').update(script[1]).digest('base64')}'`,
+  );
+  expect(policy).toContain(`script-src 'self' ${hashes.join(' ')};`);
   const playerPage = await page.request.get('/?embedded=1');
   expect(playerPage.headers()['content-security-policy']).toContain(
     "frame-ancestors 'self'",
@@ -22,7 +31,7 @@ test('SmartHome Security embeds the real player and closes it with the panel', a
     expect((await page.request.get(path)).status()).toBe(404);
   await page.getByRole('button', { name: 'Security', exact: true }).click();
   await page
-    .getByRole('button', { name: '▦ Live cameras', exact: true })
+    .getByRole('button', { name: 'Open live cameras XFINITY', exact: true })
     .click();
   const player = page.frameLocator('iframe[title="Live camera player"]');
   await player.getByText('Setup and troubleshooting', { exact: true }).click();
@@ -35,10 +44,13 @@ test('SmartHome Security embeds the real player and closes it with the panel', a
   await page.keyboard.press('Escape');
   await expect(page.locator('iframe')).toHaveCount(0);
   await expect(
-    page.getByRole('button', { name: '▦ Live cameras', exact: true }),
+    page.getByRole('button', {
+      name: 'Open live cameras XFINITY',
+      exact: true,
+    }),
   ).toBeFocused();
   await page
-    .getByRole('button', { name: '▦ Live cameras', exact: true })
+    .getByRole('button', { name: 'Open live cameras XFINITY', exact: true })
     .click();
   await expect(player.locator('#live-label')).toHaveText('STANDBY');
   await page.getByRole('button', { name: 'Close ✕' }).click();
