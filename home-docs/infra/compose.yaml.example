@@ -4,7 +4,7 @@ services:
     container_name: smarthome
     user: "1000:1000"
     working_dir: /app
-    # The application binds only HOUSE_HOST, not every host interface.
+    # The application binds only HOUSE_HOST and optional HOUSE_TAILSCALE_HOST.
     network_mode: host
     command: ["node", "server/index.js"]
     env_file: service.env.local

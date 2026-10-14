@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
+import { isAllowedHousePeer } from './network-access.js';
 import { createPiholeService } from './pihole-service.js';
 
 export function createHouseServer(options: {
@@ -27,14 +28,9 @@ export function createHouseServer(options: {
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('Cache-Control', 'no-store');
-    const address = (req.socket.remoteAddress ?? '').replace(/^::ffff:/, '');
-    // This deployment is a private 192.168.0.0/24 home-network service.
+    // Tailnet peers are accepted only on the explicit Tailscale listener.
     if (
-      !(
-        address === '127.0.0.1' ||
-        address === '::1' ||
-        /^192\.168\.0\.\d{1,3}$/.test(address)
-      ) ||
+      !isAllowedHousePeer(req.socket.remoteAddress ?? '', options.host) ||
       req.headers.host !== `${options.host}:${options.port}`
     ) {
       res.writeHead(403).end('Forbidden');

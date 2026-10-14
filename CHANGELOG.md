@@ -59,6 +59,8 @@ states and are not descriptions of the current application layout.
 
 ### Fixed
 
+- Allow SmartHome access from Tailscale clients through an explicit second listener while retaining LAN access and Host/origin checks.
+
 - Accept and safely encode Comcast's routed signaling session IDs in the camera prototype; verify real video from all three household cameras with existing Xfinity app access preserved.
 
 - Match the camera prototype's outgoing ICE candidate payload to the Xfinity Android app protocol.

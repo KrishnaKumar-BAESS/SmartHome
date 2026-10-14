@@ -7,14 +7,19 @@ No public tunnel or automated deployment pipeline is configured.
 
 ## Home server deployment
 
-The household URL is `http://192.168.0.202:8090`. Homepage links to it under
+The LAN URL is `http://192.168.0.202:8090`; tailnet devices use
+`http://100.106.235.89:8090`. Homepage links to the LAN URL under
 Family & Everyday, with an explicit development label. The UI also displays a
 persistent warning: features and recorded home data may be incomplete or inaccurate.
 
 The service runs from `/home/denkrishna/homelab/apps/smarthome`, using a pinned
 Node 22 container, `restart: unless-stopped`, resource limits, a read-only release
-mount, and `/healthz` checks. It binds only `192.168.0.202:8090`; the request handler
-accepts that Host and local/192.168.0.0/24 peers. Do not add a public tunnel to this
+mount, and `/healthz` checks. It binds explicitly to the LAN address and the
+optional `HOUSE_TAILSCALE_HOST`, never a wildcard. Each listener accepts its own
+Host header. LAN requests accept local/192.168.0.0/24 peers; the Tailscale listener
+accepts local/100.64.0.0/10 peers, subject to existing Tailscale access policies.
+Tailscale must be connected on both devices. No public tunnel is configured.
+Do not add a public tunnel to this
 unauthenticated household app. This is network-level access, not per-user login.
 
 To update after building and checking a chosen commit:
