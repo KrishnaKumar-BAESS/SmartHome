@@ -2,9 +2,10 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import * as house from './house';
+import discovery from './network-discovery.fixture.json';
 
 describe('house inventory migration', () => {
-  it('preserves every inventory field and floor coordinate from the archived prototype', () => {
+  it('preserves historical inventory and geometry except reviewed network discovery corrections', () => {
     const original = readFileSync(
       new URL(
         '../../../../../docs/archive/home-documentation/home-documentation.dc.html',
@@ -23,7 +24,11 @@ describe('house inventory migration', () => {
       { timeout: 1000 },
     ) as Record<string, unknown>;
     for (const [name, value] of Object.entries(house)) {
-      expect(value, name).toEqual(JSON.parse(JSON.stringify(baseline[name])));
+      expect(value, name).toEqual(
+        name in discovery
+          ? discovery[name as keyof typeof discovery]
+          : JSON.parse(JSON.stringify(baseline[name])),
+      );
     }
   });
 
@@ -57,6 +62,17 @@ describe('house inventory migration', () => {
     }
     for (const circuit of house.circuits)
       expect(house.boxes.some((box) => box.id === circuit.box)).toBe(true);
+    for (const node of house.nodes) {
+      expect(
+        roomIds.has(
+          house.nodeRoomId[node.room as keyof typeof house.nodeRoomId],
+        ),
+      ).toBe(true);
+      if (node.uplink)
+        expect(house.nodes.some((n) => n.id === node.uplink)).toBe(true);
+    }
+    for (const server of house.servers)
+      expect(house.nodes.some((n) => n.id === server.node)).toBe(true);
     for (const node of house.nodes)
       for (const network of node.nets)
         expect(house.networks.some((item) => item.id === network)).toBe(true);

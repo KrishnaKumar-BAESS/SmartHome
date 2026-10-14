@@ -743,8 +743,16 @@ export function renderScene(house, opt = {}) {
       const rid = house.nodeRoomId[n.room];
       const base = rid ? roomCeil(rid) : null;
       if (!base) return;
-      const cx = base.c.sx,
-        cy = base.c.sy - 13 * ms;
+      const point = n.position
+        ? projR(
+            rid,
+            n.position.x,
+            n.position.y,
+            drawBase(base.r.floor) + n.position.z,
+          )
+        : base.c;
+      const cx = point.sx,
+        cy = point.sy - (n.position ? 0 : 13 * ms);
       els.push(
         RE('rect', {
           key: `ov-node-${n.id}`,
@@ -767,7 +775,7 @@ export function renderScene(house, opt = {}) {
             cx,
             cy,
             11 * ms,
-            `${n.name}, mesh node${n.status === 'warn' ? ', recorded weak' : ''}`,
+            `${n.name}, ${n.role}${n.status === 'warn' ? ', recorded weak' : ''}`,
             () => opt.onNodeClick(n.id),
             'rect',
           ),
@@ -816,11 +824,21 @@ export function renderScene(house, opt = {}) {
     house.nodes.forEach((n) => {
       const rid = house.nodeRoomId[n.room];
       const base = rid ? roomCeil(rid) : null;
-      if (base) pos[n.id] = { x: base.c.sx, y: base.c.sy - 12 * ms };
+      if (base) {
+        const point = n.position
+          ? projR(
+              rid,
+              n.position.x,
+              n.position.y,
+              drawBase(base.r.floor) + n.position.z,
+            )
+          : base.c;
+        pos[n.id] = { x: point.sx, y: point.sy - (n.position ? 0 : 12 * ms) };
+      }
     });
     const gw = house.nodes[0];
     house.nodes.forEach((n) => {
-      if (n.id === gw.id) return;
+      if (n.id === gw.id || n.uplink !== gw.id) return;
       if (!pos[n.id] || !pos[gw.id]) return;
       const wired = /Wired/i.test(n.backhaul);
       const active = opt.selNode === n.id || opt.selNode === gw.id;
@@ -856,7 +874,7 @@ export function renderScene(house, opt = {}) {
       const sel = opt.selNode === n.id;
       const isGw = n.id === gw.id;
       const col =
-        n.status === 'ok' ? (isGw ? '#3b6fb0' : '#46739f') : '#c0892f';
+        n.status === 'observed' ? (isGw ? '#3b6fb0' : '#46739f') : '#c0892f';
       const s = (isGw ? 14 : 11) * ms;
       els.push(
         RE('rect', {

@@ -1159,6 +1159,8 @@ export class HouseController extends Component {
           n.plug,
           n.backhaul,
           n.model,
+          n.ip,
+          n.mac,
           n.status === 'warn' ? 'weak' : '',
           'router wifi network node mesh access point gateway',
         ),
@@ -1510,7 +1512,7 @@ export class HouseController extends Component {
     const showAllResults = () => set({ searchAll: true, searchSel: -1 });
     const suggestDefs = [
       ['Garage outlets', 'm02'],
-      ['Mesh Gateway', 'n1'],
+      ['TP-Link gateway', 'n1'],
       [
         'Overdue bulbs',
         null,
@@ -2084,7 +2086,7 @@ export class HouseController extends Component {
         role: nd.role,
         room: nd.room,
         statusColor: this.stColor(nd.status),
-        statusLabel: this.stLabel(nd.status) || 'OK',
+        statusLabel: 'Observed at scan',
         netDots: nd.nets.map((x) => ({
           id: x,
           color: netColor[x],
@@ -2112,11 +2114,14 @@ export class HouseController extends Component {
       plug: snd.plug,
       plugRef: this.circuitLink(snd.plug, goMode),
       statusColor: this.stColor(snd.status),
-      statusLabel: this.stLabel(snd.status) || 'OK',
+      statusLabel: 'Observed at scan',
+      ip: snd.ip,
+      mac: snd.mac,
+      observedAt: snd.observedAt,
+      evidence: snd.evidence,
+      location: `${snd.locationConfidence} · ${snd.locationNote}`,
       statusNote:
-        snd.status === 'warn'
-          ? 'Recorded as weak — wireless backhaul; treat as documentation, not a live health check.'
-          : '',
+        'Discovery snapshot, not live monitoring. Unknown links and power circuits have not been inferred.',
       netDots: snd.nets.map((x) => ({
         id: x,
         color: netColor[x],
@@ -2777,7 +2782,7 @@ export class HouseController extends Component {
           swatch: `width:14px;height:10px;border-radius:2px;background:var(--panel-marker);border:1px solid var(--panel-marker-bd);flex-shrink:0`,
         },
         { label: 'Flagged fixture', swatch: sw('#c0892f') },
-        { label: 'Mesh node', swatch: sw('#3b6fb0', true) },
+        { label: 'Network device', swatch: sw('#3b6fb0', true) },
       ];
     } else if (isElectrical) {
       legendTitle = 'CIRCUIT TYPE';
@@ -2799,16 +2804,16 @@ export class HouseController extends Component {
     } else if (isNetwork) {
       legendTitle = 'NETWORKS';
       legendItems = [
-        { label: 'Main / Trusted', swatch: sw('#3b6fb0', true) },
+        { label: 'Family', swatch: sw('#3b6fb0', true) },
         { label: 'IoT', swatch: sw('#3f9a8c', true) },
         { label: 'Guest', swatch: sw('#c0892f', true) },
         {
-          label: 'Gateway (diamond) · weak node (amber)',
+          label: 'Gateway (diamond) · discovered device',
           swatch: sw('#c0892f', true),
         },
       ];
       legendNote =
-        'Links show recorded backhaul to the gateway, not measured paths.';
+        'Only the observed host-to-gateway association is drawn. Other uplinks are unknown; positions are schematic.';
     } else if (isSound) {
       legendTitle = 'SOUND';
       legendItems = [
@@ -3210,6 +3215,12 @@ export class HouseController extends Component {
             'plug',
             'networks',
             'status',
+            'ip',
+            'mac',
+            'observed_at',
+            'location_confidence',
+            'location_note',
+            'evidence',
           ],
           this.nodes.map((n) => ({
             name: n.name,
@@ -3220,6 +3231,12 @@ export class HouseController extends Component {
             plug: n.plug,
             networks: n.nets.map((x) => netName[x]).join('; '),
             status: n.status,
+            ip: n.ip,
+            mac: n.mac,
+            observed_at: n.observedAt,
+            location_confidence: n.locationConfidence,
+            location_note: n.locationNote,
+            evidence: n.evidence,
           })),
         );
       else if (isSecurity)

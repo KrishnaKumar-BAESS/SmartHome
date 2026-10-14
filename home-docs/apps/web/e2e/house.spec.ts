@@ -250,3 +250,47 @@ test('the model is keyboard operable: rooms are buttons and arrows rotate', asyn
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Garage' })).toBeVisible();
 });
+
+test('network discovery is searchable by IP and shows placement provenance', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await search(page).fill('192.168.0.6');
+  await page
+    .getByRole('option')
+    .filter({ hasText: 'NETGEAR R7000' })
+    .first()
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'NETGEAR R7000', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('complementary', { name: 'Network details' })
+      .getByText('04:a1:51:2a:f9:02', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('complementary', { name: 'Network details' })
+      .getByText(/Owner confirmed.*midpoint of west wall/),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('complementary', { name: 'Network details' })
+      .getByText('2026-10-14 10:20 MDT', { exact: true }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: `/tmp/smarthome-network-${page.viewportSize()?.width}.png`,
+  });
+  await search(page).fill('192.168.0.202');
+  await page
+    .getByRole('option')
+    .filter({ hasText: 'server · this machine' })
+    .first()
+    .click();
+  await expect(
+    page
+      .getByRole('complementary', { name: 'Network details' })
+      .getByText(/Owner confirmed.*Parlor north wall/),
+  ).toBeVisible();
+});

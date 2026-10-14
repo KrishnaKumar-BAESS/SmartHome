@@ -450,6 +450,12 @@ export function SystemList({ view }) {
       {view.isNetwork ? (
         <>
           <Header title="Networks" onExport={view.exportCurrent}>
+            <p style={{ fontSize: 12, color: 'var(--t3)' }}>
+              Discovery: Oct 14, 2026 · 10:20 MDT. Snapshot, not live health.
+              Locations are approximate except the owner-confirmed Parlor host
+              and Office router. Unmanaged switches may be invisible to this
+              scan.
+            </p>
             <div
               style={css(
                 'display:flex;flex-direction:column;gap:5px;margin-top:10px',
@@ -482,9 +488,13 @@ export function SystemList({ view }) {
                     <div style={css(`font:400 10px ${MONO};color:var(--t3)`)}>
                       {`SSID ${n.ssid} · ${n.members} node${n.members === 1 ? '' : 's'}`}
                     </div>
-                  </div>
-                  <div style={css(`font:400 11px ${MONO};color:var(--t3)`)}>
-                    {n.band}
+                    <div
+                      style={css(
+                        `font:400 10px ${MONO};color:var(--t3);margin-top:3px;overflow-wrap:anywhere`,
+                      )}
+                    >
+                      {n.band}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -498,8 +508,8 @@ export function SystemList({ view }) {
             </div>
           </Header>
           <div style={css('overflow:auto;padding:11px 13px 14px')}>
-            <h3 style={css(SECTION)}>{'MESH NODES'}</h3>
-            <div role="listbox" aria-label="Mesh nodes">
+            <h3 style={css(SECTION)}>{'NETWORK DEVICES'}</h3>
+            <div role="listbox" aria-label="Network devices">
               {(view.nodeList ?? []).map((n, index) => (
                 <Fragment key={n.id ?? index}>
                   <Option

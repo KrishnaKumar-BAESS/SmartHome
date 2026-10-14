@@ -890,7 +890,12 @@ export function SystemDetails({ view }) {
             ) : null}
             <Specs
               rows={[
-                { k: 'Networks', v: view.nodeDet.netText },
+                { k: 'IP address', v: view.nodeDet.ip },
+                { k: 'MAC address', v: view.nodeDet.mac },
+                { k: 'Last observed', v: view.nodeDet.observedAt },
+                { k: 'Placement', v: view.nodeDet.location },
+                { k: 'Evidence', v: view.nodeDet.evidence },
+                { k: 'Networks', v: view.nodeDet.netText || 'Unverified' },
                 { k: 'Backhaul', v: view.nodeDet.backhaul },
                 {
                   k: 'Plugged into',

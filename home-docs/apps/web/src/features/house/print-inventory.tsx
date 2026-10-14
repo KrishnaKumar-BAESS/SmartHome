@@ -121,15 +121,15 @@ export function PrintInventory() {
         ])}
       />
       <Table
-        caption="Mesh nodes"
-        head={['Node', 'Role', 'Room', 'Backhaul', 'Plug', 'Status']}
+        caption="Network discovery · 2026-10-14 10:20 MDT (not live)"
+        head={['Node', 'Role', 'Room', 'IP', 'MAC', 'Placement']}
         rows={nodes.map((n) => [
           n.name,
           n.role,
           n.room,
-          n.backhaul,
-          n.plug,
-          status(n.status),
+          n.ip,
+          n.mac,
+          `${n.locationConfidence}: ${n.locationNote}`,
         ])}
       />
       <Table

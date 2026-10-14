@@ -141,3 +141,32 @@ Preserve unknown hardware descriptions as unknown until a source is verified.
 
 There is no import script or data migration service today. Adding one is a
 separate design change, not an implied part of editing a record.
+
+## Network discovery — October 14, 2026
+
+The active network inventory replaces the fictional July nodes and server associations
+with eight observed devices and three observed SSIDs. The reviewed discovery fixture
+is `apps/web/src/data/network-discovery.fixture.json`; historical parity remains enforced
+for all other inventory and geometry. The original workbook and archive are unchanged.
+
+Discovery used an authorized `nmap -sn -n 192.168.0.0/24` sweep, a limited TCP scan
+(22, 53, 80, 443, 5000, 8080, 8443), neighbor MACs, cached local Wi-Fi BSSIDs,
+and unauthenticated HTTP branding. No login or configuration changes were made.
+The sweep returned 11 addresses, including two unidentified clients (.32 and .147),
+which are not classified as network infrastructure. Pi-hole's .155 and .254 addresses
+share a MAC and page identity, so they are represented once. Switches without management
+addresses, sleeping devices, and other subnets cannot be ruled out by this discovery.
+
+Each node records IP, MAC, observation time, identity evidence, and placement confidence.
+`observed` means reachable during the scan, never current health. IPs may change with DHCP.
+Search accepts IP/MAC; CSV and print include discovery details. SSID membership for
+radio prefixes is inferred where noted and does not establish VLAN isolation or security.
+Unverified models, power circuits, and backhaul remain unknown. Only this host's observed
+gateway association is drawn; it does not assert a physical cable route.
+
+The owner places the host in Parlor, flush with its north wall, approximately 1.5 feet
+from its east wall at floor level, and the R7000 at the west-wall midpoint of the
+second-floor room still named Office. Positions use the existing model convention
+(east = +x, north = -y); model units are not surveyed feet, so the host's east-wall
+offset is approximate. Router height is unverified. Other room assignments are provisional.
+The `position` field supplies x/y and height above the floor; absent positions use room centers.
