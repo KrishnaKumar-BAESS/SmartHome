@@ -9,6 +9,8 @@ implemented state.
 | [0001 — Monorepo of subsystems](0001-monorepo-of-subsystems.md)          | Accepted; tooling consequences extended by 0002 | Subsystem ownership and reserved integration boundaries                            |
 | [0002 — Native React and pnpm workspace](0002-native-react-workspace.md) | Accepted                                        | Static native app, shared build/verification tooling, preserved migration baseline |
 
+[0006 — Local Pi-hole statistics](0006-local-pihole-stats.md) adds a development/preview stats bridge and native dashboard navigation.
+
 ## Create or evolve a decision
 
 [0005 — Renewable local camera account](0005-renewable-camera-account.md)

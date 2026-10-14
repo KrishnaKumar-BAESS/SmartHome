@@ -45,6 +45,14 @@ KumarSec and FamSecDash remain separate repositories. Root workspace discovery
 includes `home-docs/apps/*` and `security/apps/*`. A shared toolchain change can affect
 all workspace packages. Integrated Security hosting requires both app builds.
 
+## Pi-hole during local development
+
+The home-docs Vite server provides a read-only Pi-hole aggregate-stats endpoint for
+local development and preview. Credentials stay server-side; the native dashboard
+opens in another tab. Static hosting and the camera service do not provide this
+endpoint. See [decision 0006](decisions/0006-local-pihole-stats.md) and the
+[setup guide](../home-docs/docs/user-guide.md#pi-hole-statistics-and-dashboard).
+
 ## Browser execution
 
 ```mermaid

@@ -1,4 +1,6 @@
 import { defineConfig, type Plugin } from 'vitest/config';
+import { loadEnv } from 'vite';
+import { piholePlugin } from './server/pihole-service';
 import react from '@vitejs/plugin-react';
 
 // The primary faces are preloaded so first paint does not fall back and
@@ -35,10 +37,20 @@ function preloadFonts(): Plugin {
   };
 }
 
-export default defineConfig({
-  base: './',
-  plugins: [react(), preloadFonts()],
-  server: { port: 5173, strictPort: true },
-  preview: { port: 4173, strictPort: true },
-  test: { include: ['src/**/*.test.ts'] },
+export default defineConfig(({ mode }) => {
+  const env = { ...loadEnv(mode, process.cwd(), ''), ...process.env };
+  return {
+    base: './',
+    plugins: [
+      react(),
+      preloadFonts(),
+      piholePlugin(
+        env.PIHOLE_URL || 'http://192.168.0.254',
+        env.PIHOLE_APP_PASSWORD || '',
+      ),
+    ],
+    server: { port: 5173, strictPort: true },
+    preview: { port: 4173, strictPort: true },
+    test: { include: ['src/**/*.test.ts', 'server/**/*.test.ts'] },
+  };
 });

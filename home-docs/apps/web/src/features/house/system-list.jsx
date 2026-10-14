@@ -1,3 +1,4 @@
+import { PiholePanel } from './pihole-panel';
 import { Fragment } from 'react';
 import { css } from '../../lib/css';
 import { optionOnKey } from '../../lib/keyboard';
@@ -450,6 +451,7 @@ export function SystemList({ view }) {
       {view.isNetwork ? (
         <>
           <Header title="Networks" onExport={view.exportCurrent}>
+            <PiholePanel />
             <p style={{ fontSize: 12, color: 'var(--t3)' }}>
               Discovery: Oct 14, 2026 · 10:20 MDT. Snapshot, not live health.
               Locations are approximate except the owner-confirmed Parlor host

@@ -152,3 +152,38 @@ names have copy buttons.
 
 Inventory corrections follow the [data editing workflow](data-model.md#intentional-inventory-changes);
 there is no in-app editor.
+
+## Pi-hole statistics and dashboard
+
+In Network, choose **Pi-hole stats & dashboard** from the list header or the
+Pi-hole device details. The panel shows query totals, blocked queries, blocking
+percentage, active clients, blocklist size, and blocking state. It refreshes every
+30 seconds while open and includes a manual refresh button. Failed requests replace
+the summary with an error; they never turn missing data into zero counts.
+
+Choose **Open Pi-hole dashboard** for the native Pi-hole dashboard in another tab.
+Sign in there as usual; its login is separate from the stats connection. Close that
+tab or switch back to SmartHome. **Back to SmartHome** or Escape closes the stats
+panel, preserving your selected device and floor view.
+
+For embedded stats during development:
+
+1. Create a Pi-hole app password in its Settings → Web interface / API area. The
+   installed Pi-hole has two-factor authentication enabled; use an app password
+   for this unattended connection.
+2. Add `PIHOLE_APP_PASSWORD=your-app-password` to the ignored
+   `home-docs/apps/web/.env.local`. Keep `PIHOLE_URL=http://192.168.0.254` unless the
+   appliance address changes. An example is in `apps/web/.env.example`.
+3. From the repository root, run `pnpm dev` and open its localhost URL. Restart
+   the server after editing local settings. `pnpm preview` also supports the bridge
+   after `pnpm build`.
+
+The password and Pi-hole session remain in the local server. Never put the password
+in a `VITE_` variable. The bridge only returns aggregate statistics and does not
+change DNS blocking or other Pi-hole settings. Requests are coalesced and cached
+for up to ten seconds. No credentials are required just to open the native dashboard.
+
+This integration currently runs through the Vite development/preview server, bound
+to loopback. A static `dist/` deployment or the separate camera server has no Pi-hole
+stats endpoint; the dashboard link remains usable there. A production stats service
+will need an authenticated server integration when hosting is designed.

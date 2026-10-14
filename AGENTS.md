@@ -30,6 +30,10 @@ Documentation navigation: [docs/README.md](docs/README.md).
    releases unless requested.
 8. Secrets belong in ignored environment files. Serve production `dist/` only,
    never the repository root or reference material.
+   Whenever adding an ignored, hand-authored local configuration file, also add
+   or update a tracked `.example` counterpart with all required settings and no
+   secrets (for example, `.env.local` → `.env.example`). Generated build output,
+   dependencies, and test artifacts do not need example copies.
 
 Run commands at the root. Browser setup: `pnpm exec playwright install chromium`.
 See [docs/development.md](docs/development.md) for checks and rollback details.

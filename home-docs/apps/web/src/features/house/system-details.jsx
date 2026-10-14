@@ -1,3 +1,4 @@
+import { PiholePanel } from './pihole-panel';
 import { Fragment } from 'react';
 import { css } from '../../lib/css';
 import { optionOnKey } from '../../lib/keyboard';
@@ -879,6 +880,7 @@ export function SystemDetails({ view }) {
               {' · '}
               {view.nodeDet.room}
             </div>
+            {view.nodeDet.id === 'n7' ? <PiholePanel /> : null}
             {view.nodeDet.statusNote ? (
               <div
                 style={css(

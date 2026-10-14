@@ -1,0 +1,107 @@
+.pihole-entry {
+  margin: 12px 0;
+}
+.pihole-dialog {
+  box-sizing: border-box;
+  width: min(760px, calc(100vw - 24px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--lift-12);
+  border-radius: 16px;
+  color: var(--t1);
+  background: var(--bg);
+  box-shadow: 0 20px 80px #0006;
+  font:
+    400 13px/1.5 'Inter',
+    sans-serif;
+}
+.pihole-dialog::backdrop {
+  background: #071019b8;
+  backdrop-filter: blur(5px);
+}
+.pihole-dialog header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid var(--lift-12);
+}
+.pihole-dialog h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.pihole-dialog h3 {
+  font-size: 15px;
+  margin: 0;
+}
+.pihole-dialog p {
+  color: var(--t3);
+  margin: 8px 0;
+}
+.pihole-content {
+  padding: 20px;
+}
+.pihole-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pihole-dialog button,
+.pihole-dialog a {
+  display: inline-block;
+  font: inherit;
+  font-weight: 600;
+  color: var(--t1);
+  background: var(--lift-06);
+  border: 1px solid var(--lift-12);
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.pihole-dialog button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.pihole-dialog a {
+  color: var(--acc-text);
+}
+.pihole-notice {
+  padding: 16px;
+  margin-top: 20px;
+  border: 1px solid var(--lift-12);
+  border-radius: 10px;
+}
+.pihole-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.pihole-metrics div {
+  padding: 18px;
+  border: 1px solid var(--lift-12);
+  border-radius: 10px;
+}
+.pihole-metrics dt {
+  color: var(--t3);
+}
+.pihole-metrics dd {
+  margin: 8px 0 0;
+  font-size: 26px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 500px) {
+  .pihole-dialog header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .pihole-content,
+  .pihole-dialog header {
+    padding: 16px;
+  }
+  .pihole-metrics div {
+    padding: 12px;
+  }
+}
