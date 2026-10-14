@@ -15,6 +15,13 @@ tracked in the camera service guide.
 
 ## System context
 
+The [agent API](../home-docs/docs/agent-api.md) exposes recorded data and explicit
+view commands from the mounted atlas controller. The local service also hosts
+an admin console and scoped HTTP facade. An authenticated event stream connects
+each browser tab; HTTP calls target a specific tab and receive its committed
+result. API key hashes persist on the host, while admin sessions and tab routing
+stay in memory. [ADR 0006](decisions/0006-agent-access.md) records this boundary.
+
 ```mermaid
 flowchart LR
   Person["Atlas user"] --> Browser["Browser: HOUSE.SYS"]

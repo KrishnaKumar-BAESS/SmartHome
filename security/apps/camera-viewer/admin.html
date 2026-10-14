@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SmartHome · Agent access</title>
+    <script type="module" src="/src/admin.ts"></script>
+  </head>
+  <body>
+    <main class="console">
+      <header class="header">
+        <div>
+          <a href="/house/">SmartHome atlas</a>
+          <h1>Agent access</h1>
+          <p>Decide what each program can see and control.</p>
+        </div>
+        <button id="logout" hidden>Sign out</button>
+      </header>
+      <p id="message" role="status" aria-live="polite"></p>
+      <section
+        id="login-panel"
+        class="login"
+        aria-labelledby="login-title"
+        hidden
+      >
+        <h2 id="login-title">Administrator sign-in</h2>
+        <p>
+          Use the administrator token from
+          <code>security/apps/camera-viewer/agent-admin.local</code> on this
+          computer. The service creates it on first start.
+        </p>
+        <form id="login-form">
+          <label for="admin-token">Administrator token</label>
+          <input
+            id="admin-token"
+            type="password"
+            required
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="primary" type="submit">Sign in</button>
+        </form>
+      </section>
+      <div id="workspace" hidden>
+        <section class="key-section" aria-labelledby="keys-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="keys-title">API keys</h2>
+              <p>
+                Give each agent its own key. Permission changes and revocation
+                apply to subsequent requests.
+              </p>
+            </div>
+            <button id="new-key" class="primary">Create key</button>
+          </div>
+          <section
+            id="new-secret"
+            class="secret"
+            aria-labelledby="secret-title"
+            hidden
+          >
+            <h3 id="secret-title">Save this key now</h3>
+            <p>
+              This is the only time the full key is shown. Store it in your
+              program’s secret configuration.
+            </p>
+            <label for="token-value">New API key</label
+            ><textarea
+              id="token-value"
+              rows="2"
+              readonly
+              spellcheck="false"
+            ></textarea>
+            <div class="actions">
+              <button id="copy-key">Copy key</button
+              ><button id="dismiss-key">I’ve saved it</button>
+            </div>
+          </section>
+          <p id="empty-keys" hidden>
+            No keys yet. Create one with only the permissions your program
+            needs.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">
+                API keys and permissions
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Key</th>
+                  <th scope="col">Permissions</th>
+                  <th scope="col">Status &amp; usage</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="keys"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="tabs-section" aria-labelledby="tabs-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="tabs-title">Connected atlas tabs</h2>
+              <p>
+                Open the atlas in this signed-in browser. Programs target a tab
+                ID so they control the intended screen.
+              </p>
+            </div>
+            <button id="refresh">Refresh</button>
+          </div>
+          <ul id="tabs"></ul>
+          <p>
+            <a href="/house/" target="_blank" rel="noopener"
+              >Open atlas in a new tab</a
+            >
+          </p>
+        </section>
+        <aside class="permissions">
+          <h2>Permission guide</h2>
+          <dl>
+            <dt>Read inventory</dt>
+            <dd>
+              Explore recorded rooms, equipment, relationships, and geometry.
+            </dd>
+            <dt>Read view</dt>
+            <dd>
+              Inspect the selected record, visible rooms, filters, and view
+              settings.
+            </dd>
+            <dt>Control view</dt>
+            <dd>
+              Change what appears in an atlas tab. Does not edit inventory or
+              operate physical devices.
+            </dd>
+          </dl>
+          <p>
+            API keys cannot administer other keys or access camera credentials.
+            This service is available only on this computer.
+          </p>
+        </aside>
+      </div>
+      <dialog id="key-dialog" aria-labelledby="key-title">
+        <form id="key-form">
+          <h2 id="key-title">Create API key</h2>
+          <label for="key-name">Name</label
+          ><input
+            id="key-name"
+            required
+            maxlength="80"
+            placeholder="e.g. House planning assistant"
+          />
+          <fieldset>
+            <legend>Permissions</legend>
+            <label class="check"
+              ><input type="checkbox" name="scope" value="data:read" />Read
+              inventory</label
+            >
+            <label class="check"
+              ><input type="checkbox" name="scope" value="view:read" />Read
+              view</label
+            >
+            <label class="check"
+              ><input type="checkbox" name="scope" value="view:write" />Control
+              view</label
+            >
+          </fieldset>
+          <label for="key-expiry">Expires at (local time)</label
+          ><input id="key-expiry" type="datetime-local" />
+          <p class="hint">Leave empty for no expiry.</p>
+          <p id="form-error" role="alert"></p>
+          <div class="actions">
+            <button id="save-key" class="primary" type="submit">
+              Create key</button
+            ><button id="cancel-key" type="button">Cancel</button>
+          </div>
+        </form>
+      </dialog>
+      <dialog id="revoke-dialog" aria-labelledby="revoke-title">
+        <h2 id="revoke-title">Revoke API key?</h2>
+        <p id="revoke-description"></p>
+        <p>
+          New requests will be denied. Commands already delivered to a tab may
+          have taken effect.
+        </p>
+        <div class="actions">
+          <button id="confirm-revoke" class="danger">Revoke key</button
+          ><button id="cancel-revoke">Keep key</button>
+        </div>
+      </dialog>
+    </main>
+  </body>
+</html>

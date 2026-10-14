@@ -17,6 +17,9 @@ earlier decisions and are not setup instructions.
 
 ## Understand and operate
 
+- [Agent API and access console](../home-docs/docs/agent-api.md): structured data,
+  visible-view commands, scoped keys, and administrator workflows.
+
 | Guide                                                         | Audience and purpose                                                                           |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | [Architecture](architecture.md)                               | System boundaries, runtime flow, and extension points                                          |

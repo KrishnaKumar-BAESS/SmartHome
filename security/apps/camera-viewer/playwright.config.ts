@@ -10,7 +10,12 @@ export default defineConfig({
   webServer: {
     command: 'node dist/server/index.js',
     url: 'http://127.0.0.1:4319',
-    env: { PORT: '4319', XFINITY_SIGNALING_HOSTS: '', CAMERA_NAMES: '{}' },
+    env: {
+      PORT: '4319',
+      XFINITY_SIGNALING_HOSTS: '',
+      CAMERA_NAMES: '{}',
+      AGENT_STATE_DIR: 'test-results/agent-state',
+    },
     reuseExistingServer: false,
   },
 });

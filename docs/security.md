@@ -52,6 +52,13 @@ this is not a general network-security audit.
 
 ## Credentials and local configuration
 
+The [agent access console](../home-docs/docs/agent-api.md#storage-and-trust-boundary)
+adds separate administrator sessions and scoped API keys to the local service.
+API key hashes and metadata persist in ignored `agent-keys.local`; a separate
+host-local `agent-admin.local` bootstrap token signs the operator into the console.
+Keys authorize only the agent HTTP endpoints. Static inventory and direct
+in-page scripting remain accessible to viewers with access to the atlas.
+
 Do not commit credentials, tokens, camera URLs containing passwords, or secret
 keys. The root ignore rules cover `.env`, `.env.*`, and `*.local`, while
 allowing `.env.example`. Ignore rules do not protect a file already tracked by Git.
