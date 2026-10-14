@@ -14,6 +14,7 @@ import {
 import { SignalingConnection } from './signaling.js';
 import type { Account } from './account.js';
 import type { CameraAccount } from './camera-account.js';
+import type { AgentService } from './agent-service.js';
 
 interface AppOptions {
   port: number;
@@ -24,6 +25,7 @@ interface AppOptions {
   readSessions?: () => Promise<CameraSession[]>;
   account?: Account;
   cameraAccount?: CameraAccount;
+  agentService?: AgentService;
 }
 
 export function isLocalRequest(request: IncomingMessage, port: number) {
@@ -89,6 +91,8 @@ export function createViewerServer(options: AppOptions) {
       'Content-Security-Policy',
       "default-src 'self'; connect-src 'self'; media-src 'self' blob:; style-src 'self'; script-src 'self'; frame-src 'self'; frame-ancestors 'self'; base-uri 'none'",
     );
+    if (await options.agentService?.handle(request, response, options.port))
+      return;
     if (!isLocalRequest(request, options.port))
       return json(response, 403, {
         error: 'Only local, same-origin requests are accepted.',
@@ -302,6 +306,7 @@ export function createViewerServer(options: AppOptions) {
   return {
     server,
     close: () => {
+      options.agentService?.close();
       for (const id of streams.keys()) stop(id);
       server.close();
     },

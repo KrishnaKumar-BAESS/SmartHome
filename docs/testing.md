@@ -1,5 +1,12 @@
 # Testing and verification
 
+Agent coverage includes detached inventory reads, schema validation, command
+ordering and lifecycle, visible UI control on desktop/mobile Chromium, and a
+complete admin-to-HTTP-to-atlas workflow. Key-store/service tests cover hash-only
+persistence, expiry, revocation, permission changes, origin checks, administrator
+separation, and cancellation of pending replies. The security browser suite uses
+`AGENT_STATE_DIR=test-results/agent-state` so it never edits operator keys.
+
 The repository checks formatting, TypeScript, lint rules, preservation of the
 migrated data, and browser behavior. Passing gates provide evidence for these
 specific checks; they do not prove device connectivity or full accessibility.

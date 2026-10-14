@@ -13,6 +13,9 @@ implemented state.
 
 ## Create or evolve a decision
 
+[0007 — Agent access](0007-agent-access.md) adds the browser API, scoped local
+HTTP access, administrator sign-in, and persisted API-key lifecycle.
+
 [0005 — Renewable local camera account](0005-renewable-camera-account.md)
 adds Windows sign-in, encrypted session persistence, and automatic renewal.
 

@@ -30,6 +30,7 @@ import { HouseView } from './house-view';
 import { prefersReducedMotion, tween } from '../../lib/motion';
 import { decodeUrlState, encodeUrlState } from '../../lib/url-state';
 import { toCsv, downloadText, copyText } from '../../lib/export';
+import { installAgentApi } from './agent-api';
 
 const THEME_KEY = 'housedocs-theme';
 const SHORTCUTS_KEY = 'housedocs-shortcuts';
@@ -912,9 +913,32 @@ export class HouseController extends Component {
       this.setState({
         explodeT: ['stacked', 'floors', 'full'].indexOf(this.state.explode),
       });
+    this._agent = installAgentApi({
+      read: () => this.agentState(),
+      index: this.idx,
+      apply: (view) => this.applyAgentView(view),
+      select: (id) =>
+        new Promise((resolve, reject) => {
+          const item = this.idx.find((entry) => entry.focusId === id);
+          if (!item) return reject(new Error(`Missing UI record ${id}`));
+          this.setState({
+            helpOpen: false,
+            camExpanded: false,
+            feedGrid: false,
+          });
+          this.chooseResult(item, resolve);
+        }),
+      reset: () =>
+        this.applyAgentView({
+          camera: { ...HOME },
+          isolation: { floor: 'all', rooms: [] },
+          separation: 'full',
+        }),
+    });
   }
 
   componentWillUnmount() {
+    this._agent?.dispose();
     this._stage?.removeEventListener('wheel', this.onWheelNative);
     this._resize?.disconnect();
     if (this._onKey) window.removeEventListener('keydown', this._onKey);
@@ -971,6 +995,133 @@ export class HouseController extends Component {
     if (this._layout?.onePanel && !S.leftHidden && !S.rightHidden)
       this.setState({ rightHidden: true });
     this.syncHash();
+    this._agent?.publish();
+  }
+
+  // The automation adapter exposes deliberate view controls, never React internals.
+  agentState() {
+    const S = this.state;
+    const key = this.selectionKey(S);
+    const kinds = {
+      overview: 'room',
+      electrical: 'circuit',
+      lighting: 'bulb',
+      network: 'node',
+      sound: 'zone',
+      security: 'camera',
+      climate: 'sensor',
+      upkeep: 'upkeep',
+    };
+    const split = key.indexOf(':');
+    return {
+      mode: S.mode,
+      selection: key
+        ? {
+            kind: split < 0 ? kinds[S.mode] : key.slice(0, split),
+            id: split < 0 ? key : key.slice(split + 1),
+          }
+        : null,
+      search: S.q,
+      searchCategory: S.searchCat,
+      electricalFilter: S.etype,
+      lightingFilter: S.lf,
+      lightingRoom: S.lroom,
+      cameraFilter: S.camFilter,
+      upkeepFilter: S.uf,
+      isolation: { floor: S.isoFloor, rooms: [...S.isoRooms] },
+      camera: this.pick(['yaw', 'pitch', 'zoom', 'panX', 'panY']),
+      panels: { list: !S.leftHidden, details: !S.rightHidden },
+      separation: S.explode,
+      theme: S.theme,
+      effectiveTheme: this.effectiveTheme(S),
+      labels: S.showRoomLabels,
+      legend: S.legend,
+      help: S.helpOpen,
+      liveCameras: S.mode === 'security' && S.feedGrid,
+      shortcuts: S.shortcuts,
+      autoRotate: S.autoRotate,
+      visibleRoomIds: this.rooms
+        .filter((room) => this.roomVisible(room.id))
+        .map((room) => room.id),
+      hash: this.hashFor(),
+    };
+  }
+
+  applyAgentView(view) {
+    const patch = {};
+    const fields = {
+      mode: 'mode',
+      search: 'q',
+      searchCategory: 'searchCat',
+      electricalFilter: 'etype',
+      lightingFilter: 'lf',
+      lightingRoom: 'lroom',
+      cameraFilter: 'camFilter',
+      upkeepFilter: 'uf',
+      separation: 'explode',
+      theme: 'theme',
+      labels: 'showRoomLabels',
+      legend: 'legend',
+      help: 'helpOpen',
+      liveCameras: 'feedGrid',
+      shortcuts: 'shortcuts',
+    };
+    for (const [key, stateKey] of Object.entries(fields))
+      if (Object.hasOwn(view, key)) patch[stateKey] = view[key];
+    if (view.search !== undefined)
+      Object.assign(patch, {
+        searchFocus: !!view.search,
+        searchSel: -1,
+        searchAll: false,
+      });
+    if (view.isolation) {
+      const floor = view.isolation.floor ?? this.state.isoFloor;
+      const roomIds =
+        view.isolation.rooms ??
+        (view.isolation.floor !== undefined ? [] : this.state.isoRooms);
+      Object.assign(patch, {
+        isoFloor: roomIds.length ? 'all' : floor,
+        isoRooms: [...new Set(roomIds)],
+      });
+    }
+    if (view.camera) {
+      this.stopAuto();
+      this.stopInertia();
+      this._camTween?.cancel();
+      Object.assign(patch, view.camera, { autoRotate: false });
+    }
+    if (view.separation) {
+      this._explTween?.cancel();
+      patch.explodeT = ['stacked', 'floors', 'full'].indexOf(view.separation);
+    }
+    if (view.panels) {
+      if (view.panels.list !== undefined) patch.leftHidden = !view.panels.list;
+      if (view.panels.details !== undefined)
+        patch.rightHidden = !view.panels.details;
+      if (this._layout?.onePanel) {
+        if (view.panels.details) patch.leftHidden = true;
+        else if (view.panels.list) patch.rightHidden = true;
+      }
+    }
+    if (view.liveCameras)
+      Object.assign(patch, {
+        mode: 'security',
+        helpOpen: false,
+        camExpanded: false,
+      });
+    else if (view.help)
+      Object.assign(patch, { feedGrid: false, camExpanded: false });
+    return new Promise((resolve) =>
+      this.setState(patch, () => {
+        if (view.theme !== undefined) {
+          writeStorage(THEME_KEY, view.theme);
+          this.applyTheme();
+        }
+        if (view.shortcuts !== undefined)
+          writeStorage(SHORTCUTS_KEY, view.shortcuts ? 'on' : 'off');
+        resolve();
+      }),
+    );
   }
 
   handleKey(e) {
@@ -1272,9 +1423,8 @@ export class HouseController extends Component {
     return idx;
   }
 
-  chooseResult = (it) => {
+  chooseResult = (it, onCommit) => {
     const S = this.state;
-    const narrow = (this._layout || {}).narrow;
     const patch = {
       ...it.patch,
       q: '',
@@ -1284,8 +1434,7 @@ export class HouseController extends Component {
       searchAll: false,
       rightHidden: false,
     };
-    if (!narrow) patch.leftHidden = !!this._layout?.onePanel;
-    else patch.leftHidden = it.cat === 'Room' ? true : S.leftHidden;
+    patch.leftHidden = !!this._layout?.onePanel;
     let clearedIso = false;
     const isoActive =
       (S.isoFloor || 'all') !== 'all' || (S.isoRooms || []).length > 0;
@@ -1301,7 +1450,7 @@ export class HouseController extends Component {
     }
     this.searchRef.current?.blur();
     this._focusAfter = it.focusId;
-    this.setState(patch);
+    this.setState(patch, onCommit);
     if (clearedIso)
       this.notify(`Isolation cleared so ${it.label} is visible in the model`);
   };

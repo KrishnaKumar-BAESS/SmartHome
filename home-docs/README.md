@@ -22,6 +22,9 @@ by the [local security service](../security/README.md). Editing is not implement
 
 ## Subsystem layout
 
+For programmatic inventory exploration and control of a visible atlas tab, see
+the [agent API and access console](docs/agent-api.md).
+
 | Location                       | Responsibility                                                       |
 | ------------------------------ | -------------------------------------------------------------------- |
 | `apps/web/src/data/house.ts`   | Recorded inventory and original floor geometry                       |

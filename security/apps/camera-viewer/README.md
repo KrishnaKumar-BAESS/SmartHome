@@ -1,5 +1,11 @@
 # Local Xfinity camera service
 
+The service also hosts [Agent access](http://127.0.0.1:4318/admin.html): an
+administrator console for scoped API keys and HTTP control of connected atlas
+tabs. See the [agent guide](../../../home-docs/docs/agent-api.md) for setup,
+permissions, examples, and credential recovery. Agent access works without
+Xfinity configuration.
+
 This application serves the SmartHome Security player, renews a separately
 signed-in Xfinity account session, and requests fresh camera viewing credentials.
 Its local server handles legacy Socket.IO signaling; the browser negotiates
