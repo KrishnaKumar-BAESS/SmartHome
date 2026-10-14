@@ -22,6 +22,9 @@ test('all eight documentation views work without external runtime requests', asy
   });
   await page.goto('/');
   await expect(
+    page.getByRole('complementary', { name: 'Development disclaimer' }),
+  ).toContainText('In development');
+  await expect(
     page.getByRole('main', { name: 'Home documentation' }),
   ).toBeVisible();
   await expect(

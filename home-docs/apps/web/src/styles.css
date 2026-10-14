@@ -626,3 +626,37 @@ html.theme-transition * {
     display: table-header-group;
   }
 }
+
+/* Persistent warning reserves space instead of covering dashboard controls. */
+.development-shell {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.development-banner {
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  background: #fff0c2;
+  border-bottom: 1px solid #bd8b26;
+  color: #61430b;
+  text-align: center;
+  font:
+    400 12px/1.45 'Inter',
+    sans-serif;
+}
+.development-banner strong {
+  font-weight: 700;
+}
+.development-workspace {
+  flex: 1;
+  min-height: 0;
+}
+@media print {
+  .development-shell {
+    height: auto;
+  }
+  .development-banner {
+    color: #000;
+    background: none;
+  }
+}

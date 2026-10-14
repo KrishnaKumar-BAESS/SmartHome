@@ -1,9 +1,46 @@
 # Deployment and rollback
 
 The application produces a static site at `home-docs/apps/web/dist/`.
-No deployment provider, domain, access gateway, or automated release pipeline is
-configured in this repository. This runbook defines the application side of a
-deployment; the operator supplies hosting and access controls.
+A built-site Node host is available for LAN deployment, with templates in
+`home-docs/infra/`. The home server uses port 8090 and its existing Docker runtime.
+No public tunnel or automated deployment pipeline is configured.
+
+## Home server deployment
+
+The household URL is `http://192.168.0.202:8090`. Homepage links to it under
+Family & Everyday, with an explicit development label. The UI also displays a
+persistent warning: features and recorded home data may be incomplete or inaccurate.
+
+The service runs from `/home/denkrishna/homelab/apps/smarthome`, using a pinned
+Node 22 container, `restart: unless-stopped`, resource limits, a read-only release
+mount, and `/healthz` checks. It binds only `192.168.0.202:8090`; the request handler
+accepts that Host and local/192.168.0.0/24 peers. Do not add a public tunnel to this
+unauthenticated household app. This is network-level access, not per-user login.
+
+To update after building and checking a chosen commit:
+
+1. Copy `home-docs/apps/web/dist/` to `releases/<commit>/web/` and
+   `home-docs/apps/web/build/server/` to `releases/<commit>/server/` under the
+   service directory. Add `package.json` containing `{"type":"module"}` to that
+   release root. Retain the previous release for rollback.
+2. On initial setup, copy `home-docs/infra/compose.yaml.example` to `compose.yaml`
+   and `service.env.example` to `service.env.local`; keep the example copies next
+   to their local counterparts. Restrict the local environment file to its owner.
+   The optional Pi-hole password stays here and never goes in a release or Git.
+3. Atomically point `current` at the complete release and run
+   `docker compose up -d --force-recreate` from the service directory.
+4. Verify `/healthz`, the development warning, all modes, and `/api/pihole/stats`.
+   Verify `/.env.local`, `/AGENTS.md`, and `/server/index.js` return 404.
+
+The Node host serves only the built entry page and assets, plus a fixed read-only
+Pi-hole stats endpoint. Native camera playback is not hosted by this service.
+Pi-hole setup/error states remain explicit until the app password is configured;
+set it in `service.env.local` and recreate the container. The native Pi-hole
+shortcut remains available. This host uses the same summary client as development.
+
+Rollback by pointing `current` at the previous complete release and recreating
+only `smarthome`. To remove the deployment, run `docker compose down` here and
+remove its Homepage tile; leave unrelated services running.
 
 ## Hosting contract
 
@@ -14,7 +51,7 @@ deployment; the operator supplies hosting and access controls.
 | Access           | The app has no login; apply access restrictions at the host or gateway for private use                        |
 | URL layout       | Current Vite defaults assume hosting at `/`; a subpath requires an explicit base-path change and verification |
 | Routing          | One page, in-memory mode changes; no client history-route fallback needed                                     |
-| Runtime services | None; no database, application API, or secret injection required                                              |
+| Runtime services | Optional built Node host provides the Pi-hole summary; static-only hosting remains available                  |
 | Assets           | Serve HTML, JS, CSS, and fonts with their appropriate content types                                           |
 | Updates          | Publish a complete build together; avoid mixing old HTML with new assets                                      |
 

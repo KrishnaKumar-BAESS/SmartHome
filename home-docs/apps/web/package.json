@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "preview": "vite preview --host 127.0.0.1",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
-    "build": "vite build && node scripts/bundle-budget.mjs",
-    "test:e2e": "playwright test"
+    "build": "vite build && tsc -p tsconfig.server.json && node scripts/bundle-budget.mjs",
+    "test:e2e": "playwright test",
+    "start": "node --env-file-if-exists=.env.local build/server/index.js"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "5.3.0",

@@ -47,7 +47,18 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
 export function App() {
   return (
     <ErrorBoundary>
-      <HouseController stageTone="ink" />
+      <div className="development-shell">
+        <aside
+          className="development-banner"
+          aria-label="Development disclaimer"
+        >
+          <strong>In development</strong> — Features and home data may be
+          incomplete or inaccurate. Verify details before relying on them.
+        </aside>
+        <div className="development-workspace">
+          <HouseController stageTone="ink" />
+        </div>
+      </div>
     </ErrorBoundary>
   );
 }

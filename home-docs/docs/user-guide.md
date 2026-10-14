@@ -183,7 +183,8 @@ in a `VITE_` variable. The bridge only returns aggregate statistics and does not
 change DNS blocking or other Pi-hole settings. Requests are coalesced and cached
 for up to ten seconds. No credentials are required just to open the native dashboard.
 
-This integration currently runs through the Vite development/preview server, bound
-to loopback. A static `dist/` deployment or the separate camera server has no Pi-hole
-stats endpoint; the dashboard link remains usable there. A production stats service
-will need an authenticated server integration when hosting is designed.
+The LAN-hosted copy also supports this summary through its built Node server.
+Its app password belongs in the host’s `service.env.local`, followed by container
+recreation. See the [deployment guide](../../docs/deployment.md#home-server-deployment).
+A static-only `dist/` deployment or the separate camera server has no Pi-hole stats
+endpoint; the dashboard link remains usable there.

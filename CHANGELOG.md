@@ -11,6 +11,8 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
+- Show a persistent development disclaimer on every home-docs view and add a LAN host for built assets and the read-only Pi-hole summary.
+
 - Add a read-only Pi-hole stats panel to home-docs, with a server-side development/preview connection, automatic refresh, setup/error states, and a full-dashboard shortcut that preserves the SmartHome tab.
 
 - Replace home-docs fictional networking with the October 14 LAN discovery: real SSIDs, eight devices, searchable IP/MAC addresses, discovery evidence, location confidence, and enriched CSV/print exports. Place the owner-confirmed Parlor host and Office NETGEAR R7000 at their specified walls; draw only the observed host-to-gateway link.

@@ -60,7 +60,7 @@ export function HouseView({ view, scene }) {
         data-dragging={scene.dragging ? 'true' : undefined}
         data-narrow={view.narrow ? 'true' : undefined}
         style={css(
-          "position:relative;height:100dvh;width:100%;overflow:hidden;background:var(--bg);font-family:'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased",
+          "position:relative;height:100%;width:100%;overflow:hidden;background:var(--bg);font-family:'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased",
         )}
       >
         <a className="skip-link" href="#house-stage">
