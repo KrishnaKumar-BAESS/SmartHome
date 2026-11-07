@@ -57,8 +57,10 @@ export function focusId(kind: RecordKind, id: string) {
 export const dataProvenance = {
   inventorySnapshot: INVENTORY_SNAPSHOT,
   liveTelemetry: false,
+  /** Default for every record; nested entries marked `provenance: 'real'` override it. */
+  default: 'mock' as const,
   description:
-    'Recorded inventory and illustrative geometry; network observations retain their own timestamps. Camera video is a separate local service. Status fields are not current device health.',
+    "Placeholder / mock inventory and illustrative geometry. Only entries explicitly marked provenance: 'real' (currently the water softener's boiler-room location and its salt refill log) are real household data. Network observations retain their own timestamps. Camera video is a separate local service. Status fields are not current device health.",
 };
 
 export function getData() {

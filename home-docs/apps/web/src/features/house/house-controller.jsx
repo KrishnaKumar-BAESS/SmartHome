@@ -2576,6 +2576,9 @@ export class HouseController extends Component {
       statusColor: this.stColor(u.status),
       statusLabel: this.stLabel(u.status) || 'OK',
       dueLabel: upDueLabel(u),
+      lastRefill: u.refills?.length
+        ? `+${u.refills.at(-1).bags} bags · ${u.refills.at(-1).date}`
+        : '',
       barPct: upPct(u),
       barColor: this.stColor(u.status),
       barMeaning: u.metric === 'level' ? 'remaining' : 'used',
@@ -2626,10 +2629,10 @@ export class HouseController extends Component {
       barMeaning: su.metric === 'level' ? 'remaining' : 'used',
       metricLabel:
         su.metric === 'level'
-          ? 'Salt / pellet level (recorded)'
+          ? 'Salt / pellet level (placeholder)'
           : su.metric === 'hours'
-            ? 'Lamp hours used (recorded)'
-            : 'Time in service (recorded)',
+            ? 'Lamp hours used (placeholder)'
+            : 'Time in service (placeholder)',
       metricVal:
         su.metric === 'level'
           ? `${su.used}% remaining`
@@ -2639,6 +2642,8 @@ export class HouseController extends Component {
               ? `${su.used} of ${su.life} mo · over by ${overrun} mo`
               : `${su.used} of ${su.life} mo`,
       note: su.note,
+      refills: su.refills ?? [],
+      locationReal: su.locationProvenance === 'real',
       excluded: !upMatch(su),
       floorLabel: suRoom ? this.floorLabels[suRoom.floor] : '—',
       hidden: isoActive && !vis(su.roomId),
@@ -2649,7 +2654,7 @@ export class HouseController extends Component {
       specs: [
         { k: 'Part / type', v: su.part, note: this.abbrNote(su.part) },
         { k: 'Device', v: su.device, note: this.abbrNote(su.device) },
-        { k: 'Last replaced', v: `${su.lastDone} (recorded)` },
+        { k: 'Last replaced', v: `${su.lastDone} (placeholder)` },
         {
           k: 'Interval',
           v:

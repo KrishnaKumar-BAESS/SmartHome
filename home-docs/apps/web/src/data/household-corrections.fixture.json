@@ -1,0 +1,21 @@
+{
+  "description": "Owner-confirmed corrections to the archived baseline. Fields listed here replace or extend the matching record by id.",
+  "sensors": {
+    "ts6": { "mount": "Wall · garage" }
+  },
+  "upkeep": {
+    "u6": {
+      "device": "Water softener · basement boiler room",
+      "roomId": "bsmt_boiler",
+      "locationProvenance": "real",
+      "refills": [
+        {
+          "date": "2026-11-07",
+          "bags": 2,
+          "item": "Water softener pellets",
+          "provenance": "real"
+        }
+      ]
+    }
+  }
+}

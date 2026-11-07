@@ -3,6 +3,7 @@ import { Fragment } from 'react';
 import { css } from '../../lib/css';
 import { optionOnKey } from '../../lib/keyboard';
 import { Icon } from './icons';
+import { ProvenanceTag } from './provenance-tag';
 
 const FONT = "'Inter',system-ui,'Segoe UI',sans-serif";
 const MONO = "'IBM Plex Mono',monospace";
@@ -23,7 +24,10 @@ function Header({ title, count, onExport, exportLabel, children }) {
           'display:flex;align-items:center;justify-content:space-between;gap:8px',
         )}
       >
-        <h2 style={css(H2)}>{title}</h2>
+        <div style={css('display:flex;align-items:center;gap:7px;min-width:0')}>
+          <h2 style={css(H2)}>{title}</h2>
+          <ProvenanceTag />
+        </div>
         <div style={css('display:flex;align-items:center;gap:6px;min-width:0')}>
           {count ? <div style={css(COUNT)}>{count}</div> : null}
           {onExport ? (
@@ -150,7 +154,7 @@ export function SystemList({ view }) {
               )}
             >
               {
-                'Every circuit, fixture, node and speaker — recorded where it physically lives.'
+                'Every circuit, fixture, node and speaker, placed where it physically lives. All entries are placeholder / mock data.'
               }
             </div>
           </div>
@@ -253,7 +257,7 @@ export function SystemList({ view }) {
                 `font:400 11px ${FONT};color:var(--t4);margin-top:12px;line-height:1.45`,
               )}
             >
-              {`Recorded inventory as of ${view.snapshot}. Statuses are documentation, not live telemetry.`}
+              {`Placeholder / mock inventory (${view.snapshot} snapshot). Statuses are not live telemetry.`}
             </div>
           </div>
         </>
@@ -805,7 +809,7 @@ export function SystemList({ view }) {
                 `font:400 10px ${FONT};color:var(--t4);margin-top:4px`,
               )}
             >
-              {`Recorded as of ${view.snapshot} · statuses do not advance automatically`}
+              {`Placeholder / mock values (${view.snapshot}) unless tagged REAL DATA · statuses do not advance automatically`}
             </div>
             <Chips items={view.ufilters} label="Replacement filter" />
           </Header>
@@ -843,6 +847,16 @@ export function SystemList({ view }) {
                     </div>
                     <StatusText label={u.statusLabel} color={u.statusColor} />
                   </div>
+                  {u.lastRefill ? (
+                    <div
+                      style={css(
+                        `display:flex;align-items:center;gap:6px;margin-top:6px;font:500 10px ${MONO};color:var(--t2)`,
+                      )}
+                    >
+                      <ProvenanceTag real />
+                      <span>{u.lastRefill}</span>
+                    </div>
+                  ) : null}
                   <div
                     style={css(
                       'display:flex;align-items:center;gap:8px;margin-top:8px',

@@ -3,6 +3,7 @@ import { Fragment } from 'react';
 import { css } from '../../lib/css';
 import { optionOnKey } from '../../lib/keyboard';
 import { Icon } from './icons';
+import { ProvenanceTag } from './provenance-tag';
 import { FeedClock } from './feed-clock';
 
 const FONT = "'Inter',system-ui,'Segoe UI',sans-serif";
@@ -265,6 +266,11 @@ export function SystemDetails({ view }) {
         key={view.mode}
         className="mode-fade"
       >
+        <div
+          style={css('display:flex;justify-content:flex-end;margin-bottom:8px')}
+        >
+          <ProvenanceTag />
+        </div>
         <Notice notice={view.filterNotice} />
         <Notice notice={view.isoNotice} />
 
@@ -742,7 +748,7 @@ export function SystemDetails({ view }) {
                   </div>
                 </div>
                 <div style={css(`${NOTE};margin-top:8px`)}>
-                  {`Status and replacement date are recorded values from the ${view.snapshot} inventory snapshot; nothing here is computed from today's date.`}
+                  {`Status and replacement date are placeholder / mock values (${view.snapshot} snapshot); nothing here is computed from today's date.`}
                 </div>
                 <Specs rows={view.bd.specs} />
                 <div
@@ -1108,7 +1114,7 @@ export function SystemDetails({ view }) {
             </button>
             <div style={css(`${NOTE};margin:8px 0 12px`)}>
               {
-                'Recorded camera details below. The preview and event history are demonstrations, not live video.'
+                'Camera details below are placeholder / mock data. The preview and event history are demonstrations, not live video.'
               }
             </div>
             <DemoFeed det={view.camDet} />
@@ -1333,8 +1339,48 @@ export function SystemDetails({ view }) {
               </div>
             </div>
             <div style={css(`${NOTE};margin-top:10px`)}>
-              {`Usage, level, and status are recorded values as of the ${view.snapshot} inventory snapshot. They do not advance with the calendar.`}
+              {`Usage, level, and status are placeholder / mock values (${view.snapshot} snapshot). They do not advance with the calendar.`}
             </div>
+            {view.upDet.refills.length ? (
+              <div
+                style={css(
+                  'margin-top:12px;padding:10px 12px;border-radius:7px;border:1px solid #3f9a5b;background:rgba(63,154,91,0.10)',
+                )}
+                aria-label="Real refill log"
+              >
+                <div
+                  style={css(
+                    'display:flex;align-items:center;justify-content:space-between;gap:8px',
+                  )}
+                >
+                  <div
+                    style={css(
+                      `font:500 10px ${MONO};color:var(--t3);letter-spacing:0.1em`,
+                    )}
+                  >
+                    {'REFILL LOG'}
+                  </div>
+                  <ProvenanceTag real />
+                </div>
+                {view.upDet.refills.map((r) => (
+                  <div
+                    key={r.date + r.item}
+                    style={css(
+                      `display:flex;justify-content:space-between;gap:8px;margin-top:7px;font:500 12px ${FONT};color:var(--t1)`,
+                    )}
+                  >
+                    <span>{`${r.bags} bags · ${r.item}`}</span>
+                    <span
+                      style={css(
+                        `font:500 11px ${MONO};color:var(--t2);white-space:nowrap`,
+                      )}
+                    >
+                      {r.date}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
             <Specs rows={view.upDet.specs} />
             <div
               style={css(
@@ -1363,6 +1409,7 @@ export function SystemDetails({ view }) {
               <div style={css(`font:500 12px ${FONT};color:var(--t3)`)}>
                 {view.upDet.floorLabel}
               </div>
+              {view.upDet.locationReal ? <ProvenanceTag real /> : null}
               <div
                 style={css(
                   `font:400 11px ${FONT};color:var(--t3);margin-left:auto`,

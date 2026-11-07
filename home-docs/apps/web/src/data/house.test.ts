@@ -3,9 +3,25 @@ import { runInNewContext } from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import * as house from './house';
 import discovery from './network-discovery.fixture.json';
+import corrections from './household-corrections.fixture.json';
+
+/** Apply owner-confirmed per-record corrections on top of the archived baseline. */
+function corrected(name: string, records: unknown) {
+  const patch = (corrections as Record<string, unknown>)[name] as
+    Record<string, Record<string, unknown>> | undefined;
+  if (!patch || !Array.isArray(records)) return records;
+  return records.map((record: { id: string }) => {
+    const fields = patch[record.id];
+    if (!fields) return record;
+    // Keep baseline key order, then append new fields, matching house.ts.
+    const merged: Record<string, unknown> = { ...record };
+    for (const [k, v] of Object.entries(fields)) merged[k] = v;
+    return merged;
+  });
+}
 
 describe('house inventory migration', () => {
-  it('preserves historical inventory and geometry except reviewed network discovery corrections', () => {
+  it('preserves historical inventory and geometry except reviewed network discovery and household corrections', () => {
     const original = readFileSync(
       new URL(
         '../../../../../docs/archive/home-documentation/home-documentation.dc.html',
@@ -27,7 +43,7 @@ describe('house inventory migration', () => {
       expect(value, name).toEqual(
         name in discovery
           ? discovery[name as keyof typeof discovery]
-          : JSON.parse(JSON.stringify(baseline[name])),
+          : corrected(name, JSON.parse(JSON.stringify(baseline[name]))),
       );
     }
   });

@@ -52,8 +52,9 @@ export function App() {
           className="development-banner"
           aria-label="Development disclaimer"
         >
-          <strong>In development</strong> — Features and home data may be
-          incomplete or inaccurate. Verify details before relying on them.
+          <strong>In development</strong> — Home data shown is placeholder /
+          mock data unless tagged REAL DATA. Verify details before relying on
+          them.
         </aside>
         <div className="development-workspace">
           <HouseController stageTone="ink" />

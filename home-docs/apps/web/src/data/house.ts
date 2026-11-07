@@ -1,5 +1,6 @@
 // House inventory and original floor geometry, preserved from the July 2026 prototype.
-// Recorded statuses are documentation, not live device telemetry.
+// Everything here is placeholder / mock data unless an entry is explicitly marked
+// `provenance: 'real'`. Statuses are not live device telemetry.
 
 export const boxes = [
   {
@@ -1239,7 +1240,7 @@ export const sensors = [
     id: 'ts6',
     name: 'Garage',
     roomId: 'garage',
-    mount: 'Wall · by softener',
+    mount: 'Wall · garage',
     target: 'Temp + RH',
     status: 'planned',
   },
@@ -1322,8 +1323,10 @@ export const upkeep = [
   {
     id: 'u6',
     kind: 'Softener Salt',
-    device: 'Water softener · garage',
-    roomId: 'garage',
+    device: 'Water softener · basement boiler room',
+    roomId: 'bsmt_boiler',
+    // Real household data: the softener is in the basement boiler room.
+    locationProvenance: 'real',
     metric: 'level',
     used: 62,
     life: 100,
@@ -1331,6 +1334,15 @@ export const upkeep = [
     part: 'Solar salt / K-pellets',
     status: 'ok',
     note: 'Top up the brine tank before it drops below ~25%.',
+    // Real household entry; the level, status, and dates above remain placeholders.
+    refills: [
+      {
+        date: '2026-11-07',
+        bags: 2,
+        item: 'Water softener pellets',
+        provenance: 'real',
+      },
+    ],
   },
   {
     id: 'u7',

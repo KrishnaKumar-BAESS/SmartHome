@@ -11,6 +11,8 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
+- Label all home-docs inventory as placeholder / mock data, with MOCK DATA tags on every list and detail panel, and add REAL DATA tags for household-recorded entries: the water softener's location (moved from the garage to the basement boiler room) and its first refill log entry (2 bags of pellets, 2026-11-07). Owner-confirmed corrections live in `household-corrections.fixture.json`; the agent API reports `provenance.default: 'mock'`.
+
 - Show a persistent development disclaimer on every home-docs view and add a LAN host for built assets and the read-only Pi-hole summary.
 
 - Add a read-only Pi-hole stats panel to home-docs, with a server-side development/preview connection, automatic refresh, setup/error states, and a full-dashboard shortcut that preserves the SmartHome tab.

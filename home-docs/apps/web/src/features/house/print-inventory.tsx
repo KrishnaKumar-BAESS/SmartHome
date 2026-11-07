@@ -71,11 +71,12 @@ export function PrintInventory() {
   };
   return (
     <section className="print-only" aria-hidden="true">
-      <h1>HOUSE.SYS · recorded inventory</h1>
+      <h1>HOUSE.SYS · placeholder / mock inventory</h1>
       <p>
-        Snapshot {INVENTORY_SNAPSHOT}. Statuses, dates, and usage values are
-        recorded documentation, not live readings. Camera previews and event
-        history in the app are demonstrations and are not printed.
+        Snapshot {INVENTORY_SNAPSHOT}. All entries are placeholder / mock data
+        unless marked REAL; statuses, dates, and usage values are not live
+        readings. Camera previews and event history in the app are
+        demonstrations and are not printed.
       </p>
       <Table
         caption="Rooms"
