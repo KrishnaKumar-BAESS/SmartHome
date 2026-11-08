@@ -1587,12 +1587,12 @@ export class HouseController extends Component {
         ? railRight
         : railRight + listW + G;
     const rightPx = narrow ? 0 : S.rightHidden ? G : G + detW + G;
-    const sheetH = narrow ? Math.round(vh * (vh < 520 ? 0.46 : 0.42)) : 0;
+    const sheetH = narrow ? Math.round(vh * (vh < 520 ? 0.46 : 0.4)) : 0;
     const topPx = narrow ? 108 : G + 56 + G;
     const bottomPx = narrow ? (S.rightHidden ? 0 : sheetH + 8) : G;
     const freeW = Math.max(120, vw - leftPx - rightPx);
     // On phones the model dock floats above the sheet; keep the model clear.
-    const dockReserve = narrow ? 28 : 0;
+    const dockReserve = narrow ? 64 : 0;
     const freeH = Math.max(120, vh - topPx - bottomPx - dockReserve);
     const ms = Math.min(1.5, Math.max(1, Math.min(vw / 960, vh / 600)));
     return {
@@ -1615,7 +1615,11 @@ export class HouseController extends Component {
       freeH,
       cx: leftPx + freeW / 2,
       cy: topPx + freeH / 2,
-      fit: 0.72 * Math.min(freeW * 1.35, freeH),
+      // Phones give the model the most room they can: it is the only
+      // visual there, so it fills the free height instead of 72 % of it.
+      fit: narrow
+        ? Math.min(freeH * 0.95, freeW * 1.15)
+        : 0.72 * Math.min(freeW * 1.35, freeH),
       ms,
     };
   }

@@ -195,6 +195,9 @@ export function renderScene(house, opt = {}) {
     return light ? 0.79 + 0.18 * lam : 0.6 + 0.3 * lam;
   };
   const baseStroke = light ? '#b3bdc9' : '#566275';
+  // Ceiling edges read a step brighter than wall seams, so each room's
+  // footprint stays crisp against its own walls.
+  const topEdge = light ? '#a6b1be' : '#6c7a90';
   const dimOp = light ? 0.18 : 0.32;
   const markerRing = light ? '#ffffff' : '#0b0e13';
   const labelFill = light ? '#2a3644' : '#dde4ec';
@@ -217,7 +220,7 @@ export function renderScene(house, opt = {}) {
       : hov
         ? house.mix(top, hiColor, 0.18)
         : top;
-    const topStroke = sel || hov ? hiColor : baseStroke;
+    const topStroke = sel || hov ? hiColor : topEdge;
     const wallBase = sel ? house.mixHex(top, hiColor, 0.32) : top;
     const faceOp =
       (hasFocus ? (sel ? 1 : hov ? 0.55 : dimOp) : 1) * introP(r.floor);
@@ -313,6 +316,10 @@ export function renderScene(house, opt = {}) {
     );
   }
 
+  // Highlighted rooms emit a soft halo of their accent (skipped mid-drag).
+  const glowTops = S.dragging
+    ? []
+    : faces.filter((f) => f.isTop && isHi(f.rid));
   faces.forEach((f) => {
     const clickable = opt.onRoomClick && f.rid;
     const rProps = clickable
@@ -364,6 +371,41 @@ export function renderScene(house, opt = {}) {
       ),
     );
   });
+
+  if (glowTops.length) {
+    els.push(
+      RE(
+        'defs',
+        { key: 'glow-defs' },
+        RE(
+          'filter',
+          {
+            id: 'selGlow',
+            x: '-60%',
+            y: '-60%',
+            width: '220%',
+            height: '220%',
+          },
+          RE('feGaussianBlur', { stdDeviation: 10 * ms }),
+        ),
+      ),
+    );
+    glowTops.forEach((f) =>
+      els.push(
+        RE('path', {
+          key: `glow-${f.rid}`,
+          d: f.d,
+          fill: hiColor,
+          opacity: (light ? 0.3 : 0.42) * f.op,
+          filter: 'url(#selGlow)',
+          style: {
+            pointerEvents: 'none',
+            mixBlendMode: light ? 'multiply' : 'screen',
+          },
+        }),
+      ),
+    );
+  }
 
   // Markers and labels join once every floor has landed (see styles.css).
   if (introT < 1) return els;
