@@ -69,6 +69,7 @@ Search is not a workbook search and does not query devices or the internet.
 | Rotate                      | Drag the model                                                                       | Change yaw and pitch                                       |
 | Pan on desktop              | Two-finger trackpad scroll, Shift-drag, middle-button drag, or right-button drag     | Move the projected model                                   |
 | Zoom                        | Mouse wheel toward the pointer, trackpad or touch pinch, or **+ / −**                | Adjust scale within 40–400%; buttons disable at the bounds |
+| Zoom to a spot              | Double-click or double-tap the model                                                 | Zoom 1.8× centred there; at full zoom it fits again        |
 | Pan on touch                | Two-finger drag                                                                      | Move the projected model                                   |
 | Phone details sheet         | Drag the handle up to expand, down to shrink or hide; tap it to toggle height        | Read long details without leaving the model                |
 | Scroll gesture override     | **View options → Scroll gesture**: Auto, Pan or Zoom                                 | Force scrolling to pan or zoom if Auto misreads a device   |

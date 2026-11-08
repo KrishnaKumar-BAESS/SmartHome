@@ -24,6 +24,10 @@ const GESTURES = [
   ['Drag', 'Rotate'],
   ['Shift + drag, right or middle drag', 'Pan'],
   ['Mouse wheel', 'Zoom toward the pointer'],
+  [
+    'Double-click or double-tap',
+    'Zoom in on that spot; at full zoom, fit again',
+  ],
   ['Trackpad scroll', 'Two-finger scroll pans the model'],
   ['Trackpad pinch', 'Zoom toward your fingers'],
   [

@@ -687,8 +687,47 @@ export class HouseController extends Component {
     if (d.captured) {
       this.setState({ dragging: false });
       if (e.type === 'pointerup') this.startInertia(d);
+      return;
+    }
+    // Double click or double tap (no drag in between) zooms toward the spot.
+    if (e.type !== 'pointerup' || d.mode !== 'rotate') return;
+    const now = performance.now(),
+      last = this._lastTap;
+    this._lastTap = { t: now, x: e.clientX, y: e.clientY };
+    if (
+      last &&
+      now - last.t < 340 &&
+      Math.hypot(e.clientX - last.x, e.clientY - last.y) < 28
+    ) {
+      this._lastTap = null;
+      const rect = this._stage.getBoundingClientRect();
+      this.zoomToPoint(e.clientX - rect.left, e.clientY - rect.top);
     }
   };
+
+  /**
+   * Zoom 1.8× and bring the given stage point to the model's centre; at the
+   * zoom limit it returns to the fitted view instead.
+   */
+  zoomToPoint(px, py) {
+    const S = this.state,
+      L = this._layout;
+    if (!L) return;
+    if (S.zoom >= ZOOM_MAX - 0.01) {
+      this.tweenCamera({ zoom: 1, panX: 0, panY: 0 }, 460);
+      return;
+    }
+    const zoom = clampZoom(S.zoom * 1.8);
+    const real = zoom / S.zoom;
+    this.tweenCamera(
+      {
+        zoom,
+        panX: -(px - L.cx - S.panX) * real,
+        panY: -(py - L.cy - S.panY) * real,
+      },
+      460,
+    );
+  }
 
   onPointerUp = (e) => this.endPointer(e);
   onPointerCancel = (e) => this.endPointer(e);
@@ -3208,7 +3247,7 @@ export class HouseController extends Component {
         : '';
     const showHint = !S.hintDismissed && isOverview && !showPrompt;
     const hintText = narrow
-      ? 'Drag to rotate · pinch to zoom'
+      ? 'Drag to rotate · pinch or double-tap to zoom'
       : 'Drag to rotate · pinch or wheel to zoom · two-finger scroll to pan';
     let legendTitle = 'Systems',
       legendItems = [],

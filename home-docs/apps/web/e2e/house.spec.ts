@@ -341,3 +341,24 @@ test('network discovery is searchable by IP and shows placement provenance', asy
       .getByText(/Owner confirmed.*Parlor north wall/),
   ).toBeVisible();
 });
+
+test('double-click or double-tap zooms toward that spot', async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('main:not([data-intro])')).toHaveCount(1);
+  const stage = await page.getByTestId('house-stage').boundingBox();
+  // Empty stage: centre top on desktop (between the panels), the right
+  // edge on phones (clear of markers, which handle their own taps).
+  const x = isMobile
+      ? stage!.x + stage!.width - 40
+      : stage!.x + stage!.width / 2,
+    y = stage!.y + (isMobile ? 200 : 170);
+  if (isMobile) {
+    await page.touchscreen.tap(x, y);
+    await page.waitForTimeout(80);
+    await page.touchscreen.tap(x, y);
+  } else await page.mouse.dblclick(x, y);
+  await expect(page.locator('.dock-zoom')).toHaveText('180%');
+});
