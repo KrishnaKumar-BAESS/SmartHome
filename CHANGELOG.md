@@ -53,6 +53,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- Truncated list and search labels show their full text in a tooltip on mouse hover; tooltips wrap long text within their 260 px width instead of overflowing.
 - Overview names the source of each attention count: "upkeep replacements due" in the alert card and "light fixture records" above the fixture list, so the two different totals no longer read as a contradiction.
 
 - Rebuild the home-docs interface on one design system: colour, radius, elevation and motion tokens in `styles.css`, one hex palette (`palette.ts`), and class-based primitives (buttons, chips, segmented controls, list rows, key-value cards, callouts, badges, switches) in place of inline style strings. Each view has its own accent, used for the brand mark, rail indicator, stage glow, selection and focus.

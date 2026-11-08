@@ -12,8 +12,25 @@ const DELAY = 420;
 const WARM = 900; // after one tip closes, the next shows at once for a moment
 const GAP = 8;
 
+/** Single-line labels that ellipsize; hovering one shows its full text. */
+const CLIPPED =
+  '.row-title, .row-sub, .result-title, .result-sub, .group-head span, .feed-name';
+
+function clippedText(el: Element | null): string | null {
+  if (!el || el.hasAttribute('title')) return null;
+  if (el.scrollWidth <= el.clientWidth + 1) return null;
+  return el.textContent?.trim() || null;
+}
+
+/** The element whose tooltip a pointer at `target` should show. */
+function tipTarget(target: Element | null): Element | null {
+  const clipped = target?.closest?.(CLIPPED) ?? null;
+  if (clipped && clippedText(clipped)) return clipped;
+  return target?.closest?.('[data-tip]') ?? null;
+}
+
 function place(el: Element): Tip | null {
-  const text = el.getAttribute('data-tip');
+  const text = el.getAttribute('data-tip') ?? clippedText(el);
   if (!text) return null;
   const r = el.getBoundingClientRect();
   const want = el.getAttribute('data-tip-side');
@@ -37,7 +54,8 @@ function place(el: Element): Tip | null {
 
 /**
  * One delegated tooltip for every `[data-tip]` element: mouse hover after a
- * short delay, or keyboard focus. Touch never triggers it, so taps stay
+ * short delay, or keyboard focus. Truncated list labels show their full text
+ * on mouse hover too. Touch never triggers it, so taps stay
  * clean. Accessible names still come from aria-label.
  */
 export function Tooltips() {
@@ -64,7 +82,7 @@ export function Tooltips() {
     };
     const over = (e: PointerEvent) => {
       if (e.pointerType !== 'mouse') return;
-      const el = (e.target as Element | null)?.closest?.('[data-tip]');
+      const el = tipTarget(e.target as Element | null);
       if (el === current.current) return;
       if (el) show(el, false);
       else if (current.current) hide();

@@ -392,3 +392,27 @@ test('Escape steps back out of a selection', async ({ page, isMobile }) => {
     page.getByRole('heading', { name: 'Fixture health' }),
   ).toBeVisible();
 });
+
+test('hovering a truncated list label shows its full text', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Hover tooltips are mouse-only.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#m=electrical');
+  const title = page
+    .locator('#panel-left .row-title')
+    .filter({ hasText: 'Garage lights, door & workshop' });
+  await expect(title).toBeVisible();
+  const clipped = await title.evaluate((el) => el.scrollWidth > el.clientWidth);
+  test.skip(!clipped, 'Label fits at this width.');
+  await title.hover();
+  await expect(page.locator('.tooltip')).toHaveText(
+    'Garage lights, door & workshop',
+  );
+  const fits = page
+    .locator('#panel-left .row-title')
+    .filter({ hasText: /^Refrigerator$/ });
+  await fits.hover();
+  await expect(page.locator('.tooltip')).toHaveCount(0);
+});

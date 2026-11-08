@@ -2595,7 +2595,8 @@ button.callout {
     0 8px 24px -6px rgba(0, 0, 0, 0.45);
   font: 500 12px/1.3 var(--font);
   pointer-events: none;
-  white-space: nowrap;
+  width: max-content;
+  text-wrap: pretty;
   animation: tipIn 140ms var(--ease-out) both;
 }
 .tooltip kbd {
@@ -2606,7 +2607,6 @@ button.callout {
   background: rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
   color: #c8d1dc;
-  font-size: 11px;
 }
 .tooltip[data-side='bottom'] {
   transform: translateX(-50%);
