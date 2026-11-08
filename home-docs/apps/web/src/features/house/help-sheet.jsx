@@ -63,6 +63,9 @@ export function HelpSheet({ view }) {
 
 function Sheet({ view }) {
   const ref = useRef(null);
+  const coarse =
+    typeof window !== 'undefined' &&
+    !!window.matchMedia?.('(pointer: coarse)').matches;
   const close = useRef(view.closeHelp);
   useEffect(() => {
     close.current = view.closeHelp;
@@ -139,23 +142,46 @@ function Sheet({ view }) {
         </li>
       </ul>
 
-      <h3>Keyboard</h3>
-      <Table rows={SHORTCUTS} label="Global shortcuts" />
-      <label className="check-row">
-        <input
-          type="checkbox"
-          checked={view.shortcutsOn}
-          onChange={(e) => view.setShortcuts(e.target.checked)}
-        />
-        {
-          'Enable single-key shortcuts (turn off if they conflict with speech or switch input; ? and Esc always work)'
-        }
-      </label>
-      <Table rows={MODEL_KEYS} label="Model keyboard controls" />
+      {/* Touch screens lead with gestures; keyboards with shortcuts. */}
+      {coarse ? (
+        <>
+          <h3>Pointer & touch</h3>
+          <Table rows={GESTURES} label="Pointer and touch gestures" />
 
-      <h3>Pointer & touch</h3>
-      <Table rows={GESTURES} label="Pointer and touch gestures" />
+          <h3>Keyboard</h3>
+          <Table rows={SHORTCUTS} label="Global shortcuts" />
+          <label className="check-row">
+            <input
+              type="checkbox"
+              checked={view.shortcutsOn}
+              onChange={(e) => view.setShortcuts(e.target.checked)}
+            />
+            {
+              'Enable single-key shortcuts (turn off if they conflict with speech or switch input; ? and Esc always work)'
+            }
+          </label>
+          <Table rows={MODEL_KEYS} label="Model keyboard controls" />
+        </>
+      ) : (
+        <>
+          <h3>Keyboard</h3>
+          <Table rows={SHORTCUTS} label="Global shortcuts" />
+          <label className="check-row">
+            <input
+              type="checkbox"
+              checked={view.shortcutsOn}
+              onChange={(e) => view.setShortcuts(e.target.checked)}
+            />
+            {
+              'Enable single-key shortcuts (turn off if they conflict with speech or switch input; ? and Esc always work)'
+            }
+          </label>
+          <Table rows={MODEL_KEYS} label="Model keyboard controls" />
 
+          <h3>Pointer & touch</h3>
+          <Table rows={GESTURES} label="Pointer and touch gestures" />
+        </>
+      )}
       <h3>Sharing & export</h3>
       <p>
         {

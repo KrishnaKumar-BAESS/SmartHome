@@ -135,7 +135,7 @@ function PiholeDialog({ onClose }: { onClose: () => void }) {
               </h3>
               <p>
                 {stats.state === 'setup'
-                  ? 'Add a Pi-hole app password to PIHOLE_APP_PASSWORD in home-docs/apps/web/.env.local, then restart pnpm dev.'
+                  ? 'Set PIHOLE_APP_PASSWORD to a Pi-hole app password where this server runs (apps/smarthome/service.env.local for the deployed container, or home-docs/apps/web/.env.local for pnpm dev), then restart it.'
                   : stats.state === 'auth'
                     ? 'Check the app password in your local settings and restart the development server. The full dashboard is still available above.'
                     : 'Check that Pi-hole is reachable and run SmartHome with pnpm dev or pnpm preview. You can retry or open the full dashboard above.'}
