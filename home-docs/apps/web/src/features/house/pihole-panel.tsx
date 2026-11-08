@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { Icon } from './icons';
 import './pihole-panel.css';
 
 const FALLBACK_DASHBOARD = 'http://192.168.0.254/admin/';
@@ -90,8 +91,14 @@ function PiholeDialog({ onClose }: { onClose: () => void }) {
           <h2 id="pihole-title">Pi-hole · DNS statistics</h2>
           <p>pihole-pod · home network</p>
         </div>
-        <button type="button" autoFocus onClick={onClose}>
-          Back to SmartHome
+        <button
+          type="button"
+          className="pihole-close"
+          autoFocus
+          onClick={onClose}
+        >
+          Close
+          <Icon name="close" size={12} />
         </button>
       </header>
       <div className="pihole-content">

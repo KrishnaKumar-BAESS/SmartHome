@@ -439,3 +439,26 @@ test('printed inventory keeps short columns on one line', async ({
   expect(wrapped).toEqual([]);
   expect(await page.locator('.print-only td.nw').count()).toBeGreaterThan(50);
 });
+
+test('the active mode tab on phones sits clear of the scroll edge fade', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'Phone mode row only.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const mode of ['upkeep', 'overview', 'sound']) {
+    await page.goto(`/#m=${mode}`);
+    const nav = page.getByRole('navigation', { name: 'Documentation views' });
+    await expect
+      .poll(
+        () =>
+          nav.evaluate((n) => {
+            const a = n.querySelector('.is-active')!.getBoundingClientRect();
+            const r = n.getBoundingClientRect();
+            return a.left >= r.left + 10 && a.right <= r.right - 10;
+          }),
+        { message: mode },
+      )
+      .toBe(true);
+  }
+});

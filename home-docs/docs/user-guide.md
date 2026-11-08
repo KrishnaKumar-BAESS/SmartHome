@@ -166,7 +166,7 @@ the summary with an error; they never turn missing data into zero counts.
 
 Choose **Open Pi-hole dashboard** for the native Pi-hole dashboard in another tab.
 Sign in there as usual; its login is separate from the stats connection. Close that
-tab or switch back to SmartHome. **Back to SmartHome** or Escape closes the stats
+tab or switch back to SmartHome. **Close** or Escape closes the stats
 panel, preserving your selected device and floor view.
 
 For embedded stats during development:

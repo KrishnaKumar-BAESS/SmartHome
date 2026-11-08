@@ -53,6 +53,8 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- On phones the active mode tab no longer sits clipped under the mode row's edge fade (the row keeps end padding while scrolled).
+- The Pi-hole stats dialog closes with **Close** and the shared close icon, matching the other dialogs.
 - Refine the printed inventory: hairline row rules instead of a full grid, small uppercase column headers over a dark rule, tabular figures, and short columns (codes, amps, dates, statuses) kept on one line.
 - Keyboard: Tab now moves from the View options button straight into its open drawer (the drawer follows the bar in the DOM and is still drawn above it).
 - The Live cameras overlay uses the shared dialog button and close icon, with hover feedback on its setup link.

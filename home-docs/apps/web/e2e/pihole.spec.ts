@@ -51,7 +51,7 @@ test('Pi-hole stats preserve selection and open the full dashboard in a separate
   await page.screenshot({
     path: `/tmp/smarthome-pihole-${page.viewportSize()?.width}.png`,
   });
-  await dialog.getByRole('button', { name: 'Back to SmartHome' }).click();
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(dialog).not.toBeVisible();
   await expect(trigger).toBeFocused();
   await expect(

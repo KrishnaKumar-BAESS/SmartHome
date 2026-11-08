@@ -1312,6 +1312,16 @@ kbd {
   overflow-y: auto;
   scrollbar-width: none;
 }
+/* Scrolling rows drop their end padding; a spacer keeps the last tab clear
+   of the edge fade, and scroll padding does the same for scrollIntoView. */
+.nav-rail-row::after {
+  content: '';
+  flex: 0 0 10px;
+  height: 1px;
+}
+.nav-rail-row {
+  scroll-padding-inline: 16px;
+}
 .nav-rail--wide::-webkit-scrollbar,
 .nav-rail-row::-webkit-scrollbar {
   display: none;
