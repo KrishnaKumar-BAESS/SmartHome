@@ -53,6 +53,8 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- Keyboard: Tab now moves from the View options button straight into its open drawer (the drawer follows the bar in the DOM and is still drawn above it).
+- The Live cameras overlay uses the shared dialog button and close icon, with hover feedback on its setup link.
 - Narrowing a window into the phone layout (split view, a rotated tablet, or a resized desktop window) closes the List, so the List and the Details sheet no longer cover the whole model; the List button reopens it.
 - On short windows such as landscape phones, the mode rail fades at its scrolling edge so the modes below the fold are discoverable.
 - The search placeholder shortens on tablet-width windows (under 900 px) and ellipsizes instead of clipping mid-word into the ⌘K hint.

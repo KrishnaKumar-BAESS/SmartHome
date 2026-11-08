@@ -116,7 +116,6 @@ export function ViewControls({ view }) {
       aria-label="Model controls"
       aria-orientation="vertical"
     >
-      <Drawer view={view} />
       <div className="dock-bar">
         {view.isNarrow ? (
           <>
@@ -204,6 +203,7 @@ export function ViewControls({ view }) {
           <Icon name="sliders" size={15} />
         </button>
       </div>
+      <Drawer view={view} />
     </div>
   );
 }

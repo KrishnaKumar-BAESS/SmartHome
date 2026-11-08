@@ -2445,6 +2445,11 @@ button.callout {
 .dock-bar [hidden] {
   display: none;
 }
+/* The drawer follows the bar in the DOM, so Tab moves from the View options
+   button into it, but it is drawn above the bar. */
+.dock-drawer {
+  order: -1;
+}
 .dock-drawer .section-label {
   margin: 4px 4px 7px;
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Icon } from './icons';
 import './live-cameras.css';
 
 const CLOSE_MESSAGE = 'smarthome:close-live-cameras';
@@ -75,8 +76,14 @@ export function LiveCameras({ onClose }: { onClose: () => void }) {
                 : 'Local security service not attached'}
           </p>
         </div>
-        <button type="button" onClick={onClose} autoFocus>
-          Close ✕
+        <button
+          type="button"
+          className="ia dialog-button"
+          onClick={onClose}
+          autoFocus
+        >
+          Close
+          <Icon name="close" size={12} />
         </button>
       </header>
       {service === 'ready' ? (
@@ -100,7 +107,9 @@ export function LiveCameras({ onClose }: { onClose: () => void }) {
                   <code>corepack pnpm build</code> and{' '}
                   <code>corepack pnpm security:start</code> from SmartHome.
                 </p>
-                <a href="http://127.0.0.1:4318/house/">Open local SmartHome</a>
+                <a className="ia" href="http://127.0.0.1:4318/house/">
+                  Open local SmartHome
+                </a>
                 <p>
                   Then select Security → Live cameras and sign in to Xfinity.
                 </p>

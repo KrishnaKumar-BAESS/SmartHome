@@ -434,3 +434,27 @@ test('narrowing a window into the phone layout closes the list so the model stay
   await page.getByRole('button', { name: 'List' }).click();
   await expect(list).not.toHaveAttribute('inert', '');
 });
+
+test('Tab moves from the View options button into its open drawer', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Keyboard order check.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const trigger = page.getByRole('button', { name: 'View options' });
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+  const drawer = page.locator('#view-options');
+  await expect(drawer).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(drawer.locator(':focus')).toHaveCount(1);
+  // Drawn above the bar once its open animation settles.
+  await expect
+    .poll(async () => {
+      const bar = await page.locator('.dock-bar').boundingBox();
+      const box = await drawer.boundingBox();
+      return box!.y + box!.height <= bar!.y + 1;
+    })
+    .toBe(true);
+});
