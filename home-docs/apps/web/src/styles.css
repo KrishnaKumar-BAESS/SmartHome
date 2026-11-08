@@ -3257,6 +3257,33 @@ main[data-dragging='true'] #house-stage svg > * {
   }
 }
 
+/* Increase contrast (macOS, iOS, Windows): firmer lines, darker secondary
+   text, solid glass. */
+@media (prefers-contrast: more) {
+  :root {
+    --line: rgba(16, 24, 40, 0.2);
+    --line-2: rgba(16, 24, 40, 0.3);
+    --line-3: rgba(16, 24, 40, 0.42);
+    --t3: #2f3b48;
+    --t4: #3b4855;
+    --t5: #44515e;
+    --t6: #4a5765;
+    --glass: rgba(255, 255, 255, 0.96);
+    --mix-text: 40%;
+  }
+  :root[data-theme='dark'] {
+    --line: rgba(255, 255, 255, 0.2);
+    --line-2: rgba(255, 255, 255, 0.28);
+    --line-3: rgba(255, 255, 255, 0.4);
+    --t3: #cdd5df;
+    --t4: #bcc6d1;
+    --t5: #b3bdc8;
+    --t6: #aab4c0;
+    --glass: rgba(18, 22, 29, 0.97);
+    --mix-text: 82%;
+  }
+}
+
 @media (forced-colors: active) {
   .icon-btn,
   .chip,
