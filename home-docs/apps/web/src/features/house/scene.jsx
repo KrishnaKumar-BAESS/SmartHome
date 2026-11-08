@@ -494,7 +494,7 @@ export function renderScene(house, opt = {}) {
   // Geometry of a callout pill, shared by the label pass and the drawing.
   const calloutBox = (c) => {
     const fs = 11 * ms;
-    const text = c.text.length > 30 ? `${c.text.slice(0, 29)}…` : c.text;
+    const text = c.text.length > 36 ? `${c.text.slice(0, 35)}…` : c.text;
     const w = text.length * fs * 0.56 + 30 * ms;
     const h = fs * 2.1;
     let x0 = c.x - w / 2;
@@ -1085,7 +1085,12 @@ export function renderScene(house, opt = {}) {
           : STATUS.soon;
       const s = (isGw ? 14 : 11) * ms;
       if (sel)
-        callouts.push({ x: p.x, y: p.y - s / 2 - 6, text: n.name, color: col });
+        callouts.push({
+          x: p.x,
+          y: p.y - s / 2 - 6,
+          text: `${n.name} · ${n.room}`,
+          color: col,
+        });
       els.push(
         RE('rect', {
           key: `node-glow-${n.id}`,
@@ -1214,7 +1219,7 @@ export function renderScene(house, opt = {}) {
         callouts.push({
           x: apex.sx,
           y: apex.sy - 8 * ms,
-          text: cam.name,
+          text: `${cam.name} · ${cam.room}`,
           color: col,
         });
       els.push(
@@ -1507,13 +1512,11 @@ export function renderScene(house, opt = {}) {
   if (showRoomLabels) {
     const fs = 11 * ms;
     // Room names also stay clear of selection callouts.
-    const placed = [
-      ...reserved,
-      ...callouts.map((c) => {
-        const b = calloutBox(c);
-        return { x0: b.x0, x1: b.x0 + b.w, y0: b.y0, y1: c.y };
-      }),
-    ];
+    const calloutRects = callouts.map((c) => {
+      const b = calloutBox(c);
+      return { x0: b.x0, x1: b.x0 + b.w, y0: b.y0, y1: c.y };
+    });
+    const placed = [...reserved, ...calloutRects];
     const hiTops = faces
       .filter((f) => f.isTop && isHi(f.rid))
       .map((f) => f.pts);
@@ -1561,6 +1564,15 @@ export function renderScene(house, opt = {}) {
           y1: c.sy + fs * 0.3,
         };
         if (!sel && hits(box)) return;
+        // A selected room's name gives way to a callout that names it.
+        if (
+          sel &&
+          calloutRects.some(
+            (o) =>
+              box.x0 < o.x1 && box.x1 > o.x0 && box.y0 < o.y1 && box.y1 > o.y0,
+          )
+        )
+          return;
         // Another floor's name must not sit on top of a highlighted room.
         if (
           !sel &&
