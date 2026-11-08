@@ -428,22 +428,18 @@ export function renderScene(house, opt = {}) {
           }
         : {};
     els.push(
-      RE(
-        'path',
-        {
-          key: f.key,
-          className: 'face',
-          d: f.d,
-          fill: f.fill,
-          stroke: f.stroke,
-          strokeWidth: f.sw,
-          strokeLinejoin: 'round',
-          opacity: f.op,
-          ...rProps,
-          ...a11y,
-        },
-        f.isTop ? RE('title', null, f.room.name) : null,
-      ),
+      RE('path', {
+        key: f.key,
+        className: 'face',
+        d: f.d,
+        fill: f.fill,
+        stroke: f.stroke,
+        strokeWidth: f.sw,
+        strokeLinejoin: 'round',
+        opacity: f.op,
+        ...rProps,
+        ...a11y,
+      }),
     );
   });
 
@@ -548,12 +544,13 @@ export function renderScene(house, opt = {}) {
             tabIndex: opt.onPanelClick ? 0 : undefined,
             role: opt.onPanelClick ? 'button' : undefined,
             'aria-label': `${bx.name}, breaker panel`,
+            'data-tip': `${bx.name} · ${bx.loc}`,
+            'data-tip-side': 'top',
             onKeyDown: opt.onPanelClick
               ? keyActivate(() => opt.onPanelClick(bid))
               : undefined,
             ...panelCk,
           },
-          RE('title', null, `${bx.name} · ${bx.loc}`),
           RE('rect', {
             x: (p.sx - w / 2).toFixed(1),
             y: (p.sy - h - 4).toFixed(1),
@@ -742,6 +739,8 @@ export function renderScene(house, opt = {}) {
           tabIndex: 0,
           role: 'button',
           'aria-label': `Isolate ${label}`,
+          'data-tip': `Isolate ${label}`,
+          'data-tip-side': 'right',
           style: { cursor: 'pointer' },
         }
       : {};
@@ -755,7 +754,6 @@ export function renderScene(house, opt = {}) {
       RE(
         'g',
         { key: `floor-${f}`, className: 'marker', ...flCk },
-        RE('title', null, `Isolate ${label}`),
         // Hairline leader from the pill to the floor's nearest slab corner.
         RE('line', {
           x1: (lx + 10).toFixed(1),
@@ -839,6 +837,8 @@ export function renderScene(house, opt = {}) {
       tabIndex: 0,
       role: 'button',
       'aria-label': label,
+      'data-tip': label,
+      'data-tip-side': 'top',
       onClick: (e) => {
         e.stopPropagation();
         onActivate();
@@ -847,25 +847,21 @@ export function renderScene(house, opt = {}) {
       onKeyDown: keyActivate(onActivate),
       style: { cursor: 'pointer' },
     };
-    const title = RE('title', null, label);
     if (shape === 'rect')
-      return RE(
-        'rect',
-        {
-          ...props,
-          x: (cx - r).toFixed(1),
-          y: (cy - r).toFixed(1),
-          width: (r * 2).toFixed(1),
-          height: (r * 2).toFixed(1),
-          rx: 5,
-        },
-        title,
-      );
-    return RE(
-      'circle',
-      { ...props, cx: cx.toFixed(1), cy: cy.toFixed(1), r: r.toFixed(1) },
-      title,
-    );
+      return RE('rect', {
+        ...props,
+        x: (cx - r).toFixed(1),
+        y: (cy - r).toFixed(1),
+        width: (r * 2).toFixed(1),
+        height: (r * 2).toFixed(1),
+        rx: 5,
+      });
+    return RE('circle', {
+      ...props,
+      cx: cx.toFixed(1),
+      cy: cy.toFixed(1),
+      r: r.toFixed(1),
+    });
   };
   const countBadge = (key, cx, cy, n, col) => {
     els.push(
