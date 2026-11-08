@@ -52,7 +52,9 @@ export function Navigation({ view }) {
             type="button"
             className={item.active ? 'nav-button is-active' : 'nav-button'}
             aria-label={item.label}
-            title={item.title}
+            data-tip={view.narrow ? undefined : item.label}
+            data-tip-kbd={item.kbd}
+            data-tip-side="right"
             aria-pressed={item.active}
             aria-current={item.active ? 'page' : undefined}
             data-mode={key}

@@ -121,9 +121,11 @@ export function renderScene(house, opt = {}) {
   };
   const darken = (hex, f) => {
     const h = hex.replace('#', '');
-    const r = Math.round(parseInt(h.substr(0, 2), 16) * f),
-      g = Math.round(parseInt(h.substr(2, 2), 16) * f),
-      b = Math.round(parseInt(h.substr(4, 2), 16) * f);
+    const ch = (i) =>
+      Math.min(255, Math.round(parseInt(h.substr(i, 2), 16) * f));
+    const r = ch(0),
+      g = ch(2),
+      b = ch(4);
     return `rgb(${r},${g},${b})`;
   };
   // ---- exploded room layout: spread rooms radially in x/y away from each floor's center ----
@@ -183,7 +185,15 @@ export function renderScene(house, opt = {}) {
   const floorTop = light
     ? { basement: '#e8edf3', main: '#f0f2f6', second: '#f6f7fa' }
     : { basement: '#2f3744', main: '#363f4d', second: '#3e4756' };
-  const wallShade = light ? 0.87 : 0.74;
+  // A world-fixed key light, so walls turn lighter or darker as the model
+  // rotates. Tuned to separate the two visible faces at the home angle.
+  const LX = 0.259,
+    LY = -0.966;
+  const wallLight = (nx, ny) => {
+    const len = Math.hypot(nx, ny) || 1;
+    const lam = Math.max(0, (nx * LX + ny * LY) / len);
+    return light ? 0.79 + 0.18 * lam : 0.6 + 0.3 * lam;
+  };
   const baseStroke = light ? '#b3bdc9' : '#566275';
   const dimOp = light ? 0.18 : 0.32;
   const markerRing = light ? '#ffffff' : '#0b0e13';
@@ -208,9 +218,7 @@ export function renderScene(house, opt = {}) {
         ? house.mix(top, hiColor, 0.18)
         : top;
     const topStroke = sel || hov ? hiColor : baseStroke;
-    const wallFill = sel
-      ? house.mix(top, hiColor, 0.32)
-      : darken(top, wallShade);
+    const wallBase = sel ? house.mixHex(top, hiColor, 0.32) : top;
     const faceOp =
       (hasFocus ? (sel ? 1 : hov ? 0.55 : dimOp) : 1) * introP(r.floor);
     let area2 = 0;
@@ -241,7 +249,7 @@ export function renderScene(house, opt = {}) {
       faces.push({
         key: `wall-${r.id}-${i}`,
         d: polyD([p1, p2, p3, p4]),
-        fill: wallFill,
+        fill: darken(wallBase, wallLight(nx, ny) + (sel ? 0.08 : 0)),
         stroke: sel || hov ? topStroke : baseStroke,
         sw: 0.6,
         depth: (p1.depth + p2.depth + p3.depth + p4.depth) / 4,
@@ -360,6 +368,9 @@ export function renderScene(house, opt = {}) {
   // Markers and labels join once every floor has landed (see styles.css).
   if (introT < 1) return els;
 
+  // Screen boxes that room labels must not cover (panel markers).
+  const reserved = [];
+
   // ---- breaker panels (electrical infra) ----
   if (layer === 'overview' || layer === 'electrical') {
     Object.keys(house.panelPos).forEach((bid) => {
@@ -371,6 +382,12 @@ export function renderScene(house, opt = {}) {
       const bx = B[bid];
       const w = 26 * ms,
         h = 17 * ms;
+      reserved.push({
+        x0: p.sx - w / 2 - 2,
+        x1: p.sx + w / 2 + 2,
+        y0: p.sy - h - 6,
+        y1: p.sy - 2,
+      });
       const panelCk = opt.onPanelClick
         ? {
             onClick: (e) => {
@@ -517,39 +534,6 @@ export function renderScene(house, opt = {}) {
     });
   }
 
-  // ---- room labels ----
-  if (showRoomLabels) {
-    house.rooms.forEach((r) => {
-      if (!vis(r)) return;
-      const [rx, ry] = cen2(r.verts);
-      const c = projR(r.id, rx, ry, drawBase(r.floor) + r.height);
-      const sel = isHi(r.id);
-      els.push(
-        RE(
-          'text',
-          {
-            key: `label-${r.id}`,
-            x: c.sx.toFixed(1),
-            y: c.sy.toFixed(1),
-            textAnchor: 'middle',
-            style: {
-              font: `${sel ? 600 : 500} ${10.5 * ms}px 'Inter',system-ui,'Segoe UI',sans-serif`,
-              letterSpacing: '-0.01em',
-              fill: sel ? labelFillSel : labelFill,
-              paintOrder: 'stroke',
-              stroke: labelHalo,
-              strokeWidth: sel ? 4 : 3.4,
-              strokeLinejoin: 'round',
-              opacity: hasFocus && !sel ? 0.5 : 1,
-              pointerEvents: 'none',
-            },
-          },
-          r.short,
-        ),
-      );
-    });
-  }
-
   // ---- floor labels: placed at the leftmost projected vertex, clear of the list panel ----
   ['second', 'main', 'basement'].forEach((f) => {
     const fRooms = house.rooms.filter((r) => r.floor === f && vis(r));
@@ -574,12 +558,20 @@ export function renderScene(house, opt = {}) {
       });
     });
     if (minSx === 1e9) return;
-    const label = house.floorLabels[f];
+    const fullLabel = house.floorLabels[f];
     const fs = 11 * ms;
     // Inter semibold averages ≈ 0.56em per glyph.
-    const labelW = label.length * fs * 0.56;
-    const minLx = Math.max(22, opt.floorLabelMinX || 0) + labelW;
-    const lx = Math.max(minLx, minSx - 18),
+    const widthOf = (t) => t.length * fs * 0.56;
+    const minX = Math.max(22, opt.floorLabelMinX || 0);
+    // When the full name would be pushed onto the model, use the short
+    // architectural level code instead.
+    const fits = minSx - 18 >= minX + widthOf(fullLabel);
+    const visibleLabel = fits
+      ? fullLabel
+      : { second: 'L2', main: 'L1', basement: 'B1' }[f];
+    const label = fullLabel;
+    const labelW = widthOf(visibleLabel);
+    const lx = Math.max(minX + labelW, minSx - 18),
       ly = minSy;
     const flCk = opt.onFloorClick
       ? {
@@ -623,7 +615,7 @@ export function renderScene(house, opt = {}) {
               pointerEvents: 'none',
             },
           },
-          label,
+          visibleLabel,
         ),
       ),
     );
@@ -824,7 +816,7 @@ export function renderScene(house, opt = {}) {
         const sel = opt.selBulb === b.id;
         if (sel) return; // selected handled by locate pin
         const bcx = base.c.sx + ox,
-          bcy = base.c.sy;
+          bcy = base.c.sy + 12 * ms;
         pushGlowDot(`bulb-${b.id}`, bcx, bcy, house.stColor(b.st), 4, false);
         if (opt.onBulbClick)
           els.push(
@@ -1119,7 +1111,7 @@ export function renderScene(house, opt = {}) {
       const on = sn.status === 'online';
       const col = on ? MODE_ACCENT.climate : STATUS.idle;
       const cx = base.c.sx,
-        cy = base.c.sy;
+        cy = base.c.sy + 13 * ms;
       if (sel)
         els.push(
           RE('circle', {
@@ -1179,14 +1171,14 @@ export function renderScene(house, opt = {}) {
       const others = arr.filter((it) => it.id !== opt.selUp);
       const worst = worstStatus(arr.map((it) => it.status));
       const ucx = base.c.sx,
-        ucy = base.c.sy;
+        ucy = base.c.sy + 12 * ms;
       if (selHere) {
         // The locate pin marks the selected item; a badge keeps the rest of
         // the room's records (and their most urgent status) visible.
         if (others.length) {
           const worstOther = worstStatus(others.map((it) => it.status));
-          const bx = ucx + 14 * ms,
-            by = ucy - 20 * ms;
+          const bx = ucx + 16 * ms,
+            by = ucy;
           countBadge(
             `up-more-${rid}`,
             bx,
@@ -1212,8 +1204,8 @@ export function renderScene(house, opt = {}) {
       if (arr.length > 1)
         countBadge(
           `up-count-${rid}`,
-          ucx + 9 * ms,
-          ucy - 9 * ms,
+          ucx + 12 * ms,
+          ucy,
           arr.length,
           house.stColor(worst),
         );
@@ -1293,6 +1285,71 @@ export function renderScene(house, opt = {}) {
         ),
       );
     }
+  }
+
+  // ---- room labels (drawn over markers so names stay legible) ----
+  // Greedy placement: highlighted rooms first, then larger rooms. A label
+  // that would collide with one already placed is left out; the hover
+  // pill still names that room.
+  if (showRoomLabels) {
+    const fs = 10.5 * ms;
+    const placed = [...reserved];
+    const hits = (b) =>
+      placed.some(
+        (o) => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0,
+      );
+    const polyArea = (v) => {
+      let a = 0;
+      for (let i = 0; i < v.length; i++) {
+        const p = v[i],
+          q = v[(i + 1) % v.length];
+        a += p[0] * q[1] - q[0] * p[1];
+      }
+      return Math.abs(a) / 2;
+    };
+    house.rooms
+      .filter((r) => vis(r))
+      .map((r) => {
+        const [rx, ry] = cen2(r.verts);
+        const c = projR(r.id, rx, ry, drawBase(r.floor) + r.height);
+        const sel = isHi(r.id);
+        return { r, c, sel, rank: (sel ? 1e6 : 0) + polyArea(r.verts) };
+      })
+      .sort((a, b) => b.rank - a.rank)
+      .forEach(({ r, c, sel }) => {
+        const w = r.short.length * fs * 0.55 + 6;
+        const box = {
+          x0: c.sx - w / 2,
+          x1: c.sx + w / 2,
+          y0: c.sy - fs * 0.95,
+          y1: c.sy + fs * 0.3,
+        };
+        if (!sel && hits(box)) return;
+        placed.push(box);
+        els.push(
+          RE(
+            'text',
+            {
+              key: `label-${r.id}`,
+              x: c.sx.toFixed(1),
+              y: c.sy.toFixed(1),
+              textAnchor: 'middle',
+              style: {
+                font: `${sel ? 600 : 500} ${fs}px 'Inter',system-ui,'Segoe UI',sans-serif`,
+                letterSpacing: '-0.01em',
+                fill: sel ? labelFillSel : labelFill,
+                paintOrder: 'stroke',
+                stroke: labelHalo,
+                strokeWidth: sel ? 4 : 3.4,
+                strokeLinejoin: 'round',
+                opacity: hasFocus && !sel ? 0.5 : 1,
+                pointerEvents: 'none',
+              },
+            },
+            r.short,
+          ),
+        );
+      });
   }
 
   // ---- hovered / focused room name preview ----

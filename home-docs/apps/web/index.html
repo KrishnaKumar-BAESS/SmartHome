@@ -33,6 +33,11 @@
       content="Explore your home's rooms, circuits, lighting, network, and maintenance in an interactive house model."
     />
     <title>SmartHome · House documentation</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='#9aa0fa'/%3E%3Cstop offset='.55' stop-color='#7b83f6'/%3E%3Cstop offset='1' stop-color='#5059c9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(#g)'/%3E%3Cg fill='none' stroke='#fff' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M16 6.5l8.2 4.7v9.6L16 25.5l-8.2-4.7v-9.6z'/%3E%3Cpath d='M16 16l8.2-4.8M16 16l-8.2-4.8M16 16v9.5' opacity='.65'/%3E%3C/g%3E%3C/svg%3E"
+    />
     <style>
       html {
         background: #eef1f5;
@@ -68,6 +73,43 @@
         color: inherit;
         cursor: pointer;
       }
+      .boot-wait {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        margin-top: 16vh;
+        font-size: 13px;
+        color: #627080;
+        animation: boot-in 0.6s 0.2s ease both;
+      }
+      [data-theme='dark'] .boot-wait {
+        color: #87929f;
+      }
+      .boot-mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(145deg, #9aa0fa, #7b83f6 55%, #5059c9);
+        box-shadow: 0 10px 28px -8px rgba(123, 131, 246, 0.7);
+        animation: boot-pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes boot-in {
+        from {
+          opacity: 0;
+        }
+      }
+      @keyframes boot-pulse {
+        50% {
+          transform: scale(0.92);
+          opacity: 0.75;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-mark {
+          animation: none;
+        }
+      }
       #boot[data-failed] .boot-wait {
         display: none;
       }
@@ -89,7 +131,10 @@
       </div>
     </noscript>
     <div id="boot" class="boot-fallback" aria-live="polite">
-      <p class="boot-wait">Loading the house atlas…</p>
+      <div class="boot-wait">
+        <span class="boot-mark" aria-hidden="true"></span>
+        <p>Loading the house atlas…</p>
+      </div>
       <div class="boot-failed" role="alert">
         <h1>The house atlas did not start</h1>
         <p>

@@ -44,6 +44,12 @@ const GLYPHS: Record<string, ReactNode> = {
       <path d="M13.3 6h2.9M13.3 9h2.2M13.3 12h2.9" />
     </>
   ),
+  room: (
+    <>
+      <path d="M3.25 16.75V4.75a1.5 1.5 0 0 1 1.5-1.5h10.5a1.5 1.5 0 0 1 1.5 1.5v12" />
+      <path d="M2.5 16.75h15M8 16.75v-5.5h4v5.5" />
+    </>
+  ),
   upkeep: (
     <>
       <path d="M15.6 7.2A6 6 0 1 0 16.2 12" />

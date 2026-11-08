@@ -96,7 +96,6 @@ function Viewer({ view }) {
             className="ia dialog-button dialog-button--icon"
             onClick={f.prev}
             aria-label="Previous camera"
-            title="Previous camera"
           >
             <Icon name="chevronLeft" size={15} />
           </button>
@@ -106,7 +105,6 @@ function Viewer({ view }) {
             className="ia dialog-button dialog-button--icon"
             onClick={f.next}
             aria-label="Next camera"
-            title="Next camera"
           >
             <Icon name="chevronRight" size={15} />
           </button>

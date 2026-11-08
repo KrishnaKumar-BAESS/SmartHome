@@ -23,7 +23,7 @@ function Header({ title, count, onExport, exportLabel, children, tag }) {
               className="ia icon-btn"
               onClick={onExport}
               aria-label={exportLabel || 'Export the visible list as CSV'}
-              title="Export CSV"
+              data-tip="Export CSV"
             >
               <Icon name="download" size={14} />
             </button>
@@ -46,6 +46,13 @@ function Chips({ items, label }) {
           onClick={t.onClick}
           aria-pressed={t.on}
         >
+          {t.color ? (
+            <span
+              className="dot"
+              style={{ '--c': t.color, width: 7, height: 7 }}
+              aria-hidden="true"
+            ></span>
+          ) : null}
           {t.label}
         </button>
       ))}
@@ -84,7 +91,10 @@ function Empty({ text, action, actionLabel }) {
   );
 }
 
+// Rows flag exceptions only: a healthy record shows no badge (its row
+// label still announces the status).
 function Status({ label, color }) {
+  if (label === 'OK' || label === 'Online') return null;
   return (
     <span className="tag" style={{ '--c': color }}>
       {label}
@@ -182,7 +192,12 @@ export function SystemList({ view }) {
                 style={{ '--c': MODE_ACCENT.climate, marginTop: 8 }}
               >
                 <ModeIcon mode="climate" size={16} />
-                <span className="grow">{view.climateBannerText}</span>
+                <span className="grow">
+                  <span className="callout-title">
+                    {view.climateBanner.title}
+                  </span>
+                  <span className="callout-sub">{view.climateBanner.sub}</span>
+                </span>
                 <Icon name="arrowRight" size={13} className="chev" />
               </button>
               <h3 className="section">The house</h3>
@@ -346,8 +361,8 @@ export function SystemList({ view }) {
                     ></span>
                     <div className="row-main">
                       <div className="row-title">{n.name}</div>
-                      <div className="row-sub">
-                        {`SSID ${n.ssid} · ${n.band}`}
+                      <div className="row-sub" title={n.band}>
+                        {`SSID ${n.ssid}`}
                       </div>
                     </div>
                     <span className="row-meta">

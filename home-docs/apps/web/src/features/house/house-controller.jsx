@@ -290,6 +290,35 @@ export class HouseController extends Component {
     return `rgb(${c[0]},${c[1]},${c[2]})`;
   }
 
+  /** Discovery status: observed reads as the network hue, weak as a warning. */
+  nodeColor(status) {
+    return status === 'observed'
+      ? MODE_ACCENT.network
+      : status === 'warn'
+        ? STATUS.soon
+        : STATUS.idle;
+  }
+
+  /** Like mix() but returns hex, so the result can be shaded again. */
+  mixHex(h1, h2, t) {
+    const p = (h) => {
+      h = h.replace('#', '');
+      return [0, 2, 4].map((i) => parseInt(h.substr(i, 2), 16));
+    };
+    const a = p(h1),
+      b = p(h2);
+    return (
+      '#' +
+      a
+        .map((v, i) =>
+          Math.round(v + (b[i] - v) * t)
+            .toString(16)
+            .padStart(2, '0'),
+        )
+        .join('')
+    );
+  }
+
   bulbRoomId(name) {
     return bulbRoomId(name);
   }
@@ -1546,7 +1575,9 @@ export class HouseController extends Component {
     const topPx = narrow ? 108 : G + 56 + G;
     const bottomPx = narrow ? (S.rightHidden ? 0 : sheetH + 8) : G;
     const freeW = Math.max(120, vw - leftPx - rightPx);
-    const freeH = Math.max(120, vh - topPx - bottomPx);
+    // On phones the model dock floats above the sheet; keep the model clear.
+    const dockReserve = narrow ? 28 : 0;
+    const freeH = Math.max(120, vh - topPx - bottomPx - dockReserve);
     const ms = Math.min(1.5, Math.max(1, Math.min(vw / 960, vh / 600)));
     return {
       vw,
@@ -1606,6 +1637,7 @@ export class HouseController extends Component {
         label,
         accent: MODE_ACCENT[key],
         title: `${label} — shortcut ${i + 1}`,
+        kbd: S.shortcuts ? String(i + 1) : null,
       };
     });
 
@@ -1790,7 +1822,7 @@ export class HouseController extends Component {
     const listPanelStyle =
       (narrow
         ? // The phone list stops above the model dock so both stay usable.
-          `left:8px;right:8px;top:calc(${L.topPx + 8}px + env(safe-area-inset-top));bottom:calc(${L.bottomPx + 112}px + env(safe-area-inset-bottom));z-index:20`
+          `left:8px;right:8px;top:calc(${L.topPx + 8}px + env(safe-area-inset-top));bottom:calc(${L.bottomPx + 76}px + env(safe-area-inset-bottom));z-index:20`
         : `left:${L.railRight}px;top:${L.topPx}px;bottom:${G}px;width:${L.listW}px;z-index:18`) +
       (S.leftHidden ? `;transform:${hideLeft}` : '');
     const detailPanelStyle =
@@ -1930,6 +1962,7 @@ export class HouseController extends Component {
       key,
       label,
       on: etype === key,
+      color: CIRCUIT_TYPE[key] || null,
       onClick: () => set({ etype: key }),
     }));
     const matches = (c) => etype === 'all' || c.type === etype;
@@ -2068,6 +2101,7 @@ export class HouseController extends Component {
       key,
       label,
       on: S.lf === key,
+      color: STATUS[key] && key !== 'warn' ? STATUS[key] : null,
       onClick: () => set({ lf: key }),
     }));
     // Room filter values: `rid:<roomId>` groups every display-name alias of a
@@ -2137,7 +2171,7 @@ export class HouseController extends Component {
         kColor: this.kColor(sb.k),
         color: this.stColor(sb.st),
         statusLabel: this.stLabel(sb.st) || 'OK',
-        statusFull: `${this.stLabel(sb.st) || 'OK'} · recorded replacement ${sb.replaced} · ~${sb.life} yr rated life`,
+        statusFull: `Replaced ${sb.replaced} (recorded) · ~${sb.life} yr rated life`,
         excluded: !bulbMatch(sb),
         specs: [
           { k: 'Wattage', v: `${sb.w} W` },
@@ -2219,7 +2253,7 @@ export class HouseController extends Component {
         name: nd.name,
         role: nd.role,
         room: nd.room,
-        statusColor: this.stColor(nd.status),
+        statusColor: this.nodeColor(nd.status),
         statusLabel: 'Observed at scan',
         netDots: nd.nets.map((x) => ({
           id: x,
@@ -2247,7 +2281,7 @@ export class HouseController extends Component {
       backhaul: snd.backhaul,
       plug: snd.plug,
       plugRef: this.circuitLink(snd.plug, goMode),
-      statusColor: this.stColor(snd.status),
+      statusColor: this.nodeColor(snd.status),
       statusLabel: 'Observed at scan',
       ip: snd.ip,
       mac: snd.mac,
@@ -2328,6 +2362,7 @@ export class HouseController extends Component {
       key,
       label,
       on: camFilter === key,
+      color: key === 'offline' ? STATUS.idle : null,
       onClick: () => set({ camFilter: key }),
     }));
     const camMatch = (c) =>
@@ -2531,6 +2566,7 @@ export class HouseController extends Component {
       key,
       label,
       on: uf === key,
+      color: key === 'overdue' ? STATUS.overdue : null,
       onClick: () => set({ uf: key }),
     }));
     const upMatch = (u) =>
@@ -3551,6 +3587,10 @@ export class HouseController extends Component {
       quickFacts,
       needs,
       alertText,
+      alert: {
+        title: `${due.length} fixtures need attention`,
+        sub: `${this.bulbs.filter((b) => b.st === 'overdue').length} overdue · ${this.bulbs.filter((b) => b.st === 'soon').length} due soon`,
+      },
       roomDet,
       typeFilters,
       circGroups,
@@ -3596,6 +3636,10 @@ export class HouseController extends Component {
       sensorList,
       sensorDet,
       climateBannerText,
+      climateBanner: {
+        title: `${sensorsPlanned} climate sensors planned`,
+        sub: 'None connected yet',
+      },
       upSummary,
       upTotal,
       upCount,
@@ -3603,6 +3647,10 @@ export class HouseController extends Component {
       upList,
       upDet,
       upAlertText,
+      upAlert: {
+        title: `${upDue} replacements due`,
+        sub: `${upOverdue} overdue · ${upSoon} due soon`,
+      },
       goClimate,
       goUpkeep,
       filterNotice,

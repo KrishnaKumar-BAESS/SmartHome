@@ -77,7 +77,7 @@ function Drawer({ view }) {
             onClick={n.onClick}
             className="ia icon-btn icon-btn--lg icon-btn--filled"
             aria-label={n.label}
-            title={n.label}
+            data-tip={n.label}
           >
             <Icon name={n.icon} size={14} />
           </button>
@@ -112,52 +112,47 @@ export function ViewControls({ view }) {
       aria-label="Model controls"
       aria-orientation="vertical"
     >
-      {view.isNarrow ? (
-        <div className="dock-panels">
-          <button
-            type="button"
-            className="ia panel-toggle"
-            onClick={view.toggleLeft}
-            aria-pressed={!view.leftHidden}
-            aria-controls="panel-left"
-          >
-            <Icon name="list" size={13} />
-            {view.leftHidden ? 'List' : 'Hide list'}
-          </button>
-          <button
-            type="button"
-            className="ia panel-toggle"
-            onClick={view.toggleRight}
-            aria-pressed={!view.rightHidden}
-            aria-controls="panel-right"
-          >
-            <Icon name="panel" size={13} />
-            {view.rightHidden ? 'Details' : 'Hide details'}
-          </button>
-          <button
-            type="button"
-            className="ia panel-toggle"
-            onClick={view.togglePanels}
-            aria-pressed={view.panelsHidden}
-          >
-            {view.panelsHidden ? 'Show panels' : 'Show model'}
-          </button>
-        </div>
-      ) : null}
       <Drawer view={view} />
       <div className="dock-bar">
+        {view.isNarrow ? (
+          <>
+            <button
+              type="button"
+              className="ia btn btn--ghost dock-toggle"
+              onClick={view.toggleLeft}
+              aria-pressed={!view.leftHidden}
+              aria-controls="panel-left"
+            >
+              <Icon name="list" size={14} />
+              List
+            </button>
+            <button
+              type="button"
+              className="ia btn btn--ghost dock-toggle"
+              onClick={view.toggleRight}
+              aria-pressed={!view.rightHidden}
+              aria-controls="panel-right"
+            >
+              <Icon name="panel" size={14} />
+              Details
+            </button>
+            <div className="dock-sep" aria-hidden="true"></div>
+          </>
+        ) : null}
         <button
           type="button"
           onClick={view.zoomOut}
           className="ia icon-btn icon-btn--lg"
           aria-label="Zoom out"
-          title="Zoom out (−)"
+          data-tip="Zoom out"
+          data-tip-kbd={view.shortcutsOn ? '−' : undefined}
           aria-disabled={view.atMin}
           disabled={view.atMin}
         >
           <Icon name="minus" size={14} />
         </button>
         <div
+          hidden={view.isNarrow}
           className="dock-zoom"
           role="status"
           aria-live="polite"
@@ -170,19 +165,26 @@ export function ViewControls({ view }) {
           onClick={view.zoomIn}
           className="ia icon-btn icon-btn--lg"
           aria-label="Zoom in"
-          title="Zoom in (+)"
+          data-tip="Zoom in"
+          data-tip-kbd={view.shortcutsOn ? '+' : undefined}
           aria-disabled={view.atMax}
           disabled={view.atMax}
         >
           <Icon name="plus" size={14} />
         </button>
-        <div className="dock-sep" aria-hidden="true"></div>
+        <div
+          className="dock-sep"
+          aria-hidden="true"
+          hidden={view.isNarrow}
+        ></div>
         <button
           type="button"
+          hidden={view.isNarrow}
           onClick={view.resetView}
           className="ia icon-btn icon-btn--lg"
           aria-label="Reset orientation"
-          title="Reset orientation (0)"
+          data-tip="Reset view"
+          data-tip-kbd={view.shortcutsOn ? '0' : undefined}
         >
           <Icon name="reset" size={14} />
         </button>
@@ -191,7 +193,7 @@ export function ViewControls({ view }) {
           onClick={view.toggleViewOpts}
           className="ia icon-btn icon-btn--lg"
           aria-label="View options"
-          title="View options"
+          data-tip={view.viewOptsOpen ? undefined : 'View options'}
           aria-expanded={view.viewOptsOpen}
           aria-controls="view-options"
         >

@@ -14,7 +14,8 @@ export function DetailsToggle({ view }) {
       onClick={view.toggleRight}
       style={css(view.rightTabStyle)}
       aria-label={label}
-      title={label}
+      data-tip={view.rightHidden ? 'Show details' : 'Hide details'}
+      data-tip-side="left"
       aria-expanded={!view.rightHidden}
       aria-controls="panel-right"
     >

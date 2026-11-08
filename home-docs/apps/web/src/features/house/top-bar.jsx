@@ -1,5 +1,20 @@
 import { usePresence } from '../../lib/presence';
 import { Icon } from './icons';
+import { ModeIcon } from './mode-icons';
+
+const CAT_ICON = {
+  Room: 'room',
+  Circuit: 'electrical',
+  Panel: 'electrical',
+  Light: 'lighting',
+  Network: 'network',
+  Node: 'network',
+  Server: 'network',
+  Sound: 'sound',
+  Camera: 'security',
+  Climate: 'climate',
+  Upkeep: 'upkeep',
+};
 
 function SearchPopup({ view }) {
   const open = view.showResults || view.showSuggest;
@@ -58,7 +73,9 @@ function SearchPopup({ view }) {
                 className="result-icon"
                 style={{ '--c': r.accent }}
                 aria-hidden="true"
-              ></span>
+              >
+                <ModeIcon mode={CAT_ICON[r.cat] || 'overview'} size={15} />
+              </span>
               <div className="result-main">
                 <div className="result-title">{r.label}</div>
                 <div className="result-sub">{r.sub}</div>
@@ -176,7 +193,6 @@ export function TopBar({ view }) {
           placeholder={view.searchPlaceholder}
           className="search-input"
           aria-label="Search home inventory"
-          title="Search (press / anywhere)"
           role="combobox"
           aria-autocomplete="list"
           aria-haspopup="listbox"
@@ -192,7 +208,7 @@ export function TopBar({ view }) {
             onClick={view.clearSearch}
             className="ia icon-btn search-clear"
             aria-label="Clear search"
-            title="Clear search"
+            data-tip="Clear"
           >
             <Icon name="close" size={11} strokeWidth={1.8} />
           </button>
@@ -235,7 +251,7 @@ export function TopBar({ view }) {
               onClick={view.isoClear}
               className="ia icon-btn"
               aria-label="Clear isolation and show all rooms"
-              title="Clear isolation"
+              data-tip="Clear isolation"
             >
               <Icon name="close" size={12} />
             </button>
@@ -246,7 +262,8 @@ export function TopBar({ view }) {
             onClick={view.helpBtn.onClick}
             className="ia icon-btn icon-btn--lg"
             aria-label="Help and keyboard shortcuts"
-            title="Help (?)"
+            data-tip="Help"
+            data-tip-kbd="?"
             aria-haspopup="dialog"
           >
             <Icon name="help" size={16} />
@@ -256,7 +273,7 @@ export function TopBar({ view }) {
             onClick={view.themeBtn.onClick}
             className="ia icon-btn icon-btn--lg"
             aria-label={view.themeBtn.title}
-            title={view.themeBtn.title}
+            data-tip={view.themeBtn.isLight ? 'Dark theme' : 'Light theme'}
           >
             <Icon
               key={view.themeBtn.isLight ? 'moon' : 'sun'}

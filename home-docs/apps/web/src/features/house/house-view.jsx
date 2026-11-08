@@ -18,6 +18,7 @@ import { CameraViewer } from './camera-viewer';
 import { HelpSheet } from './help-sheet';
 import { NoticeToast } from './notice-toast';
 import { PrintInventory } from './print-inventory';
+import { Tooltips } from './tooltips';
 
 // Everything except the stage only depends on `view`, which the controller
 // keeps referentially stable while the camera moves, so these skip
@@ -41,6 +42,7 @@ const Chrome = memo(function Chrome({ view }) {
       ) : null}
       <CameraViewer view={view} />
       <HelpSheet view={view} />
+      <Tooltips />
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {view.selectionAnnounce}
       </div>

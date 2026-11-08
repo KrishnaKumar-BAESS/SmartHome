@@ -14,7 +14,8 @@ export function ListToggle({ view }) {
       onClick={view.toggleLeft}
       style={css(view.leftTabStyle)}
       aria-label={label}
-      title={label}
+      data-tip={view.leftHidden ? 'Show list' : 'Hide list'}
+      data-tip-side="right"
       aria-expanded={!view.leftHidden}
       aria-controls="panel-left"
     >
