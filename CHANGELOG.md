@@ -12,7 +12,7 @@ states and are not descriptions of the current application layout.
 ### Added
 
 - Show the running home-docs build in the UI: the version and commit (marked `-dirty` for uncommitted builds) beside the brand (commit only on tablets; click to copy), at the foot of View options and the help sheet with the build time, and in the print header.
-- Add `e2e/design-qa.spec.ts`: measured WCAG AA contrast for derived tones and model text in both themes, an 11 px text floor, 40 px coarse-pointer touch targets, and no overlapping panel-header items at 1024 px.
+- Add `e2e/design-qa.spec.ts`: measured WCAG AA contrast for derived tones and model text in both themes, an 11 px text floor, 40 px coarse-pointer touch targets, and no overlapping panel-header items at 1024 px, no overlapping model labels, and model translucency that survives entrance fades.
 - Add a View options **Scroll gesture** setting (Auto, Pan, Zoom) that overrides trackpad/mouse detection.
 
 - Add a first-load intro to home-docs: the basement, main and second floors drop into place in turn while the camera eases round, the top bar, rail and panels slide in, and markers and labels fade in last. Any click, key or wheel input settles it at once; reduced-motion users start on the settled view.

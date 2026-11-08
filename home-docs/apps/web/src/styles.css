@@ -3193,9 +3193,6 @@ button.callout {
 main[data-dragging='true'] .face {
   transition: none;
 }
-.callout-pin {
-  animation: appear 0.35s var(--ease-out) both;
-}
 main[data-dragging='true'] .callout-pin rect {
   filter: none !important;
 }
@@ -3207,9 +3204,6 @@ main[data-dragging='true'] .callout-pin rect {
 }
 main[data-dragging='true'] #house-stage svg > * {
   animation: none;
-}
-.sel-glow {
-  animation: appear 0.6s var(--ease-out) both;
 }
 
 @media (pointer: coarse) {

@@ -335,3 +335,35 @@ test('model labels and callouts never overlap', async ({ page, isMobile }) => {
   }
   expect(hits).toEqual([]);
 });
+
+test('model translucency survives entrance fades', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Same renderer on every layout');
+  const wrong: string[] = [];
+  for (const hash of [
+    '#m=overview&s=kitchen_breakfast_room',
+    '#m=lighting',
+    '#m=network&s=n1',
+  ]) {
+    await open(page, 'dark', hash);
+    for (const w of await page.evaluate(() => {
+      const out: string[] = [];
+      for (const el of document.querySelectorAll(
+        '#house-stage svg [opacity]',
+      )) {
+        const cs = getComputedStyle(el);
+        // Pulsing halos animate their own opacity on purpose.
+        if (cs.animationName.includes('nodePulse')) continue;
+        const want = parseFloat(el.getAttribute('opacity') || '1');
+        const got = parseFloat(cs.opacity);
+        if (got > want + 0.02)
+          out.push(`${el.tagName}.${el.getAttribute('class')} ${want}→${got}`);
+      }
+      return out;
+    }))
+      wrong.push(`${hash}: ${w}`);
+  }
+  expect(wrong).toEqual([]);
+});
