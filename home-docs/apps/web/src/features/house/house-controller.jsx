@@ -1830,8 +1830,9 @@ export class HouseController extends Component {
     const short = vh < 520;
     // Chrome geometry: 12 px gutters, a 56 px top bar and a 72 px rail.
     const G = 12;
-    const listW = narrow ? 0 : compact ? 280 : 320;
-    const detW = narrow ? 0 : compact ? 300 : 352;
+    const wide = vw >= 1800;
+    const listW = narrow ? 0 : compact ? 280 : wide ? 360 : 320;
+    const detW = narrow ? 0 : compact ? 300 : wide ? 400 : 352;
     const railRight = G + 72 + G;
     const leftPx = narrow
       ? 0
