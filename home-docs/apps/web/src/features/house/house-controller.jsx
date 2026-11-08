@@ -114,6 +114,17 @@ function writeStorage(key, value) {
   }
 }
 
+const INTRO_KEY = 'housedocs-intro-played';
+
+function playIntro() {
+  if (typeof window === 'undefined' || prefersReducedMotion()) return false;
+  try {
+    return window.sessionStorage.getItem(INTRO_KEY) !== '1';
+  } catch {
+    return true;
+  }
+}
+
 function initialTheme() {
   const saved = readStorage(THEME_KEY);
   if (saved === 'light' || saved === 'dark' || saved === 'system') return saved;
@@ -185,8 +196,9 @@ export class HouseController extends Component {
       explode: 'full',
       explodeT: 2,
       // 0→1 drives the first-load intro; reduced motion starts settled.
-      introT: prefersReducedMotion() ? 1 : 0,
-      intro: !prefersReducedMotion(),
+      // The intro plays once per browser session; reloads open settled.
+      introT: playIntro() ? 0 : 1,
+      intro: playIntro(),
       legend: false,
       autoRotate: false,
       isoFloor: 'all',
@@ -932,6 +944,11 @@ export class HouseController extends Component {
 
   endIntro() {
     this._introTween = null;
+    try {
+      window.sessionStorage.setItem(INTRO_KEY, '1');
+    } catch {
+      // Without session storage the intro simply plays again next load.
+    }
     for (const type of ['pointerdown', 'keydown', 'wheel'])
       window.removeEventListener(type, this._onIntroInput, { capture: true });
     // Keep the flag briefly so markers, labels and panels finish fading in.
