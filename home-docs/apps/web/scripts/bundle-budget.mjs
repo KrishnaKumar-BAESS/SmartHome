@@ -9,7 +9,7 @@ const BUDGET = {
   js: 140 * 1024, // total gzip JS
   // Styling moved from inline JS strings into the stylesheet's design
   // system (JS fell ~5 kB gzip while CSS grew ~6 kB).
-  css: 12 * 1024, // total gzip CSS
+  css: 14 * 1024, // total gzip CSS
   fontFiles: 6, // one woff2 per shipped face; woff fallbacks are also emitted
 };
 

@@ -203,6 +203,7 @@ export function renderScene(house, opt = {}) {
   const markerRing = light ? '#ffffff' : '#0b0e13';
   const labelFill = light ? '#2a3644' : '#dde4ec';
   const labelFillSel = light ? '#0f1722' : '#ffffff';
+  const labelFillDim = light ? '#5b6a78' : '#a6b1bd';
   const labelHalo = light ? 'rgba(255,255,255,0.94)' : 'rgba(12,15,20,0.86)';
 
   // ---- room volumes ----
@@ -217,7 +218,7 @@ export function renderScene(house, opt = {}) {
     const top = floorTop[r.floor];
     // REVERSED transparency: highlighted rooms read SOLID; everything else fades back
     const topFill = sel
-      ? house.mix(top, hiColor, 0.5)
+      ? house.mix(top, hiColor, light ? 0.38 : 0.5)
       : hov
         ? house.mix(top, hiColor, 0.18)
         : top;
@@ -465,7 +466,7 @@ export function renderScene(house, opt = {}) {
             height: h,
             rx: 5,
             fill: active
-              ? MODE_ACCENT.electrical
+              ? house.mixHex(MODE_ACCENT.electrical, '#000000', 0.3)
               : light
                 ? 'rgba(255,255,255,0.9)'
                 : 'rgba(30,36,46,0.92)',
@@ -756,7 +757,8 @@ export function renderScene(house, opt = {}) {
         cx: cx.toFixed(1),
         cy: cy.toFixed(1),
         r: 7 * ms,
-        fill: col,
+        // Darkened so the white count clears AA on every status hue.
+        fill: house.mixHex(col, '#000000', 0.35),
         stroke: markerRing,
         strokeWidth: 1.2,
         style: { pointerEvents: 'none' },
@@ -1437,12 +1439,12 @@ export function renderScene(house, opt = {}) {
               style: {
                 font: `${sel ? 600 : 500} ${fs}px 'Inter',system-ui,'Segoe UI',sans-serif`,
                 letterSpacing: '-0.01em',
-                fill: sel ? labelFillSel : labelFill,
+                fill: sel ? labelFillSel : hasFocus ? labelFillDim : labelFill,
                 paintOrder: 'stroke',
                 stroke: labelHalo,
                 strokeWidth: sel ? 4 : 3.4,
                 strokeLinejoin: 'round',
-                opacity: hasFocus && !sel ? 0.5 : 1,
+                // Dimmed by colour, not opacity, so it still clears AA.
                 pointerEvents: 'none',
               },
             },
