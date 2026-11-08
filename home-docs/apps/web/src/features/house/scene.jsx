@@ -79,8 +79,32 @@ export function renderScene(house, opt = {}) {
     if (zt > bz1) bz1 = zt;
   });
   const MC = { x: (bx0 + bx1) / 2, y: (by0 + by1) / 2, z: (bz0 + bz1) / 2 };
-  const diag =
+  const visDiag =
     Math.sqrt((bx1 - bx0) ** 2 + (by1 - by0) ** 2 + (bz1 - bz0) ** 2) || 1;
+  // Isolating one room or floor zooms in, but never beyond 1.6× the
+  // whole-house fit, so a single room does not swell to fill the stage.
+  let fullDiag;
+  {
+    let x0 = 1e9,
+      x1 = -1e9,
+      y0 = 1e9,
+      y1 = -1e9,
+      z0 = 1e9,
+      z1 = -1e9;
+    house.rooms.forEach((r) => {
+      const zb = layoutBase(r.floor);
+      z0 = Math.min(z0, zb);
+      z1 = Math.max(z1, zb + r.height);
+      r.verts.forEach(([vx, vy]) => {
+        x0 = Math.min(x0, vx);
+        x1 = Math.max(x1, vx);
+        y0 = Math.min(y0, vy);
+        y1 = Math.max(y1, vy);
+      });
+    });
+    fullDiag = Math.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2) || 1;
+  }
+  const diag = Math.max(visDiag, fullDiag / 1.6);
   // Pixel units: the SVG viewBox matches the stage, and the model is fitted
   // to the stage area left free by the panels.
   const scale = (L.fit / diag) * S.zoom;
