@@ -1020,6 +1020,27 @@ html.theme-transition * {
   color: var(--t5);
   font-weight: 500;
 }
+.build-tag {
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  background: var(--fill-2);
+  color: var(--t5);
+  font: 500 11px var(--mono);
+  white-space: nowrap;
+  cursor: default;
+}
+@media (max-width: 1100px) {
+  .build-tag {
+    display: none;
+  }
+}
+.help-build {
+  margin-top: 22px !important;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font: 500 11.5px var(--mono) !important;
+  color: var(--t5) !important;
+}
 .topbar-actions {
   display: flex;
   align-items: center;
@@ -2013,6 +2034,11 @@ button.callout {
   height: 6px;
   border-radius: var(--r-pill);
   overflow: hidden;
+}
+.stat-bar {
+  width: 100%;
+  height: 4px;
+  margin-top: 10px;
 }
 .stack-bar--lg {
   height: 10px;

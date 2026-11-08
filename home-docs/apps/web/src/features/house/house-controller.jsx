@@ -1982,6 +1982,21 @@ export class HouseController extends Component {
         rightHidden: false,
         ...(narrow ? {} : { leftHidden: L.onePanel }),
       });
+    // Composition strips for the overview cards.
+    const seg = (label, count, color) => ({ label, count, color });
+    const statusBar = (items, key) => [
+      seg('OK', items.filter((x) => x[key] === 'ok').length, STATUS.ok),
+      seg(
+        'Due soon',
+        items.filter((x) => x[key] === 'soon').length,
+        STATUS.soon,
+      ),
+      seg(
+        'Overdue',
+        items.filter((x) => x[key] === 'overdue').length,
+        STATUS.overdue,
+      ),
+    ];
     const overviewStats = [
       {
         label: 'ELECTRICAL',
@@ -1990,6 +2005,13 @@ export class HouseController extends Component {
         stat: String(this.circuits.length),
         sub: `circuits · ${this.boxes.length} panels`,
         accent: MODE_ACCENT.electrical,
+        bar: Object.keys(CIRCUIT_TYPE).map((t) =>
+          seg(
+            t,
+            this.circuits.filter((c) => c.type === t).length,
+            CIRCUIT_TYPE[t],
+          ),
+        ),
         onClick: () => goMode({ mode: 'electrical' }),
       },
       {
@@ -1999,6 +2021,7 @@ export class HouseController extends Component {
         stat: String(this.bulbs.length),
         sub: `fixtures · ${due.length} flagged`,
         accent: MODE_ACCENT.lighting,
+        bar: statusBar(this.bulbs, 'st'),
         onClick: () => goMode({ mode: 'lighting' }),
       },
       {
@@ -2008,6 +2031,13 @@ export class HouseController extends Component {
         stat: String(this.nodes.length),
         sub: `nodes · ${this.networks.length} networks`,
         accent: MODE_ACCENT.network,
+        bar: this.networks.map((n) =>
+          seg(
+            n.name,
+            this.nodes.filter((nd) => nd.nets.includes(n.id)).length,
+            networkColor(n.color),
+          ),
+        ),
         onClick: () => goMode({ mode: 'network' }),
       },
       {
@@ -2017,6 +2047,7 @@ export class HouseController extends Component {
         stat: String(this.zones.length),
         sub: 'surround zones',
         accent: MODE_ACCENT.sound,
+        bar: this.zones.map((z) => seg(z.name, 1, MODE_ACCENT.sound)),
         onClick: () => goMode({ mode: 'sound' }),
       },
       {
@@ -2026,6 +2057,18 @@ export class HouseController extends Component {
         stat: String(this.cameras.length),
         sub: 'cameras',
         accent: MODE_ACCENT.security,
+        bar: [
+          seg(
+            'Online',
+            this.cameras.filter((c) => c.status === 'online').length,
+            STATUS.ok,
+          ),
+          seg(
+            'Offline',
+            this.cameras.filter((c) => c.status !== 'online').length,
+            STATUS.idle,
+          ),
+        ],
         onClick: () => goMode({ mode: 'security' }),
       },
       {
@@ -2035,6 +2078,7 @@ export class HouseController extends Component {
         stat: String(this.upkeep.filter((u) => u.status !== 'ok').length),
         sub: 'replacements due',
         accent: MODE_ACCENT.upkeep,
+        bar: statusBar(this.upkeep, 'status'),
         onClick: () => goMode({ mode: 'upkeep' }),
       },
     ];

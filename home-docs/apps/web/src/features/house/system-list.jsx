@@ -181,6 +181,29 @@ export function SystemList({ view }) {
                       </span>
                       <span className="stat-label">{s.name}</span>
                       <span className="stat-sub">{s.sub}</span>
+                      {s.bar ? (
+                        <span
+                          className="stack-bar stat-bar"
+                          role="img"
+                          aria-label={s.bar
+                            .filter((b) => b.count)
+                            .map((b) => `${b.label} ${b.count}`)
+                            .join(', ')}
+                          title={s.bar
+                            .filter((b) => b.count)
+                            .map((b) => `${b.label} ${b.count}`)
+                            .join(' · ')}
+                        >
+                          {s.bar
+                            .filter((b) => b.count)
+                            .map((b) => (
+                              <span
+                                key={b.label}
+                                style={{ '--c': b.color, flexGrow: b.count }}
+                              />
+                            ))}
+                        </span>
+                      ) : null}
                     </button>
                   </div>
                 ))}

@@ -1,5 +1,6 @@
 import { usePresence } from '../../lib/presence';
 import { Icon } from './icons';
+import { BUILD_LABEL, builtAt } from '../../build-info';
 import { ModeIcon } from './mode-icons';
 
 const IS_MAC =
@@ -192,6 +193,15 @@ export function TopBar({ view }) {
           <h1 className={narrow ? 'brand-name sr-only' : 'brand-name'}>
             house<span>.sys</span>
           </h1>
+          {narrow ? null : (
+            <span
+              className="build-tag"
+              data-tip={`Built ${builtAt()}`}
+              aria-label={`Version ${BUILD_LABEL}`}
+            >
+              {BUILD_LABEL}
+            </span>
+          )}
         </div>
       )}
 

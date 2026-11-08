@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Icon } from './icons';
+import { BUILD, builtAt } from '../../build-info';
 
 const REPO = 'https://github.com/KrishnaKumar-BAESS/SmartHome';
 
@@ -167,6 +168,9 @@ function Sheet({ view }) {
         {
           ' describing the record, what is wrong, and the source for the correction.'
         }
+      </p>
+      <p className="help-build">
+        {`Version ${BUILD.version} · commit ${BUILD.commit} · built ${builtAt()}`}
       </p>
     </dialog>
   );
