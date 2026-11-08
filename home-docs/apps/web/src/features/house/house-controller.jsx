@@ -204,6 +204,8 @@ export class HouseController extends Component {
       // Scroll gesture: 'auto' tells trackpad from mouse; 'pan' / 'zoom' force.
       scrollMode: (hasWindow && readStorage(SCROLL_KEY)) || 'auto',
       notice: null,
+      // Phone details sheet: half height, or expanded to nearly full screen.
+      sheetFull: false,
     };
     if (hasWindow)
       Object.assign(this.state, this.stateFromHash(window.location.hash));
@@ -1984,7 +1986,7 @@ export class HouseController extends Component {
       (S.leftHidden ? `;transform:${hideLeft}` : '');
     const detailPanelStyle =
       (narrow
-        ? `left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));height:${L.sheetH}px;z-index:19`
+        ? `left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));height:${S.sheetFull ? `calc(100% - ${L.topPx + 16}px - env(safe-area-inset-top) - env(safe-area-inset-bottom))` : `${L.sheetH}px`};z-index:${S.sheetFull ? 37 : 19}`
         : `right:${G}px;top:${L.topPx}px;bottom:${G}px;width:${L.detW}px;z-index:18`) +
       (S.rightHidden ? `;transform:${hideRight}` : '');
     const searchPlaceholder = narrow
@@ -3261,6 +3263,7 @@ export class HouseController extends Component {
     const toggleRight = () =>
       set((s) => ({
         rightHidden: !s.rightHidden,
+        sheetFull: false,
         leftHidden: L.onePanel && s.rightHidden ? true : s.leftHidden,
       }));
     const mapRight = narrow ? 8 : L.rightPx;
@@ -3777,6 +3780,8 @@ export class HouseController extends Component {
       rightHidden,
       toggleLeft,
       toggleRight,
+      sheetFull: !!S.sheetFull,
+      setSheetFull: (on) => set({ sheetFull: on }),
       leftTabStyle: `left:${L.leftPx - 17}px`,
       rightTabStyle: `right:${L.rightPx - 17}px`,
       isoFloors,

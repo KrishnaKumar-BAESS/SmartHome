@@ -178,7 +178,12 @@ export { DemoFeed };
  * Phone sheet handle: drag down to dismiss, or tap to hide. The sheet
  * follows the finger, then either slides away or springs back.
  */
-function SheetGrip({ sheet, onDismiss }) {
+/**
+ * Phone sheet handle. Drag up to expand the sheet to nearly full screen,
+ * drag down to shrink it (or hide it from half height). A tap or
+ * Enter/Space toggles between the two heights.
+ */
+function SheetGrip({ sheet, full, onExpand, onDismiss }) {
   const start = useRef(null);
   const dragged = useRef(false);
   const end = (e, cancel) => {
@@ -186,24 +191,29 @@ function SheetGrip({ sheet, onDismiss }) {
     start.current = null;
     const el = sheet.current;
     if (!s || !el) return;
-    const dy = Math.max(0, e.clientY - s.y);
-    dragged.current = dy > 6;
+    const dy = e.clientY - s.y;
+    dragged.current = Math.abs(dy) > 6;
     el.style.transition = '';
     el.style.translate = '';
-    if (!cancel && dy > 72) onDismiss();
+    if (cancel) return;
+    if (dy < -56 && !full) onExpand(true);
+    else if (dy > 72 && full) onExpand(false);
+    else if (dy > 72) onDismiss();
   };
   return (
     <button
       type="button"
       className="sheet-grip-hit"
-      aria-label="Hide the details panel"
+      aria-label={
+        full ? 'Shrink the details panel' : 'Expand the details panel'
+      }
+      aria-expanded={full}
       onClick={() => {
-        // A drag already decided; a tap or Enter/Space hides the sheet.
         if (dragged.current) {
           dragged.current = false;
           return;
         }
-        onDismiss();
+        onExpand(!full);
       }}
       onPointerDown={(e) => {
         start.current = { y: e.clientY };
@@ -213,8 +223,9 @@ function SheetGrip({ sheet, onDismiss }) {
       }}
       onPointerMove={(e) => {
         if (!start.current || !sheet.current) return;
-        const dy = Math.max(0, e.clientY - start.current.y);
-        sheet.current.style.translate = `0 ${dy}px`;
+        const dy = e.clientY - start.current.y;
+        // Follow the finger down freely; resist upward pulls.
+        sheet.current.style.translate = `0 ${dy > 0 ? dy : dy / 4}px`;
       }}
       onPointerUp={(e) => end(e, false)}
       onPointerCancel={(e) => end(e, true)}
@@ -237,7 +248,12 @@ export function SystemDetails({ view }) {
       inert={view.rightHidden ? true : undefined}
     >
       {view.narrow ? (
-        <SheetGrip sheet={sheet} onDismiss={view.toggleRight} />
+        <SheetGrip
+          sheet={sheet}
+          full={view.sheetFull}
+          onExpand={view.setSheetFull}
+          onDismiss={view.toggleRight}
+        />
       ) : null}
       <div className="panel-scroll" ref={view.detailsRef}>
         <div className="panel-inner mode-fade" key={view.mode}>

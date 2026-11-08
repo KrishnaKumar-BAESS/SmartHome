@@ -1439,6 +1439,12 @@ kbd {
   visibility: hidden;
 }
 .side-panel--sheet {
+  transition:
+    transform var(--dur-4) var(--ease-spring),
+    translate var(--dur-4) var(--ease-spring),
+    height var(--dur-4) var(--ease-spring),
+    opacity var(--dur-3) var(--ease-out),
+    visibility var(--dur-4);
   border-radius: var(--r-xl) var(--r-xl) var(--r-lg) var(--r-lg);
 }
 .sheet-grip-hit {
