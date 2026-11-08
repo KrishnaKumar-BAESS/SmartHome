@@ -3052,6 +3052,9 @@ button.callout {
 main[data-dragging='true'] .face {
   transition: none;
 }
+.sel-glow {
+  animation: fadeIn 0.6s var(--ease-out) both;
+}
 
 @media (pointer: coarse) {
   /* Every touch target clears 40 px. */

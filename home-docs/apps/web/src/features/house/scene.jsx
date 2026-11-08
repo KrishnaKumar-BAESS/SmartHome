@@ -198,7 +198,8 @@ export function renderScene(house, opt = {}) {
   // Ceiling edges read a step brighter than wall seams, so each room's
   // footprint stays crisp against its own walls.
   const topEdge = light ? '#a6b1be' : '#6c7a90';
-  const dimOp = light ? 0.18 : 0.32;
+  // Context rooms stay legible behind a selection in both themes.
+  const dimOp = light ? 0.3 : 0.34;
   const markerRing = light ? '#ffffff' : '#0b0e13';
   const labelFill = light ? '#2a3644' : '#dde4ec';
   const labelFillSel = light ? '#0f1722' : '#ffffff';
@@ -394,13 +395,14 @@ export function renderScene(house, opt = {}) {
       els.push(
         RE('path', {
           key: `glow-${f.rid}`,
+          className: 'sel-glow',
           d: f.d,
           fill: hiColor,
-          opacity: (light ? 0.3 : 0.42) * f.op,
+          opacity: (light ? 0.22 : 0.42) * f.op,
           filter: 'url(#selGlow)',
           style: {
             pointerEvents: 'none',
-            mixBlendMode: light ? 'multiply' : 'screen',
+            mixBlendMode: light ? 'normal' : 'screen',
           },
         }),
       ),
