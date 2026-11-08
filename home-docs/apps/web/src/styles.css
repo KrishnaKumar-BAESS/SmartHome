@@ -226,6 +226,13 @@ input::placeholder {
     opacity: 1;
   }
 }
+/* Fades from transparent to the element's own opacity (no `to` frame), so
+   SVG halos and glows keep their designed translucency. */
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
 @keyframes contentIn {
   from {
     opacity: 0;
@@ -348,7 +355,7 @@ main[data-intro] .dock {
   animation: introSlide 0.7s var(--ease-out) 0.6s both;
 }
 main[data-intro] #house-stage svg > :not(.face) {
-  animation: fadeIn 0.5s ease both;
+  animation: appear 0.5s ease both;
 }
 
 /* ------------------------------------------------- accessibility utils */
@@ -3187,7 +3194,7 @@ main[data-dragging='true'] .face {
   transition: none;
 }
 .callout-pin {
-  animation: fadeIn 0.35s var(--ease-out) both;
+  animation: appear 0.35s var(--ease-out) both;
 }
 main[data-dragging='true'] .callout-pin rect {
   filter: none !important;
@@ -3196,13 +3203,13 @@ main[data-dragging='true'] .callout-pin rect {
    view switch reads as a crossfade instead of a hard swap. Elements that
    persist across renders are reused by React and do not replay this. */
 #house-stage svg > :not(.face):not(.plate):not(defs) {
-  animation: fadeIn 0.28s var(--ease-out) both;
+  animation: appear 0.28s var(--ease-out) both;
 }
 main[data-dragging='true'] #house-stage svg > * {
   animation: none;
 }
 .sel-glow {
-  animation: fadeIn 0.6s var(--ease-out) both;
+  animation: appear 0.6s var(--ease-out) both;
 }
 
 @media (pointer: coarse) {

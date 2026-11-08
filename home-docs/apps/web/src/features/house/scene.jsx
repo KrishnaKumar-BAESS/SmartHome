@@ -242,7 +242,7 @@ export function renderScene(house, opt = {}) {
     const top = floorTop[r.floor];
     // REVERSED transparency: highlighted rooms read SOLID; everything else fades back
     const topFill = sel
-      ? house.mix(top, hiColor, light ? 0.38 : 0.5)
+      ? house.mix(top, hiColor, light ? 0.38 : 0.36)
       : hov
         ? house.mix(top, hiColor, 0.18)
         : top;
@@ -492,7 +492,7 @@ export function renderScene(house, opt = {}) {
           className: 'sel-glow',
           d: f.d,
           fill: hiColor,
-          opacity: (light ? 0.22 : 0.42) * f.op,
+          opacity: (light ? 0.22 : 0.26) * f.op,
           filter: 'url(#selGlow)',
           style: {
             pointerEvents: 'none',
