@@ -668,10 +668,14 @@ export function SystemList({ view }) {
                         marginTop: 8,
                         marginLeft: 18,
                         color: 'var(--t2)',
+                        flexWrap: 'wrap',
+                        rowGap: 4,
                       }}
                     >
                       <ProvenanceTag real />
-                      <span>{u.lastRefill}</span>
+                      <span style={{ whiteSpace: 'nowrap' }}>
+                        {u.lastRefill}
+                      </span>
                     </div>
                   ) : null}
                   <div

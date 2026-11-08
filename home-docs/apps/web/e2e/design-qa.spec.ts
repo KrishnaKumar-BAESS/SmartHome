@@ -236,3 +236,47 @@ test('touch targets are at least 40 px on coarse pointers', async ({
   }
   expect([...small]).toEqual([]);
 });
+
+test('panel header items never overlap at compact widths', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Phones stack the panels');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  const overlaps: string[] = [];
+  for (const mode of [
+    'overview',
+    'electrical',
+    'lighting',
+    'network',
+    'sound',
+    'security',
+    'climate',
+    'upkeep',
+  ]) {
+    await open(page, 'light', `#m=${mode}`);
+    for (const o of await page.evaluate(() => {
+      const out: string[] = [];
+      for (const row of document.querySelectorAll('.panel-head-row')) {
+        const kids = [...row.querySelectorAll('*')].filter(
+          (el) => el.children.length === 0 && el.getBoundingClientRect().width,
+        );
+        for (let i = 0; i < kids.length; i++)
+          for (let j = i + 1; j < kids.length; j++) {
+            const a = kids[i].getBoundingClientRect(),
+              b = kids[j].getBoundingClientRect();
+            if (
+              a.left < b.right - 1 &&
+              b.left < a.right - 1 &&
+              a.top < b.bottom - 1 &&
+              b.top < a.bottom - 1
+            )
+              out.push(`${kids[i].textContent} / ${kids[j].textContent}`);
+          }
+      }
+      return out;
+    }))
+      overlaps.push(`${mode}: ${o}`);
+  }
+  expect(overlaps).toEqual([]);
+});

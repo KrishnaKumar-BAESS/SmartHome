@@ -491,6 +491,22 @@ export function renderScene(house, opt = {}) {
   // Name callouts for the selected item, drawn above everything else.
   const callouts = [];
   const floorBoxes = [];
+  // Geometry of a callout pill, shared by the label pass and the drawing.
+  const calloutBox = (c) => {
+    const fs = 11 * ms;
+    const text = c.text.length > 30 ? `${c.text.slice(0, 29)}…` : c.text;
+    const w = text.length * fs * 0.56 + 30 * ms;
+    const h = fs * 2.1;
+    let x0 = c.x - w / 2;
+    const y0 = c.y - h - 7 * ms;
+    // Slide right of any floor label it would cover; the stem still points
+    // at the item because it is drawn from the pill's nearest edge.
+    floorBoxes.forEach((b) => {
+      if (x0 < b.x1 + 6 && x0 + w > b.x0 && y0 < b.y1 && y0 + h > b.y0)
+        x0 = b.x1 + 6;
+    });
+    return { fs, text, w, h, x0, y0 };
+  };
 
   // ---- breaker panels (electrical infra) ----
   if (layer === 'overview' || layer === 'electrical') {
@@ -1485,7 +1501,14 @@ export function renderScene(house, opt = {}) {
   // pill still names that room.
   if (showRoomLabels) {
     const fs = 11 * ms;
-    const placed = [...reserved];
+    // Room names also stay clear of selection callouts.
+    const placed = [
+      ...reserved,
+      ...callouts.map((c) => {
+        const b = calloutBox(c);
+        return { x0: b.x0, x1: b.x0 + b.w, y0: b.y0, y1: c.y };
+      }),
+    ];
     const hiTops = faces
       .filter((f) => f.isTop && isHi(f.rid))
       .map((f) => f.pts);
@@ -1576,18 +1599,7 @@ export function renderScene(house, opt = {}) {
 
   // ---- selection callouts: a named pill above the selected item ----
   callouts.forEach((c, i) => {
-    const fs = 11 * ms;
-    const text = c.text.length > 30 ? `${c.text.slice(0, 29)}…` : c.text;
-    const w = text.length * fs * 0.56 + 30 * ms;
-    const h = fs * 2.1;
-    let x0 = c.x - w / 2;
-    const y0 = c.y - h - 7 * ms;
-    // Slide right of any floor label it would cover; the stem still points
-    // at the item because it is drawn from the pill's nearest edge.
-    floorBoxes.forEach((b) => {
-      if (x0 < b.x1 + 6 && x0 + w > b.x0 && y0 < b.y1 && y0 + h > b.y0)
-        x0 = b.x1 + 6;
-    });
+    const { fs, text, w, h, x0, y0 } = calloutBox(c);
     const stemX = Math.min(Math.max(c.x, x0 + h / 2), x0 + w - h / 2);
     els.push(
       RE(

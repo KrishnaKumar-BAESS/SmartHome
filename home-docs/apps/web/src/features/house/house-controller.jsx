@@ -2826,7 +2826,7 @@ export class HouseController extends Component {
         ? `${u.used}/${u.life} h used`
         : u.metric === 'months'
           ? u.used > u.life
-            ? `${u.used}/${u.life} mo · over by ${u.used - u.life}`
+            ? `${u.used}/${u.life} mo · +${u.used - u.life}`
             : `${u.used}/${u.life} mo used`
           : `${u.used}% remaining`;
     const uf = S.uf || 'all';
