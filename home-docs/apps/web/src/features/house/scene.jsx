@@ -126,7 +126,7 @@ export function renderScene(house, opt = {}) {
     const r = ch(0),
       g = ch(2),
       b = ch(4);
-    return `rgb(${r},${g},${b})`;
+    return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
   };
   // ---- exploded room layout: spread rooms radially in x/y away from each floor's center ----
   const EXPL_XY = eT <= 1 ? 0 : (eT - 1) * 0.34;
@@ -278,6 +278,22 @@ export function renderScene(house, opt = {}) {
       pts: tp,
     });
   });
+  // ---- aerial perspective: rooms further from the camera recede ----
+  // A gentle fade toward the stage tone (light) or a slight dimming (dark),
+  // applied to unhighlighted ceilings and walls only.
+  {
+    const ds = faces.map((f) => f.depth);
+    const dMin = Math.min(...ds),
+      dMax = Math.max(...ds);
+    const span = dMax - dMin || 1;
+    const stageTone = light ? '#e4e9ef' : '#0d1016';
+    faces.forEach((f) => {
+      if (!f.room || isHi(f.rid) || !/^#/.test(f.fill)) return;
+      const t = (f.depth - dMin) / span;
+      f.fill = house.mixHex(f.fill, stageTone, t * (light ? 0.22 : 0.28));
+    });
+  }
+
   // ---- floor plates: a thin slab under each separated floor ----
   // They fade in with separation (absent when stacked) and sort just behind
   // their own floor's rooms so each floor reads as one object.
@@ -663,13 +679,12 @@ export function renderScene(house, opt = {}) {
       });
     });
     if (minSx === 1e9) return;
-    const roomMinSx = minSx;
-    // With plates showing, the leader points at the plate's nearest corner.
-    if (platePts[f] && plateT > 0.5) {
-      const corner = platePts[f].reduce((a, b) => (b.sx < a.sx ? b : a));
-      minSx = corner.sx;
-      minSy = corner.sy;
-    }
+    const roomMinSx = minSx,
+      roomMinSy = minSy;
+    const plateCorner =
+      platePts[f] && plateT > 0.5
+        ? platePts[f].reduce((a, b) => (b.sx < a.sx ? b : a))
+        : null;
     const fullLabel = house.floorLabels[f];
     const fs = 11 * ms;
     // Inter semibold averages ≈ 0.56em per glyph.
@@ -685,8 +700,17 @@ export function renderScene(house, opt = {}) {
       : { second: 'L2', main: 'L1', basement: 'B1' }[f];
     const label = fullLabel;
     const labelW = widthOf(visibleLabel);
-    const lx = Math.max(minX + labelW, minSx - 18),
-      ly = minSy;
+    const lx = Math.max(minX + labelW, roomMinSx - 18),
+      ly = roomMinSy;
+    // The leader points at the plate's outer corner when it lies clear of the
+    // label, otherwise at the floor's nearest room corner.
+    if (plateCorner && plateCorner.sx > lx + 16) {
+      minSx = plateCorner.sx;
+      minSy = plateCorner.sy;
+    } else {
+      minSx = roomMinSx;
+      minSy = roomMinSy;
+    }
     const flCk = opt.onFloorClick
       ? {
           onClick: (e) => {
