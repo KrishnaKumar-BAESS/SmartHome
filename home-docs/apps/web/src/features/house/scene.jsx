@@ -615,7 +615,8 @@ export function renderScene(house, opt = {}) {
     // When the full name would be pushed onto the model, use the short
     // architectural level code instead.
     // Phones always use the short codes: the model fills the width there.
-    const fits = !L.narrow && minSx - 18 >= minX + widthOf(fullLabel);
+    const fits =
+      !L.narrow && !L.short && minSx - 18 >= minX + widthOf(fullLabel);
     const visibleLabel = fits
       ? fullLabel
       : { second: 'L2', main: 'L1', basement: 'B1' }[f];

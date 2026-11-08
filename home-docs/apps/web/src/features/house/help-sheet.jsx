@@ -22,7 +22,9 @@ const MODEL_KEYS = [
 const GESTURES = [
   ['Drag', 'Rotate'],
   ['Shift + drag, right or middle drag', 'Pan'],
-  ['Wheel', 'Zoom toward the pointer (Ctrl + wheel stays browser zoom)'],
+  ['Mouse wheel', 'Zoom toward the pointer'],
+  ['Trackpad scroll', 'Two-finger scroll pans the model'],
+  ['Trackpad pinch', 'Zoom toward your fingers'],
   ['Two fingers', 'Pinch to zoom, move to pan'],
   ['View options', 'Tap-only rotate, tilt, and pan buttons'],
 ];

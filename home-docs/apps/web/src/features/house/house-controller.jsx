@@ -49,10 +49,11 @@ const HINT_KEY = 'housedocs-hint';
 const SHOW_ADDRESS = import.meta.env.VITE_SHOW_ADDRESS === 'true';
 
 /** State keys that only move the camera; panels never depend on them. */
+// Zoom is deliberately absent: the dock shows the zoom level and disables
+// its buttons at the limits, so zoom changes must refresh the view.
 const CAMERA_KEYS = new Set([
   'yaw',
   'pitch',
-  'zoom',
   'panX',
   'panY',
   'explodeT',
@@ -60,6 +61,13 @@ const CAMERA_KEYS = new Set([
   'hoverRoom',
   'dragging',
 ]);
+/**
+ * Phone layout (stacked bars + bottom sheet) only when the screen is
+ * narrow and tall enough for it. Landscape phones are short and wide, so
+ * they use the compact side-rail layout instead.
+ */
+const isNarrow = (vw, vh) => vw < 760 && !(vh < 520 && vw > vh * 1.4);
+
 const HOME = { yaw: 35, pitch: 58, zoom: 1, panX: 0, panY: 0 };
 const ZOOM_MIN = 0.4,
   ZOOM_MAX = 4;
@@ -140,7 +148,7 @@ export class HouseController extends Component {
     const hasWindow = typeof window !== 'undefined';
     const vw = hasWindow ? window.innerWidth : 1280;
     const vh = hasWindow ? window.innerHeight : 800;
-    const narrow = vw < 760;
+    const narrow = isNarrow(vw, vh);
     this.state = {
       mode: 'overview',
       etype: 'all',
@@ -170,8 +178,9 @@ export class HouseController extends Component {
       isoFloor: 'all',
       isoRooms: [],
       isoPanel: false,
-      leftHidden: narrow,
-      rightHidden: !narrow && vw < 1000,
+      // Short screens (landscape phones) open model-first; panels on demand.
+      leftHidden: narrow || vh < 520,
+      rightHidden: (!narrow && vw < 1000) || (!narrow && vh < 520),
       camExpanded: false,
       histIdx: 0,
       q: '',
@@ -712,24 +721,90 @@ export class HouseController extends Component {
     });
   }
 
+  /**
+   * Classify a non-pinch wheel event. Trackpads send pixel deltas that are
+   * small, fractional or sideways; mouse wheels send large integer notches.
+   * The verdict sticks for the rest of a gesture so momentum scrolling (which
+   * decays into small values) is not misread.
+   */
+  wheelKind(e) {
+    const now = performance.now();
+    if (this._wheelKind && now - this._wheelAt < 300) {
+      this._wheelAt = now;
+      return this._wheelKind;
+    }
+    const trackpad =
+      e.deltaMode === 0 &&
+      (e.deltaX !== 0 ||
+        Math.abs(e.deltaY) < 40 ||
+        !Number.isInteger(e.deltaY));
+    this._wheelKind = trackpad ? 'trackpad' : 'mouse';
+    this._wheelAt = now;
+    return this._wheelKind;
+  }
+
+  // Wheel input: a trackpad pinch (reported as Ctrl + wheel) zooms toward the
+  // fingers, two-finger trackpad scrolling pans, a mouse wheel zooms toward
+  // the pointer. ⌘ + wheel is left to the browser.
   onWheelNative = (e) => {
-    // Ctrl/⌘ + wheel is the browser's own zoom; leave it alone.
-    if (e.ctrlKey || e.metaKey) return;
-    if (!e.deltaY) return;
+    if (e.metaKey) return;
+    if (!e.deltaY && !e.deltaX) return;
     e.preventDefault();
     const rect = this._stage.getBoundingClientRect();
+    const px = e.clientX - rect.left,
+      py = e.clientY - rect.top;
+    if (e.ctrlKey) {
+      const d = Math.max(-25, Math.min(25, e.deltaY * (e.deltaMode ? 16 : 1)));
+      this.zoomAt(Math.exp(-d * 0.011), px, py);
+      return;
+    }
+    if (this.wheelKind(e) === 'trackpad') {
+      const k = e.deltaMode ? 16 : 1;
+      this.setState((s) => ({
+        panX: s.panX - e.deltaX * k,
+        panY: s.panY - e.deltaY * k,
+      }));
+      return;
+    }
     const mag = Math.min(1, Math.abs(e.deltaY) / 100);
     const f = Math.exp(-Math.sign(e.deltaY) * mag * 0.14);
+    this.zoomAt(f, px, py);
+  };
+
+  // Safari reports trackpad pinches as gesture events, not Ctrl + wheel.
+  // Touch pinches already arrive as pointers, so those are skipped here.
+  onGestureStart = (e) => {
+    if (this.pointers.size) return;
+    e.preventDefault();
+    this._gestureScale = 1;
+  };
+
+  onGestureChange = (e) => {
+    if (this.pointers.size || !this._gestureScale) return;
+    e.preventDefault();
+    const rect = this._stage.getBoundingClientRect();
+    const f = e.scale / this._gestureScale;
+    this._gestureScale = e.scale;
     this.zoomAt(f, e.clientX - rect.left, e.clientY - rect.top);
+  };
+
+  onGestureEnd = () => {
+    this._gestureScale = 0;
   };
 
   stageRef = (element) => {
     if (element === this._stage) return;
     this._stage?.removeEventListener('wheel', this.onWheelNative);
+    this._stage?.removeEventListener('gesturestart', this.onGestureStart);
+    this._stage?.removeEventListener('gesturechange', this.onGestureChange);
+    this._stage?.removeEventListener('gestureend', this.onGestureEnd);
     this._resize?.disconnect();
     this._stage = element;
     if (!element) return;
     element.addEventListener('wheel', this.onWheelNative, { passive: false });
+    element.addEventListener('gesturestart', this.onGestureStart);
+    element.addEventListener('gesturechange', this.onGestureChange);
+    element.addEventListener('gestureend', this.onGestureEnd);
     if (typeof ResizeObserver !== 'undefined') {
       this._resize = new ResizeObserver((entries) => {
         const r = entries[0]?.contentRect;
@@ -1036,6 +1111,9 @@ export class HouseController extends Component {
   componentWillUnmount() {
     this._agent?.dispose();
     this._stage?.removeEventListener('wheel', this.onWheelNative);
+    this._stage?.removeEventListener('gesturestart', this.onGestureStart);
+    this._stage?.removeEventListener('gesturechange', this.onGestureChange);
+    this._stage?.removeEventListener('gestureend', this.onGestureEnd);
     this._resize?.disconnect();
     if (this._onKey) window.removeEventListener('keydown', this._onKey);
     if (this._onDown) document.removeEventListener('pointerdown', this._onDown);
@@ -1613,7 +1691,7 @@ export class HouseController extends Component {
   layoutFor(S) {
     const vw = S.vw || 1280,
       vh = S.vh || 800;
-    const narrow = vw < 760;
+    const narrow = isNarrow(vw, vh);
     const compact = !narrow && vw < 1180;
     const onePanel = !narrow && vw < 1000;
     const short = vh < 520;
@@ -1660,7 +1738,7 @@ export class HouseController extends Component {
       // visual there, so it fills the free height instead of 72 % of it.
       fit: narrow
         ? Math.min(freeH * 0.95, freeW * 1.15)
-        : 0.72 * Math.min(freeW * 1.35, freeH),
+        : (short ? 0.92 : 0.72) * Math.min(freeW * 1.35, freeH),
       ms,
     };
   }
@@ -3023,7 +3101,7 @@ export class HouseController extends Component {
     const showHint = !S.hintDismissed && isOverview && !showPrompt;
     const hintText = narrow
       ? 'Drag to rotate · pinch to zoom'
-      : 'Drag to rotate · scroll to zoom · Shift-drag to pan';
+      : 'Drag to rotate · pinch or wheel to zoom · two-finger scroll to pan';
     let legendTitle = 'Systems',
       legendItems = [],
       legendNote = '';

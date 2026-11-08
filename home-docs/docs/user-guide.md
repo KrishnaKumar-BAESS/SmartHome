@@ -67,8 +67,8 @@ Search is not a workbook search and does not query devices or the internet.
 | Action                      | Control                                                                              | Result                                                     |
 | --------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
 | Rotate                      | Drag the model                                                                       | Change yaw and pitch                                       |
-| Pan on desktop              | Shift-drag, middle-button drag, or right-button drag                                 | Move the projected model                                   |
-| Zoom                        | Mouse wheel toward the pointer, pinch, or **+ / −**                                  | Adjust scale within 40–400%; buttons disable at the bounds |
+| Pan on desktop              | Two-finger trackpad scroll, Shift-drag, middle-button drag, or right-button drag     | Move the projected model                                   |
+| Zoom                        | Mouse wheel toward the pointer, trackpad or touch pinch, or **+ / −**                | Adjust scale within 40–400%; buttons disable at the bounds |
 | Pan on touch                | Two-finger drag                                                                      | Move the projected model                                   |
 | Reset orientation           | **View options → Reset orientation**, or **0** / **r**                               | Restore yaw, pitch, zoom, and pan; stops auto-spin         |
 | Fit / presets               | **View options → Fit visible, Isometric, Plan, North up, Elevation**                 | Recentre or jump to a preset orientation                   |
