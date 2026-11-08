@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import './pihole-panel.css';
 
 const FALLBACK_DASHBOARD = 'http://192.168.0.254/admin/';
@@ -178,11 +178,40 @@ export function PiholePanel() {
   return (
     <div className="pihole-entry">
       <button
-        className="ia chip-button"
+        className="ia callout"
         type="button"
+        style={{ '--c': '#22b8a5' } as CSSProperties}
         onClick={() => setOpen(true)}
       >
-        Pi-hole stats & dashboard
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M8 1.8 13.5 4v4c0 3.2-2.4 5.4-5.5 6.2C4.9 13.4 2.5 11.2 2.5 8V4z" />
+          <path d="m5.6 8 1.7 1.7 3.2-3.4" />
+        </svg>
+        <span className="grow">Pi-hole stats & dashboard</span>
+        <svg
+          className="chev"
+          width="13"
+          height="13"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3 8h10M9 4l4 4-4 4" />
+        </svg>
       </button>
       {open && <PiholeDialog onClose={() => setOpen(false)} />}
     </div>

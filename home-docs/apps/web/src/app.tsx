@@ -52,12 +52,15 @@ export function App() {
           className="development-banner"
           aria-label="Development disclaimer"
         >
-          <strong>In development</strong> — Home data shown is placeholder /
-          mock data unless tagged REAL DATA. Verify details before relying on
-          them.
+          <span>
+            <strong>In development</strong> · Data is placeholder unless tagged
+            REAL DATA
+            <span className="banner-extra"> — verify before relying on it</span>
+            .
+          </span>
         </aside>
         <div className="development-workspace">
-          <HouseController stageTone="ink" />
+          <HouseController />
         </div>
       </div>
     </ErrorBoundary>

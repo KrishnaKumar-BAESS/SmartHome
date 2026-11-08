@@ -10,6 +10,7 @@ import {
   servers,
   upkeep,
 } from '../../data/house';
+import { MODE_ACCENT } from './palette';
 
 /** Snapshot the recorded inventory describes; values do not advance. */
 export const INVENTORY_SNAPSHOT = 'July 2026';
@@ -167,14 +168,14 @@ export type RelatedRecord = {
 };
 
 const ACCENT = {
-  circuit: '#3b6fb0',
-  bulb: '#e0a043',
-  node: '#3f9a8c',
-  server: '#3f9a8c',
-  camera: '#c0573b',
-  sensor: '#3f9a8c',
-  upkeep: '#b07b3b',
-  zone: '#7b5cd6',
+  circuit: MODE_ACCENT.electrical,
+  bulb: MODE_ACCENT.lighting,
+  node: MODE_ACCENT.network,
+  server: MODE_ACCENT.network,
+  camera: MODE_ACCENT.security,
+  sensor: MODE_ACCENT.climate,
+  upkeep: MODE_ACCENT.upkeep,
+  zone: MODE_ACCENT.sound,
 };
 
 /** Every recorded item associated with a model room, for cross-system links. */

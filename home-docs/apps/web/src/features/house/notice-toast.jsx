@@ -1,4 +1,3 @@
-import { css } from '../../lib/css';
 import { usePresence } from '../../lib/presence';
 import { Icon } from './icons';
 
@@ -8,16 +7,14 @@ export function NoticeToast({ view }) {
   const { mounted, exiting } = usePresence(!!notice);
   if (!mounted) return null;
   const n = notice || view._lastNotice || {};
-  const bottom = view.narrow ? view.layout.bottomPx + 60 : 74;
+  const bottom = view.narrow ? view.layout.bottomPx + 64 : 80;
   return (
     <div
       role="status"
-      className={exiting ? 'float-out' : 'float-in'}
-      style={css(
-        `position:absolute;left:0;right:0;margin:0 auto;width:fit-content;bottom:calc(${bottom}px + env(safe-area-inset-bottom));z-index:40;max-width:calc(100% - 32px);display:flex;align-items:center;gap:12px;padding:10px 12px 10px 14px;border-radius:12px;background:var(--popover);border:1px solid var(--lift-10);box-shadow:0 18px 44px -14px var(--shadow-2);color:var(--t1);font:500 12px 'Inter',system-ui,'Segoe UI',sans-serif`,
-      )}
+      className={`toast surface-pop ${exiting ? 'float-out' : 'float-in'}`}
+      style={{ bottom: `calc(${bottom}px + env(safe-area-inset-bottom))` }}
     >
-      <span style={css('min-width:0')}>{n.text}</span>
+      <span>{n.text}</span>
       {n.action ? (
         <button
           type="button"
@@ -32,7 +29,8 @@ export function NoticeToast({ view }) {
       ) : null}
       <button
         type="button"
-        className="ia icon-button"
+        className="ia icon-btn"
+        style={{ borderRadius: '50%' }}
         onClick={view.dismissNotice}
         aria-label="Dismiss notice"
       >

@@ -1,22 +1,12 @@
-import { css } from '../../lib/css';
-
 /**
- * Base gradient plus an accent tint layer. The tint uses currentColor so a
- * plain color transition cross-fades the stage when the mode changes.
+ * Base gradient plus an accent tint layer. The tint follows `--accent`
+ * through a colour transition, so the stage cross-fades between views.
  */
-export function StageBackground({ view }) {
+export function StageBackground() {
   return (
     <>
-      <div
-        style={css(
-          'position:absolute;inset:0;background:' + (view.stageGrad ?? ''),
-        )}
-      ></div>
-      <div
-        style={css(
-          `position:absolute;inset:0;color:${view.tintColor};background:${view.tintGrad};transition:color .45s ease`,
-        )}
-      ></div>
+      <div className="stage-base"></div>
+      <div className="stage-tint"></div>
     </>
   );
 }

@@ -7,7 +7,9 @@ import { gzipSync } from 'node:zlib';
 const dist = new URL('../dist/assets/', import.meta.url);
 const BUDGET = {
   js: 140 * 1024, // total gzip JS
-  css: 8 * 1024, // total gzip CSS
+  // Styling moved from inline JS strings into the stylesheet's design
+  // system (JS fell ~5 kB gzip while CSS grew ~6 kB).
+  css: 12 * 1024, // total gzip CSS
   fontFiles: 6, // one woff2 per shipped face; woff fallbacks are also emitted
 };
 

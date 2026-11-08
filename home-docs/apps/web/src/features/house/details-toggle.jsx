@@ -10,7 +10,7 @@ export function DetailsToggle({ view }) {
     <button
       id="toggle-right"
       type="button"
-      className="ia panel-tab"
+      className="ia panel-tab surface"
       onClick={view.toggleRight}
       style={css(view.rightTabStyle)}
       aria-label={label}

@@ -1,5 +1,6 @@
 import { createElement } from 'react';
 import { worstStatus } from './catalog';
+import { MODE_ACCENT, STATUS } from './palette';
 
 const keyActivate = (fn) => (e) => {
   if (e.key === 'Enter' || e.key === ' ') {
@@ -168,7 +169,11 @@ export function renderScene(house, opt = {}) {
   const extraHi = opt.hiRooms ? new Set(opt.hiRooms) : null;
   const hiColor =
     opt.hiColor ||
-    (selC ? house.typeColor(selC.type) : locate ? locate.color : '#3b6fb0');
+    (selC
+      ? house.typeColor(selC.type)
+      : locate
+        ? locate.color
+        : MODE_ACCENT.overview);
   const isHi = (id) =>
     (servedSet && servedSet.has(id)) ||
     (locate && locate.roomId === id) ||
@@ -176,15 +181,15 @@ export function renderScene(house, opt = {}) {
   const hasFocus = !!(servedSet || (locate && locate.roomId) || extraHi);
   // Theme-aware model palette: dark mode keeps de-emphasised rooms legible.
   const floorTop = light
-    ? { basement: '#e7eef5', main: '#ecedf2', second: '#efedf4' }
-    : { basement: '#3b4755', main: '#414c5a', second: '#465160' };
-  const wallShade = light ? 0.9 : 0.82;
-  const baseStroke = light ? '#aab6c1' : '#5f6d7a';
-  const dimOp = light ? 0.16 : 0.34;
-  const markerRing = light ? '#fff' : '#0b1015';
-  const labelFill = light ? '#3c4a54' : '#d9e1e8';
-  const labelFillSel = light ? '#11202c' : '#f4f7fa';
-  const labelHalo = light ? '#ffffffea' : 'rgba(16,23,30,0.9)';
+    ? { basement: '#e8edf3', main: '#f0f2f6', second: '#f6f7fa' }
+    : { basement: '#2f3744', main: '#363f4d', second: '#3e4756' };
+  const wallShade = light ? 0.87 : 0.74;
+  const baseStroke = light ? '#b3bdc9' : '#566275';
+  const dimOp = light ? 0.18 : 0.32;
+  const markerRing = light ? '#ffffff' : '#0b0e13';
+  const labelFill = light ? '#2a3644' : '#dde4ec';
+  const labelFillSel = light ? '#0f1722' : '#ffffff';
+  const labelHalo = light ? 'rgba(255,255,255,0.94)' : 'rgba(12,15,20,0.86)';
 
   // ---- room volumes ----
   const faces = [];
@@ -396,14 +401,18 @@ export function renderScene(house, opt = {}) {
             y: (p.sy - h - 4).toFixed(1),
             width: w,
             height: h,
-            rx: 3,
+            rx: 5,
             fill: active
-              ? '#e0a043'
+              ? MODE_ACCENT.electrical
               : light
-                ? 'rgba(232,237,242,0.82)'
-                : 'rgba(40,50,62,0.9)',
-            stroke: active ? '#d9a24e' : light ? '#9aa4ad' : '#6b7986',
-            strokeWidth: 1.2,
+                ? 'rgba(255,255,255,0.9)'
+                : 'rgba(30,36,46,0.92)',
+            stroke: active
+              ? MODE_ACCENT.electrical
+              : light
+                ? '#a9b4c1'
+                : '#5d6a7d',
+            strokeWidth: 1,
           }),
           RE(
             'text',
@@ -413,7 +422,7 @@ export function renderScene(house, opt = {}) {
               textAnchor: 'middle',
               style: {
                 font: `600 ${9.5 * ms}px 'IBM Plex Mono',monospace`,
-                fill: active ? '#3a2a08' : light ? '#5a6b7a' : '#c9d3dc',
+                fill: active ? '#ffffff' : light ? '#4a5867' : '#c8d1dc',
                 pointerEvents: 'none',
               },
             },
@@ -524,11 +533,12 @@ export function renderScene(house, opt = {}) {
             y: c.sy.toFixed(1),
             textAnchor: 'middle',
             style: {
-              font: `600 ${10 * ms}px 'Inter',system-ui,'Segoe UI',sans-serif`,
+              font: `${sel ? 600 : 500} ${10.5 * ms}px 'Inter',system-ui,'Segoe UI',sans-serif`,
+              letterSpacing: '-0.01em',
               fill: sel ? labelFillSel : labelFill,
               paintOrder: 'stroke',
               stroke: labelHalo,
-              strokeWidth: sel ? 3.6 : 3,
+              strokeWidth: sel ? 4 : 3.4,
               strokeLinejoin: 'round',
               opacity: hasFocus && !sel ? 0.5 : 1,
               pointerEvents: 'none',
@@ -565,9 +575,9 @@ export function renderScene(house, opt = {}) {
     });
     if (minSx === 1e9) return;
     const label = house.floorLabels[f];
-    const fs = 10.5 * ms;
-    // Monospace advance ≈ 0.6em plus 0.05em letter-spacing.
-    const labelW = label.length * fs * 0.65;
+    const fs = 11 * ms;
+    // Inter semibold averages ≈ 0.56em per glyph.
+    const labelW = label.length * fs * 0.56;
     const minLx = Math.max(22, opt.floorLabelMinX || 0) + labelW;
     const lx = Math.max(minLx, minSx - 18),
       ly = minSy;
@@ -591,25 +601,25 @@ export function renderScene(house, opt = {}) {
         { key: `floor-${f}`, className: 'marker', ...flCk },
         RE('title', null, `Isolate ${label}`),
         RE('rect', {
-          x: (lx - labelW - 5).toFixed(1),
-          y: (ly - fs * 0.85).toFixed(1),
-          width: (labelW + 10).toFixed(1),
-          height: (fs * 1.35).toFixed(1),
-          rx: 4,
-          fill: light ? 'rgba(255,255,255,0.72)' : 'rgba(16,23,30,0.72)',
-          stroke: light ? 'rgba(61,93,128,0.25)' : 'rgba(200,216,234,0.25)',
-          strokeWidth: 0.8,
+          x: (lx - labelW - 10).toFixed(1),
+          y: (ly - fs * 1.05).toFixed(1),
+          width: (labelW + 20).toFixed(1),
+          height: (fs * 1.75).toFixed(1),
+          rx: ((fs * 1.75) / 2).toFixed(1),
+          fill: light ? 'rgba(255,255,255,0.86)' : 'rgba(22,26,34,0.86)',
+          stroke: light ? 'rgba(16,24,40,0.1)' : 'rgba(255,255,255,0.1)',
+          strokeWidth: 1,
         }),
         RE(
           'text',
           {
             x: lx.toFixed(1),
-            y: ly.toFixed(1),
+            y: (ly - fs * 0.15 + fs * 0.35).toFixed(1),
             textAnchor: 'end',
             style: {
-              font: `600 ${fs}px 'IBM Plex Mono',monospace`,
-              fill: light ? '#3d5d80' : '#c8d8ea',
-              letterSpacing: '0.05em',
+              font: `600 ${fs}px 'Inter',system-ui,'Segoe UI',sans-serif`,
+              fill: light ? '#344150' : '#c8d1dc',
+              letterSpacing: '-0.005em',
               pointerEvents: 'none',
             },
           },
@@ -706,7 +716,7 @@ export function renderScene(house, opt = {}) {
           y: (cy + 3 * ms).toFixed(1),
           textAnchor: 'middle',
           style: {
-            font: `700 ${8.5 * ms}px 'Inter',system-ui,sans-serif`,
+            font: `600 ${8.5 * ms}px 'Inter',system-ui,sans-serif`,
             fill: '#fff',
             pointerEvents: 'none',
           },
@@ -773,9 +783,9 @@ export function renderScene(house, opt = {}) {
           y: (cy - 5 * ms).toFixed(1),
           width: 10 * ms,
           height: 10 * ms,
-          rx: 2.5,
-          fill: n.status === 'warn' ? '#c0892f' : '#3b6fb0',
-          opacity: 0.8,
+          rx: 3,
+          fill: n.status === 'warn' ? STATUS.soon : MODE_ACCENT.network,
+          opacity: 0.9,
           stroke: markerRing,
           strokeWidth: 1,
           style: { pointerEvents: 'none' },
@@ -855,7 +865,7 @@ export function renderScene(house, opt = {}) {
       if (!pos[n.id] || !pos[gw.id]) return;
       const wired = /Wired/i.test(n.backhaul);
       const active = opt.selNode === n.id || opt.selNode === gw.id;
-      const col = active ? '#3b6fb0' : light ? '#7d93ad' : '#8fa5bf';
+      const col = active ? MODE_ACCENT.network : light ? '#8e9cb0' : '#7d8ba1';
       els.push(
         RE(
           'line',
@@ -872,7 +882,7 @@ export function renderScene(house, opt = {}) {
             strokeLinecap: 'round',
             style: active
               ? {
-                  filter: 'drop-shadow(0 0 3px #3b6fb0)',
+                  filter: `drop-shadow(0 0 3px ${MODE_ACCENT.network})`,
                   pointerEvents: 'none',
                 }
               : { pointerEvents: 'none' },
@@ -887,7 +897,11 @@ export function renderScene(house, opt = {}) {
       const sel = opt.selNode === n.id;
       const isGw = n.id === gw.id;
       const col =
-        n.status === 'observed' ? (isGw ? '#3b6fb0' : '#46739f') : '#c0892f';
+        n.status === 'observed'
+          ? isGw
+            ? MODE_ACCENT.network
+            : '#3a9e93'
+          : STATUS.soon;
       const s = (isGw ? 14 : 11) * ms;
       els.push(
         RE('rect', {
@@ -973,7 +987,7 @@ export function renderScene(house, opt = {}) {
               width: 7 * ms,
               height: 7 * ms,
               rx: 1.4,
-              fill: house.SOUND,
+              fill: MODE_ACCENT.sound,
               stroke: markerRing,
               strokeWidth: 0.8,
             }),
@@ -1009,7 +1023,7 @@ export function renderScene(house, opt = {}) {
       }
       const sel = opt.selCam === cam.id,
         off = cam.status !== 'online';
-      const col = off ? '#8a94a0' : sel ? '#d2604f' : '#c0573b';
+      const col = off ? STATUS.idle : sel ? '#ff7d68' : MODE_ACCENT.security;
       const room = roomById(cam.roomId);
       const conflict = room && room.floor !== cam.floor;
       const label = `${cam.name}, ${cam.type} camera, recorded ${cam.status}${conflict ? ', floor mapping unverified' : ''}`;
@@ -1076,7 +1090,7 @@ export function renderScene(house, opt = {}) {
               y: (apex.sy - 6 * ms).toFixed(1),
               style: {
                 font: `700 ${10 * ms}px 'Inter',system-ui,sans-serif`,
-                fill: '#c0892f',
+                fill: STATUS.soon,
                 paintOrder: 'stroke',
                 stroke: labelHalo,
                 strokeWidth: 2.5,
@@ -1103,7 +1117,7 @@ export function renderScene(house, opt = {}) {
       if (!base) return;
       const sel = opt.selSensor === sn.id;
       const on = sn.status === 'online';
-      const col = on ? '#3f9a8c' : '#8a94a0';
+      const col = on ? MODE_ACCENT.climate : STATUS.idle;
       const cx = base.c.sx,
         cy = base.c.sy;
       if (sel)
@@ -1287,7 +1301,7 @@ export function renderScene(house, opt = {}) {
     if (base) {
       const name = base.r.name;
       const fs = 12 * ms;
-      const w = name.length * fs * 0.58 + 18;
+      const w = name.length * fs * 0.56 + 24;
       const x = base.c.sx,
         y = base.c.sy - 26 * ms;
       els.push(
@@ -1303,9 +1317,9 @@ export function renderScene(house, opt = {}) {
             y: (y - fs * 0.95).toFixed(1),
             width: w.toFixed(1),
             height: (fs * 1.6).toFixed(1),
-            rx: 6,
-            fill: light ? 'rgba(255,255,255,0.92)' : 'rgba(16,23,30,0.92)',
-            stroke: light ? 'rgba(24,38,52,0.16)' : 'rgba(255,255,255,0.14)',
+            rx: ((fs * 1.6) / 2).toFixed(1),
+            fill: light ? 'rgba(255,255,255,0.96)' : 'rgba(24,28,37,0.96)',
+            stroke: light ? 'rgba(16,24,40,0.12)' : 'rgba(255,255,255,0.12)',
             strokeWidth: 1,
           }),
           RE(
@@ -1316,7 +1330,7 @@ export function renderScene(house, opt = {}) {
               textAnchor: 'middle',
               style: {
                 font: `600 ${fs}px 'Inter',system-ui,'Segoe UI',sans-serif`,
-                fill: light ? '#1c2733' : '#e8edf2',
+                fill: light ? '#0f1722' : '#eef2f7',
               },
             },
             name,

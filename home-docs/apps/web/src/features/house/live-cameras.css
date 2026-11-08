@@ -12,13 +12,13 @@
   margin: 0;
   padding: 20px 26px;
   border: 0;
-  background: rgba(7, 11, 15, 0.93);
-  backdrop-filter: blur(9px);
-  -webkit-backdrop-filter: blur(9px);
+  background: rgba(6, 9, 13, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: #eef3f8;
-  font-family: 'Inter', system-ui, 'Segoe UI', sans-serif;
+  font-family: var(--font);
   overflow: hidden;
-  animation: floatIn 0.25s ease both;
+  animation: fadeIn var(--dur-3) ease both;
 }
 .live-cameras[open] {
   display: flex;
@@ -36,32 +36,24 @@
   flex-shrink: 0;
 }
 .live-cameras h2 {
-  font:
-    600 15px 'Inter',
-    system-ui,
-    'Segoe UI',
-    sans-serif;
+  font: 600 15px var(--font);
   color: #eef3f8;
   margin: 0;
 }
 .live-cameras-heading p {
-  font:
-    400 11px 'IBM Plex Mono',
-    monospace;
+  font: 400 11px var(--mono);
   color: #8a98a6;
   margin: 3px 0 0;
 }
 .live-cameras-heading button {
-  font:
-    500 11.5px 'Inter',
-    system-ui,
-    'Segoe UI',
-    sans-serif;
+  font: 500 11.5px var(--font);
   color: #cdd6df;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 8px 14px;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  min-height: var(--hit);
+  padding: 0 14px;
+  border-radius: var(--r-md);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -84,56 +76,42 @@
   align-items: flex-start;
   gap: 12px;
   width: min(560px, 100%);
-  padding: 22px 24px;
-  border-radius: 12px;
-  background: #0b1015;
-  border: 1px solid #20303c;
-  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.6);
+  padding: 24px 26px;
+  border-radius: var(--r-xl);
+  background: rgba(255, 255, 255, 0.035);
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  animation: sheetIn var(--dur-4) var(--ease-out) both;
 }
 .live-cameras-tag {
-  font:
-    600 9px 'IBM Plex Mono',
-    monospace;
+  font: 600 9px var(--mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #e0b46b;
+  color: #efc05e;
 }
 .live-cameras-setup h3 {
-  font:
-    600 15px 'Inter',
-    system-ui,
-    'Segoe UI',
-    sans-serif;
+  font: 600 15px var(--font);
   margin: 0;
 }
 .live-cameras-setup p {
-  font:
-    400 12px/1.6 'Inter',
-    system-ui,
-    'Segoe UI',
-    sans-serif;
+  font: 400 12px/1.6 var(--font);
   color: #aeb9c4;
   margin: 0;
 }
 .live-cameras-setup code {
-  font:
-    500 11px 'IBM Plex Mono',
-    monospace;
+  font: 500 11px var(--mono);
   color: #dfe7ee;
   background: rgba(255, 255, 255, 0.08);
   padding: 1px 5px;
   border-radius: 4px;
 }
 .live-cameras-setup a {
-  font:
-    600 11.5px 'Inter',
-    system-ui,
-    'Segoe UI',
-    sans-serif;
+  font: 600 11.5px var(--font);
   color: #fff;
-  background: #c0573b;
-  border-radius: 7px;
-  padding: 10px 14px;
+  background: #d9533d;
+  border-radius: var(--r-md);
+  padding: 10px 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   text-decoration: none;
 }
 @media (max-width: 600px) {

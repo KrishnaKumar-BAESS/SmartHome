@@ -1,9 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { css } from '../../lib/css';
 import { Icon } from './icons';
 
-const FONT = "'Inter',system-ui,'Segoe UI',sans-serif";
-const MONO = "'IBM Plex Mono',monospace";
 const REPO = 'https://github.com/KrishnaKumar-BAESS/SmartHome';
 
 const SHORTCUTS = [
@@ -31,32 +28,14 @@ const GESTURES = [
 
 function Table({ rows, label }) {
   return (
-    <table
-      style={css('width:100%;border-collapse:collapse;margin-top:6px')}
-      aria-label={label}
-    >
+    <table className="keys" aria-label={label}>
       <tbody>
         {rows.map(([k, v]) => (
           <tr key={k}>
-            <th
-              scope="row"
-              style={css(
-                `text-align:left;padding:5px 10px 5px 0;font:600 11px ${MONO};color:var(--t1);white-space:nowrap;vertical-align:top`,
-              )}
-            >
-              <kbd
-                style={css(
-                  'font:inherit;background:var(--lift-06);border:1px solid var(--lift-12);border-radius:4px;padding:1px 6px',
-                )}
-              >
-                {k}
-              </kbd>
+            <th scope="row">
+              <kbd>{k}</kbd>
             </th>
-            <td
-              style={css(`padding:5px 0;font:400 12px ${FONT};color:var(--t2)`)}
-            >
-              {v}
-            </td>
+            <td>{v}</td>
           </tr>
         ))}
       </tbody>
@@ -85,8 +64,6 @@ function Sheet({ view }) {
       if (previous instanceof HTMLElement) previous.focus();
     };
   }, []);
-  const H3 = `font:600 10px ${MONO};color:var(--t3);letter-spacing:0.12em;margin:18px 0 4px`;
-  const P = `font:400 12px ${FONT};color:var(--t2);line-height:1.55;margin:6px 0 0`;
   return (
     <dialog
       ref={ref}
@@ -107,17 +84,11 @@ function Sheet({ view }) {
         if (e.target === e.currentTarget) close.current();
       }}
     >
-      <div
-        style={css(
-          'display:flex;align-items:center;justify-content:space-between;gap:12px',
-        )}
-      >
-        <h2 id="help-title" style={css(`font:600 16px ${FONT};margin:0`)}>
-          {'Help & shortcuts'}
-        </h2>
+      <div className="dialog-head" style={{ marginBottom: 4 }}>
+        <h2 id="help-title">{'Help & shortcuts'}</h2>
         <button
           type="button"
-          className="ia icon-button"
+          className="ia icon-btn icon-btn--lg"
           onClick={view.closeHelp}
           aria-label="Close help"
           autoFocus
@@ -125,9 +96,9 @@ function Sheet({ view }) {
           <Icon name="close" size={14} />
         </button>
       </div>
-      <p style={css(P)}>
+      <p>
         {
-          'HOUSE.SYS is a documentation atlas. Everything shown is recorded inventory as of '
+          'house.sys is a documentation atlas. Everything shown is recorded inventory as of '
         }
         {view.snapshot}
         {
@@ -135,8 +106,8 @@ function Sheet({ view }) {
         }
       </p>
 
-      <h3 style={css(H3)}>{'RECORDED VS. DEMONSTRATION'}</h3>
-      <ul style={css(`${P};padding-left:18px`)}>
+      <h3>Recorded vs. demonstration</h3>
+      <ul>
         <li>
           Circuits, fixtures, nodes, cameras, sensors, and upkeep items are
           recorded data.
@@ -156,13 +127,9 @@ function Sheet({ view }) {
         </li>
       </ul>
 
-      <h3 style={css(H3)}>{'KEYBOARD'}</h3>
+      <h3>Keyboard</h3>
       <Table rows={SHORTCUTS} label="Global shortcuts" />
-      <label
-        style={css(
-          `display:flex;align-items:center;gap:8px;margin-top:8px;font:500 12px ${FONT};color:var(--t2)`,
-        )}
-      >
+      <label className="check-row">
         <input
           type="checkbox"
           checked={view.shortcutsOn}
@@ -174,26 +141,22 @@ function Sheet({ view }) {
       </label>
       <Table rows={MODEL_KEYS} label="Model keyboard controls" />
 
-      <h3 style={css(H3)}>{'POINTER & TOUCH'}</h3>
+      <h3>Pointer & touch</h3>
       <Table rows={GESTURES} label="Pointer and touch gestures" />
 
-      <h3 style={css(H3)}>{'SHARING & EXPORT'}</h3>
-      <p style={css(P)}>
+      <h3>Sharing & export</h3>
+      <p>
         {
           'The address bar tracks the current view, selection, and isolation, so a copied link restores them. Each list has a CSV export; circuit tags and camera names have copy buttons.'
         }
       </p>
 
-      <h3 style={css(H3)}>{'REQUEST A CORRECTION'}</h3>
-      <p style={css(P)}>
+      <h3>Request a correction</h3>
+      <p>
         {'This app has no editing. Inventory lives in '}
-        <code style={css(`font:500 11px ${MONO}`)}>
-          home-docs/apps/web/src/data/house.ts
-        </code>
+        <code>home-docs/apps/web/src/data/house.ts</code>
         {' and changes go through the data workflow in '}
-        <code style={css(`font:500 11px ${MONO}`)}>
-          home-docs/docs/data-model.md
-        </code>
+        <code>home-docs/docs/data-model.md</code>
         {'. '}
         <a href={`${REPO}/issues/new`} target="_blank" rel="noreferrer">
           Open an issue

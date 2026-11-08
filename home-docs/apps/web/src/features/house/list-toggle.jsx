@@ -10,7 +10,7 @@ export function ListToggle({ view }) {
     <button
       id="toggle-left"
       type="button"
-      className="ia panel-tab"
+      className="ia panel-tab surface"
       onClick={view.toggleLeft}
       style={css(view.leftTabStyle)}
       aria-label={label}

@@ -1,25 +1,19 @@
 import { css } from '../../lib/css';
 import { usePresence } from '../../lib/presence';
 import { Icon } from './icons';
+import { Segmented } from './segmented';
 
 function ToggleRow({ row, icon }) {
   return (
     <button
       type="button"
       onClick={row.onClick}
-      className="ia row-button"
-      style={css(row.style)}
+      className="ia opt-row"
       aria-pressed={row.on}
     >
-      <span
-        style={css(
-          'width:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;line-height:1',
-        )}
-      >
-        <Icon name={icon} size={13} />
-      </span>
-      <span style={css('flex:1;text-align:left')}>{row.label}</span>
-      <span style={css(row.toggle)} aria-hidden="true"></span>
+      <Icon name={icon} size={14} />
+      <span className="grow">{row.label}</span>
+      <span className="switch" aria-hidden="true"></span>
     </button>
   );
 }
@@ -29,25 +23,12 @@ function ActionRow({ row, icon }) {
     <button
       type="button"
       onClick={row.onClick}
-      className="ia row-button"
-      style={css(row.style)}
+      className="ia opt-row"
       title={row.hint}
     >
-      <span
-        style={css(
-          'width:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;line-height:1',
-        )}
-      >
-        <Icon name={icon} size={13} />
-      </span>
-      <span style={css('flex:1;text-align:left')}>{row.label}</span>
-      {row.hint ? (
-        <span
-          style={css("font:400 10px 'IBM Plex Mono',monospace;color:var(--t4)")}
-        >
-          {row.hint}
-        </span>
-      ) : null}
+      <Icon name={icon} size={14} />
+      <span className="grow">{row.label}</span>
+      {row.hint ? <span className="hint">{row.hint}</span> : null}
     </button>
   );
 }
@@ -59,33 +40,17 @@ function Drawer({ view }) {
   return (
     <div
       id="view-options"
-      className={exiting ? 'float-out' : 'float-in'}
+      className={`dock-drawer ${exiting ? 'float-out' : 'float-in'}`}
       style={css(o.drawerStyle)}
       role="group"
       aria-label="View options"
     >
-      <div style={css(o.sectionLabelStyle)}>{'FLOOR VIEW'}</div>
+      <div className="section-label">Floors</div>
+      <Segmented items={view.explodeBtns} label="Floor separation" />
+      <div className="section-label">Camera</div>
       <div
-        style={css('display:flex;gap:4px;margin-bottom:6px')}
-        role="group"
-        aria-label="Floor separation"
-      >
-        {view.explodeBtns.map((b) => (
-          <button
-            key={b.key}
-            type="button"
-            onClick={b.onClick}
-            className="ia"
-            style={css(b.style)}
-            aria-pressed={b.on}
-          >
-            {b.label}
-          </button>
-        ))}
-      </div>
-      <div style={css(o.sectionLabelStyle)}>{'ORIENTATION'}</div>
-      <div
-        style={css('display:flex;gap:4px;margin-bottom:6px')}
+        className="chips"
+        style={{ marginBottom: 8 }}
         role="group"
         aria-label="Orientation presets"
       >
@@ -94,15 +59,14 @@ function Drawer({ view }) {
             key={p.key}
             type="button"
             onClick={p.onClick}
-            className="ia"
-            style={css(o.presetStyle)}
+            className="ia chip"
           >
             {p.label}
           </button>
         ))}
       </div>
       <div
-        style={css('display:flex;gap:4px;margin-bottom:6px')}
+        className="dock-nudge"
         role="group"
         aria-label="Rotate, tilt, and pan"
       >
@@ -111,8 +75,7 @@ function Drawer({ view }) {
             key={n.key}
             type="button"
             onClick={n.onClick}
-            className="ia"
-            style={css(o.nudgeStyle)}
+            className="ia icon-btn icon-btn--lg icon-btn--filled"
             aria-label={n.label}
             title={n.label}
           >
@@ -120,38 +83,21 @@ function Drawer({ view }) {
           </button>
         ))}
       </div>
-      <div
-        style={css(
-          "font:400 10px 'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t4);line-height:1.4;margin-bottom:6px",
-        )}
-      >
+      <div className="note" style={{ margin: '4px 4px 0' }}>
         {o.presetNote}
       </div>
-      <div style={css(o.divStyle)}></div>
+      <div className="dock-divider"></div>
       <ActionRow row={o.resetRow} icon="reset" />
       <ActionRow row={o.fitRow} icon="expand" />
       <ActionRow row={o.resetAllRow} icon="cube" />
-      <div style={css(o.divStyle)}></div>
+      <div className="dock-divider"></div>
       <ToggleRow row={o.autoRow} icon="rotateRight" />
       <ToggleRow row={o.labelsRow} icon="labels" />
       <ToggleRow row={o.legendRow} icon="legend" />
       <ToggleRow row={o.shortcutsRow} icon="list" />
-      <div style={css(o.divStyle)}></div>
-      <div style={css(o.sectionLabelStyle)}>{'THEME'}</div>
-      <div style={css('display:flex;gap:4px')} role="group" aria-label="Theme">
-        {o.theme.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={t.onClick}
-            className="ia"
-            style={css(t.style)}
-            aria-pressed={t.on}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <div className="dock-divider"></div>
+      <div className="section-label">Theme</div>
+      <Segmented items={o.theme} label="Theme" />
     </div>
   );
 }
@@ -159,6 +105,7 @@ function Drawer({ view }) {
 export function ViewControls({ view }) {
   return (
     <div
+      className="dock surface"
       style={css(view.ctrlClusterStyle)}
       data-popover="view"
       role="toolbar"
@@ -166,7 +113,7 @@ export function ViewControls({ view }) {
       aria-orientation="vertical"
     >
       {view.isNarrow ? (
-        <div style={css('display:flex;border-bottom:1px solid var(--lift-10)')}>
+        <div className="dock-panels">
           <button
             type="button"
             className="ia panel-toggle"
@@ -174,7 +121,7 @@ export function ViewControls({ view }) {
             aria-pressed={!view.leftHidden}
             aria-controls="panel-left"
           >
-            <Icon name="list" size={12} />
+            <Icon name="list" size={13} />
             {view.leftHidden ? 'List' : 'Hide list'}
           </button>
           <button
@@ -184,7 +131,7 @@ export function ViewControls({ view }) {
             aria-pressed={!view.rightHidden}
             aria-controls="panel-right"
           >
-            <Icon name="panel" size={12} />
+            <Icon name="panel" size={13} />
             {view.rightHidden ? 'Details' : 'Hide details'}
           </button>
           <button
@@ -198,12 +145,11 @@ export function ViewControls({ view }) {
         </div>
       ) : null}
       <Drawer view={view} />
-      <div style={css(view.zoomBarStyle)}>
+      <div className="dock-bar">
         <button
           type="button"
           onClick={view.zoomOut}
-          className="ia"
-          style={css(view.zoomBtnStyle(view.atMin))}
+          className="ia icon-btn icon-btn--lg"
           aria-label="Zoom out"
           title="Zoom out (−)"
           aria-disabled={view.atMin}
@@ -212,7 +158,7 @@ export function ViewControls({ view }) {
           <Icon name="minus" size={14} />
         </button>
         <div
-          style={css(view.zoomPctStyle)}
+          className="dock-zoom"
           role="status"
           aria-live="polite"
           aria-label={`Zoom ${view.zoomPct}${view.atMin ? ', minimum' : view.atMax ? ', maximum' : ''}`}
@@ -222,8 +168,7 @@ export function ViewControls({ view }) {
         <button
           type="button"
           onClick={view.zoomIn}
-          className="ia"
-          style={css(view.zoomBtnStyle(view.atMax))}
+          className="ia icon-btn icon-btn--lg"
           aria-label="Zoom in"
           title="Zoom in (+)"
           aria-disabled={view.atMax}
@@ -231,22 +176,26 @@ export function ViewControls({ view }) {
         >
           <Icon name="plus" size={14} />
         </button>
-        <div
-          style={css(
-            'width:1px;height:16px;background:var(--lift-12);margin:0 3px;flex-shrink:0',
-          )}
-        ></div>
+        <div className="dock-sep" aria-hidden="true"></div>
+        <button
+          type="button"
+          onClick={view.resetView}
+          className="ia icon-btn icon-btn--lg"
+          aria-label="Reset orientation"
+          title="Reset orientation (0)"
+        >
+          <Icon name="reset" size={14} />
+        </button>
         <button
           type="button"
           onClick={view.toggleViewOpts}
-          className="ia"
-          style={css(view.viewOptsBtnStyle)}
+          className="ia icon-btn icon-btn--lg"
           aria-label="View options"
           title="View options"
           aria-expanded={view.viewOptsOpen}
           aria-controls="view-options"
         >
-          <Icon name="sliders" size={14} />
+          <Icon name="sliders" size={15} />
         </button>
       </div>
     </div>

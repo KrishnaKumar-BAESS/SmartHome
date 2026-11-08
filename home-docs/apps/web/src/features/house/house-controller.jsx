@@ -31,6 +31,16 @@ import { prefersReducedMotion, tween } from '../../lib/motion';
 import { decodeUrlState, encodeUrlState } from '../../lib/url-state';
 import { toCsv, downloadText, copyText } from '../../lib/export';
 import { installAgentApi } from './agent-api';
+import {
+  MODE_ACCENT,
+  STATUS,
+  CIRCUIT_TYPE,
+  FLOOR,
+  ROOM,
+  SPEAKER,
+  CAMERA_EVENT,
+  networkColor,
+} from './palette';
 
 const THEME_KEY = 'housedocs-theme';
 const SHORTCUTS_KEY = 'housedocs-shortcuts';
@@ -64,18 +74,6 @@ const MODE_DEF = [
   ['upkeep', 'Upkeep'],
 ];
 const MODE_ORDER = MODE_DEF.map(([key]) => key);
-const MODE_ACCENT = {
-  overview: '#3b6fb0',
-  electrical: '#3b6fb0',
-  lighting: '#e0a043',
-  network: '#3f9a8c',
-  sound: '#7b5cd6',
-  security: '#c0573b',
-  climate: '#3f9a8c',
-  upkeep: '#b07b3b',
-};
-const FONT = "'Inter',system-ui,'Segoe UI',sans-serif";
-const MONO = "'IBM Plex Mono',monospace";
 
 function readStorage(key) {
   try {
@@ -203,14 +201,12 @@ export class HouseController extends Component {
   stColor(s) {
     // Hex only: results can feed hexA()/mix() in the scene renderer.
     return s === 'ok'
-      ? '#5a9c6e'
-      : s === 'soon'
-        ? '#c0892f'
+      ? STATUS.ok
+      : s === 'soon' || s === 'warn'
+        ? STATUS.soon
         : s === 'overdue'
-          ? '#c0573b'
-          : s === 'warn'
-            ? '#c0892f'
-            : '#8a94a0';
+          ? STATUS.overdue
+          : STATUS.idle;
   }
 
   stLabel(s) {
@@ -264,13 +260,7 @@ export class HouseController extends Component {
   }
 
   typeColor(t) {
-    return t === 'Lighting'
-      ? '#e0a043'
-      : t === 'Outlets'
-        ? '#3b6fb0'
-        : t === 'Appliance'
-          ? '#c0573b'
-          : '#3f9a8c';
+    return CIRCUIT_TYPE[t] || CIRCUIT_TYPE.Mixed;
   }
 
   circuitRooms(cid) {
@@ -337,20 +327,14 @@ export class HouseController extends Component {
 
   spk(arr) {
     return arr.map((p, i) => {
-      const col =
-        p.t === 'sub'
-          ? '#c0573b'
-          : p.t === 'height'
-            ? '#3f9a8c'
-            : p.t === 'seat'
-              ? 'var(--t4)'
-              : '#3b6fb0';
-      const sz = p.t === 'seat' ? 16 : 14;
+      const col = p.t === 'seat' ? 'var(--t4)' : SPEAKER[p.t] || SPEAKER.main;
+      const sz = p.t === 'seat' ? 18 : 16;
       return {
         key: `${p.t}-${i}`,
         label: p.t === 'seat' ? '' : p.l,
         name: p.n,
-        style: `position:absolute;left:${p.x}%;top:${p.y}%;transform:translate(-50%,-50%);width:${sz}px;height:${sz}px;border-radius:${p.t === 'seat' ? '50%' : '2px'};background:${p.t === 'seat' ? 'transparent' : col};border:${p.t === 'seat' ? '1.5px solid var(--t4)' : 'none'};display:flex;align-items:center;justify-content:center;font:600 9px ${MONO};color:#fff;`,
+        seat: p.t === 'seat',
+        style: `left:${p.x}%;top:${p.y}%;width:${sz}px;height:${sz}px;background:${p.t === 'seat' ? 'transparent' : col};animation-delay:${i * 30}ms`,
       };
     });
   }
@@ -396,13 +380,7 @@ export class HouseController extends Component {
         : cam.type === 'Indoor'
           ? ['Motion', 'Person']
           : ['Motion', 'Person', 'Vehicle', 'Package'];
-    const tcol = {
-      Motion: '#c0892f',
-      Person: '#c0573b',
-      Vehicle: '#3b6fb0',
-      Ring: '#7b5cd6',
-      Package: '#3f9a8c',
-    };
+    const tcol = CAMERA_EVENT;
     const out = [];
     // Demonstration clock: events are generated backwards from 14:48.
     const nowMin = 14 * 60 + 48;
@@ -899,7 +877,7 @@ export class HouseController extends Component {
     document.documentElement.dataset.themeChoice = S.theme;
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta)
-      meta.setAttribute('content', t === 'dark' ? '#0f1318' : '#e9edf1');
+      meta.setAttribute('content', t === 'dark' ? '#0b0e13' : '#eef1f5');
   }
 
   setTheme = (theme) => {
@@ -1240,7 +1218,7 @@ export class HouseController extends Component {
     this.rooms.forEach((r) =>
       idx.push({
         cat: 'Room',
-        accent: '#6b7a88',
+        accent: ROOM,
         label: r.name,
         sub: this.floorLabels[r.floor],
         ids: [r.name, r.short],
@@ -1292,7 +1270,7 @@ export class HouseController extends Component {
     this.boxes.forEach((bx) =>
       idx.push({
         cat: 'Panel',
-        accent: '#3b6fb0',
+        accent: MODE_ACCENT.electrical,
         label: bx.name,
         sub: bx.loc,
         ids: [bx.short, bx.name],
@@ -1310,7 +1288,7 @@ export class HouseController extends Component {
     this.bulbs.forEach((b) =>
       idx.push({
         cat: 'Light',
-        accent: '#e0a043',
+        accent: MODE_ACCENT.lighting,
         label: `${b.room} — ${b.fixture}`,
         sub: `${b.brand} ${b.model} · ${this.stLabel(b.st) || 'OK'}`,
         ids: [b.fixture, `${b.brand} ${b.model}`],
@@ -1335,7 +1313,7 @@ export class HouseController extends Component {
     this.networks.forEach((n) =>
       idx.push({
         cat: 'Network',
-        accent: '#3f9a8c',
+        accent: MODE_ACCENT.network,
         label: n.name,
         sub: `${n.ssid} · ${n.band}`,
         ids: [n.name, n.ssid],
@@ -1348,7 +1326,7 @@ export class HouseController extends Component {
     this.nodes.forEach((n) =>
       idx.push({
         cat: 'Node',
-        accent: '#3f9a8c',
+        accent: MODE_ACCENT.network,
         label: n.name,
         sub: `${n.role} · ${n.room}`,
         ids: [n.name],
@@ -1372,7 +1350,7 @@ export class HouseController extends Component {
     this.servers.forEach((s) =>
       idx.push({
         cat: 'Server',
-        accent: '#3f9a8c',
+        accent: MODE_ACCENT.network,
         label: s.name,
         sub: `${s.kind} · ${s.room}`,
         ids: [s.name],
@@ -1385,7 +1363,7 @@ export class HouseController extends Component {
     this.zones.forEach((z) =>
       idx.push({
         cat: 'Sound',
-        accent: this.SOUND,
+        accent: MODE_ACCENT.sound,
         label: `${z.name} zone`,
         sub: `${z.config} · ${z.room}`,
         ids: [z.name, z.config],
@@ -1406,7 +1384,7 @@ export class HouseController extends Component {
     this.cameras.forEach((c) =>
       idx.push({
         cat: 'Camera',
-        accent: '#c0573b',
+        accent: MODE_ACCENT.security,
         label: c.name,
         sub: `${c.type} · ${c.room} · ${c.status}`,
         ids: [c.name],
@@ -1434,7 +1412,7 @@ export class HouseController extends Component {
     this.sensors.forEach((s) =>
       idx.push({
         cat: 'Climate',
-        accent: '#3f9a8c',
+        accent: MODE_ACCENT.climate,
         label: `${s.name} sensor`,
         sub: `${s.target} · planned`,
         ids: [s.name],
@@ -1452,7 +1430,7 @@ export class HouseController extends Component {
     this.upkeep.forEach((u) =>
       idx.push({
         cat: 'Upkeep',
-        accent: '#b07b3b',
+        accent: MODE_ACCENT.upkeep,
         label: u.kind,
         sub: `${u.device} · ${this.stLabel(u.status) || 'OK'}`,
         ids: [u.kind, u.part],
@@ -1553,13 +1531,20 @@ export class HouseController extends Component {
     const compact = !narrow && vw < 1180;
     const onePanel = !narrow && vw < 1000;
     const short = vh < 520;
-    const listW = narrow ? 0 : compact ? 272 : 316;
-    const detW = narrow ? 0 : compact ? 292 : 340;
-    const leftPx = narrow ? 0 : S.leftHidden ? 90 : 90 + listW;
-    const rightPx = narrow ? 0 : S.rightHidden ? 10 : 10 + detW;
-    const sheetH = narrow ? Math.round(vh * (vh < 520 ? 0.46 : 0.4)) : 0;
-    const topPx = narrow ? 108 : 74;
-    const bottomPx = narrow ? (S.rightHidden ? 0 : sheetH + 8) : 10;
+    // Chrome geometry: 12 px gutters, a 56 px top bar and a 72 px rail.
+    const G = 12;
+    const listW = narrow ? 0 : compact ? 280 : 320;
+    const detW = narrow ? 0 : compact ? 300 : 352;
+    const railRight = G + 72 + G;
+    const leftPx = narrow
+      ? 0
+      : S.leftHidden
+        ? railRight
+        : railRight + listW + G;
+    const rightPx = narrow ? 0 : S.rightHidden ? G : G + detW + G;
+    const sheetH = narrow ? Math.round(vh * (vh < 520 ? 0.46 : 0.42)) : 0;
+    const topPx = narrow ? 108 : G + 56 + G;
+    const bottomPx = narrow ? (S.rightHidden ? 0 : sheetH + 8) : G;
     const freeW = Math.max(120, vw - leftPx - rightPx);
     const freeH = Math.max(120, vh - topPx - bottomPx);
     const ms = Math.min(1.5, Math.max(1, Math.min(vw / 960, vh / 600)));
@@ -1577,6 +1562,8 @@ export class HouseController extends Component {
       topPx,
       bottomPx,
       sheetH,
+      G,
+      railRight,
       freeW,
       freeH,
       cx: leftPx + freeW / 2,
@@ -1590,25 +1577,15 @@ export class HouseController extends Component {
     const S = this.state,
       B = this.bMap();
     const set = (o) => this.setState(o);
-    const tone = this.props.stageTone ?? 'slate';
     const L = this.layoutFor(S);
     this._layout = L;
     const narrow = L.narrow;
     const light = this.effectiveTheme(S) === 'light';
-    const accent = MODE_ACCENT[S.mode] || '#3b6fb0';
+    const accent = MODE_ACCENT[S.mode] || MODE_ACCENT.overview;
     const isoFloor = S.isoFloor || 'all';
     const isoRooms = S.isoRooms || [];
     const isoActive = isoFloor !== 'all' || isoRooms.length > 0;
     const vis = (rid) => this.roomVisible(rid);
-
-    const stage =
-      tone === 'ink' ? 'stage1' : tone === 'navy' ? 'stage2' : 'stage3';
-    const baseGrad = `radial-gradient(125% 120% at 50% 0%,var(--${stage}-hi) 0%,var(--${stage}-mid) 55%,var(--${stage}-lo) 100%)`;
-    // The accent tint layers use currentColor so a color transition
-    // cross-fades the stage between modes.
-    const tintGrad =
-      `radial-gradient(85% 65% at 82% -4%,currentColor 0%,transparent 58%),` +
-      `radial-gradient(70% 58% at 8% 104%,currentColor 0%,transparent 55%)`;
 
     const isOverview = S.mode === 'overview',
       isElectrical = S.mode === 'electrical',
@@ -1623,24 +1600,14 @@ export class HouseController extends Component {
     // --- nav rail ---
     const nav = {};
     MODE_DEF.forEach(([key, label], i) => {
-      const on = S.mode === key,
-        ac = MODE_ACCENT[key];
-      const activeGlow = `background:${this.hexA(ac, 0.17)};color:${ac};box-shadow:inset 0 0 0 1px ${this.hexA(ac, 0.32)},0 8px 22px -8px ${this.hexA(ac, 0.55)};`;
       nav[key] = {
         onClick: () => set({ mode: key }),
-        active: on,
+        active: S.mode === key,
         label,
+        accent: MODE_ACCENT[key],
         title: `${label} — shortcut ${i + 1}`,
-        style: narrow
-          ? `display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:10px;cursor:pointer;user-select:none;flex-shrink:0;white-space:nowrap;transition:background .15s,color .15s,box-shadow .15s;` +
-            (on ? activeGlow : `background:transparent;color:var(--t4);`)
-          : `display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 3px;border-radius:12px;cursor:pointer;user-select:none;transition:background .15s,color .15s,box-shadow .15s;` +
-            (on ? activeGlow : `background:transparent;color:var(--t4);`),
       };
     });
-    const navLabelStyle = narrow
-      ? `font:600 12px ${FONT}`
-      : `font:600 10px ${MONO};letter-spacing:0.02em`;
 
     // --- global search ---
     const q = S.q || '';
@@ -1684,28 +1651,29 @@ export class HouseController extends Component {
     const searchResults = shown.map((it, i) => ({
       id: `search-opt-${i}`,
       active: i === searchSel,
-      rowStyle:
-        'display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;cursor:pointer' +
-        (i === searchSel ? ';background:var(--lift-08)' : ''),
       label: it.label,
       sub: it.sub,
       cat: it.cat,
-      swatch: `width:9px;height:9px;border-radius:2px;background:${it.accent};flex-shrink:0`,
-      chipStyle: `font:600 10px ${MONO};color:${it.accent};background:${this.hexA(it.accent, 0.12)};border:1px solid ${this.hexA(it.accent, 0.3)};padding:2px 7px;border-radius:5px;flex-shrink:0;letter-spacing:0.04em`,
+      accent: it.accent,
       onClick: () => this.chooseResult(it),
     }));
     const searchMore = catMatches.length - shown.length;
     const searchCats = [
-      { key: 'all', label: `All ${searchCount}`, on: searchCat === 'all' },
+      {
+        key: 'all',
+        label: 'All',
+        count: searchCount,
+        on: searchCat === 'all',
+      },
       ...Object.keys(catCounts).map((c) => ({
         key: c,
-        label: `${c} ${catCounts[c]}`,
+        label: c,
+        count: catCounts[c],
         on: searchCat === c,
       })),
     ].map((c) => ({
       ...c,
       onClick: () => set({ searchCat: c.key, searchSel: -1 }),
-      style: `padding:3px 8px;border-radius:12px;cursor:pointer;font:500 11px ${FONT};border:1px solid ${c.on ? this.hexA(accent, 0.5) : 'var(--lift-12)'};background:${c.on ? this.hexA(accent, 0.14) : 'var(--lift-04)'};color:${c.on ? 'var(--acc-text)' : 'var(--t3)'}`,
     }));
     const showAllResults = () => set({ searchAll: true, searchSel: -1 });
     const suggestDefs = [
@@ -1810,53 +1778,29 @@ export class HouseController extends Component {
         ? `${searchSuggest.length} suggested destinations`
         : '';
 
-    // --- layout style strings ---
-    const glass =
-      'background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--lift-08)';
-    const glassShadow = 'box-shadow:0 20px 50px -20px var(--shadow-1)';
+    // --- layout ---
     const searchOpen = narrow && S.searchFocus;
-    const topbarStyle = narrow
-      ? `position:absolute;top:0;left:0;right:0;height:56px;padding-top:env(safe-area-inset-top);box-sizing:content-box;z-index:34;display:grid;grid-template-columns:${searchOpen ? 'minmax(0,1fr) auto' : 'auto minmax(0,1fr) auto'};align-items:center;gap:10px;padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right));background:var(--glass-strong);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--lift-08)`
-      : `position:absolute;top:10px;left:10px;right:10px;height:54px;z-index:34;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:0 14px;${glass};border-radius:16px;${glassShadow}`;
-    const railStyle = narrow
-      ? `position:absolute;top:calc(56px + env(safe-area-inset-top));left:0;right:0;height:52px;z-index:26;display:flex;flex-direction:row;align-items:center;gap:3px;padding:0 16px;overflow-x:auto;overflow-y:hidden;background:var(--glass-strong);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--lift-06)`
-      : `position:absolute;top:74px;left:10px;bottom:10px;width:72px;z-index:26;display:flex;flex-direction:column;gap:4px;padding:10px 8px;overflow-y:auto;${glass};border-radius:16px;${glassShadow}`;
-    const panelBase = narrow
-      ? `background:var(--panel-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--lift-08);border-radius:14px;box-shadow:0 22px 54px -16px var(--shadow-2);color:var(--t1)`
-      : `background:var(--panel);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--lift-08);border-radius:16px;${glassShadow};color:var(--t1)`;
-    const slide =
-      ';transition:transform .28s cubic-bezier(0.4,0,0.2,1),visibility .28s';
+    const G = L.G;
+    const hideLeft = narrow
+      ? 'translateY(calc(-100% - 120px))'
+      : `translateX(calc(-100% - ${L.railRight + G}px))`;
+    const hideRight = narrow
+      ? 'translateY(calc(100% + 24px))'
+      : `translateX(calc(100% + ${G + 8}px))`;
     const listPanelStyle =
       (narrow
-        ? `position:absolute;left:8px;right:8px;top:calc(${L.topPx + 10}px + env(safe-area-inset-top));bottom:${L.bottomPx + 8}px;z-index:20;display:flex;flex-direction:column;${panelBase};overflow:hidden`
-        : `position:absolute;left:90px;top:74px;bottom:10px;width:${L.listW}px;z-index:18;display:flex;flex-direction:column;${panelBase};overflow:hidden`) +
-      (S.leftHidden
-        ? narrow
-          ? ';transform:translateY(calc(-100% - 120px));visibility:hidden'
-          : ';transform:translateX(calc(-100% - 106px));visibility:hidden'
-        : '') +
-      slide;
+        ? // The phone list stops above the model dock so both stay usable.
+          `left:8px;right:8px;top:calc(${L.topPx + 8}px + env(safe-area-inset-top));bottom:calc(${L.bottomPx + 112}px + env(safe-area-inset-bottom));z-index:20`
+        : `left:${L.railRight}px;top:${L.topPx}px;bottom:${G}px;width:${L.listW}px;z-index:18`) +
+      (S.leftHidden ? `;transform:${hideLeft}` : '');
     const detailPanelStyle =
       (narrow
-        ? `position:absolute;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));height:${L.sheetH}px;z-index:19;display:flex;flex-direction:column;${panelBase};overflow:auto`
-        : `position:absolute;right:10px;top:74px;bottom:10px;width:${L.detW}px;z-index:18;display:flex;flex-direction:column;${panelBase};overflow:auto`) +
-      (S.rightHidden
-        ? narrow
-          ? ';transform:translateY(calc(100% + 20px));visibility:hidden'
-          : ';transform:translateX(calc(100% + 16px));visibility:hidden'
-        : '') +
-      slide;
-    const idBoxStyle = `display:flex;align-items:center;gap:10px;min-width:0;${searchOpen ? 'display:none' : ''}`;
-    const idSubStyle = `font:400 10px ${MONO};color:var(--t3);margin-top:2px;${narrow ? 'display:none' : ''}`;
-    const searchWrapStyle = `position:relative;width:100%;max-width:${narrow ? '100%' : '560px'};margin:0 auto;display:flex;align-items:center;gap:9px;height:38px;padding:0 11px;background:${S.searchFocus ? 'var(--lift-10)' : 'var(--lift-06)'};border:1px solid ${S.searchFocus ? this.hexA(accent, 0.55) : 'var(--lift-12)'};${S.searchFocus ? `box-shadow:0 0 0 3px ${this.hexA(accent, 0.14)};` : ''}border-radius:12px;transition:background .15s,border-color .15s,box-shadow .15s`;
-    const searchInputStyle = `flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;color:var(--t1);font:500 13px ${FONT}`;
+        ? `left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));height:${L.sheetH}px;z-index:19`
+        : `right:${G}px;top:${L.topPx}px;bottom:${G}px;width:${L.detW}px;z-index:18`) +
+      (S.rightHidden ? `;transform:${hideRight}` : '');
     const searchPlaceholder = narrow
       ? 'Search'
-      : 'Search the house — a breaker, room, light, router, camera…';
-    const resultsStyle = narrow
-      ? `position:absolute;top:46px;left:-11px;right:-11px;max-height:calc(100dvh - 130px);overflow:auto;z-index:42;background:var(--popover);border:1px solid var(--lift-08);border-radius:12px;box-shadow:0 26px 60px -14px var(--shadow-2);color:var(--t1);padding:7px`
-      : `position:absolute;top:50px;left:0;right:0;max-height:64vh;overflow:auto;z-index:42;background:var(--popover);border:1px solid var(--lift-08);border-radius:12px;box-shadow:0 26px 60px -14px var(--shadow-2);color:var(--t1);padding:7px`;
-    const controlsWrapStyle = `display:flex;align-items:center;gap:7px;justify-self:end;${searchOpen ? 'display:none' : ''}`;
+      : 'Search rooms, circuits, lights, devices…';
 
     // ---- shared dashboard data ----
     const due = this.bulbs.filter((b) => b.st !== 'ok');
@@ -1870,44 +1814,56 @@ export class HouseController extends Component {
     const overviewStats = [
       {
         label: 'ELECTRICAL',
+        mode: 'electrical',
+        name: 'Electrical',
         stat: String(this.circuits.length),
         sub: `circuits · ${this.boxes.length} panels`,
-        accent: '#3b6fb0',
+        accent: MODE_ACCENT.electrical,
         onClick: () => goMode({ mode: 'electrical' }),
       },
       {
         label: 'LIGHTING',
+        mode: 'lighting',
+        name: 'Lighting',
         stat: String(this.bulbs.length),
-        sub: `fixture records · ${due.length} flagged`,
-        accent: '#e0a043',
+        sub: `fixtures · ${due.length} flagged`,
+        accent: MODE_ACCENT.lighting,
         onClick: () => goMode({ mode: 'lighting' }),
       },
       {
         label: 'NETWORK',
+        mode: 'network',
+        name: 'Network',
         stat: String(this.nodes.length),
         sub: `nodes · ${this.networks.length} networks`,
-        accent: '#3f9a8c',
+        accent: MODE_ACCENT.network,
         onClick: () => goMode({ mode: 'network' }),
       },
       {
         label: 'SOUND',
+        mode: 'sound',
+        name: 'Sound',
         stat: String(this.zones.length),
         sub: 'surround zones',
-        accent: this.SOUND,
+        accent: MODE_ACCENT.sound,
         onClick: () => goMode({ mode: 'sound' }),
       },
       {
         label: 'SECURITY',
+        mode: 'security',
+        name: 'Security',
         stat: String(this.cameras.length),
-        sub: 'documented cameras',
-        accent: '#c0573b',
+        sub: 'cameras',
+        accent: MODE_ACCENT.security,
         onClick: () => goMode({ mode: 'security' }),
       },
       {
         label: 'UPKEEP',
+        mode: 'upkeep',
+        name: 'Upkeep',
         stat: String(this.upkeep.filter((u) => u.status !== 'ok').length),
         sub: 'replacements due',
-        accent: '#b07b3b',
+        accent: MODE_ACCENT.upkeep,
         onClick: () => goMode({ mode: 'upkeep' }),
       },
     ];
@@ -1917,7 +1873,6 @@ export class HouseController extends Component {
       fixture: b.fixture,
       statusLabel: this.stLabel(b.st),
       color: this.stColor(b.st),
-      dotStyle: `width:8px;height:8px;border-radius:50%;flex-shrink:0;background:${this.stColor(b.st)}`,
       onClick: () =>
         goMode({ mode: 'lighting', bulb: b.id, lf: 'all', lroom: 'all' }),
     }));
@@ -1944,7 +1899,7 @@ export class HouseController extends Component {
       relatedForRoom(rid).map((r) => ({
         ...r,
         onClick: () => this.openRelated(r),
-        swatch: `width:8px;height:8px;border-radius:${r.kind === 'circuit' || r.kind === 'node' ? '2px' : '50%'};background:${r.accent};flex-shrink:0`,
+        square: r.kind === 'circuit' || r.kind === 'node',
       }));
     const roomDet = selRoomRec
       ? {
@@ -1971,24 +1926,15 @@ export class HouseController extends Component {
       ['Appliance', 'Appliance'],
       ['Mixed', 'Mixed'],
     ];
-    const chipStyle = (on, ac) =>
-      `padding:5px 11px;border-radius:6px;cursor:pointer;font:500 11px ${FONT};` +
-      (on
-        ? `background:${ac};color:#fff;border:1px solid ${ac};`
-        : `background:var(--lift-05);color:var(--t3);border:1px solid var(--lift-12);`);
     const typeFilters = eTypeDef.map(([key, label]) => ({
       key,
       label,
       on: etype === key,
       onClick: () => set({ etype: key }),
-      style: chipStyle(etype === key, '#3b6fb0'),
     }));
     const matches = (c) => etype === 'all' || c.type === etype;
-    const rowStyleFor = (sel, ac) =>
-      `display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:7px;cursor:pointer;margin-bottom:3px;` +
-      (sel
-        ? `background:var(--lift-06);box-shadow:inset 0 0 0 1.5px ${ac};`
-        : 'background:var(--lift-04);border:1px solid var(--lift-08);');
+    // List rows take their selection hue from a custom property.
+    const rowStyleFor = (_sel, ac) => `--ac:${ac}`;
     const circGroups = this.boxes
       .map((bx) => ({
         id: bx.id,
@@ -2009,14 +1955,8 @@ export class HouseController extends Component {
               typeLabel: c.type,
               selected: isSel,
               onClick: () => set({ selCirc: c.id, selPanel: null }),
-              rowStyle: rowStyleFor(isSel, '#3b6fb0').replace(
-                '9px 11px',
-                '8px 10px',
-              ),
-              dotStyle: `width:9px;height:9px;border-radius:2px;flex-shrink:0;background:${this.typeColor(c.type)}`,
-              tagStyle: `font:600 11px ${MONO};width:44px;flex-shrink:0;color:${isSel ? 'var(--t1)' : 'var(--t3)'}`,
-              labelStyle: `font:500 12px ${FONT};flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${isSel ? 'var(--t1)' : 'var(--t2)'}`,
-              ampStyle: `font:500 11px ${MONO};flex-shrink:0;color:var(--t3)`,
+              rowStyle: rowStyleFor(isSel, MODE_ACCENT.electrical),
+              color: this.typeColor(c.type),
             };
           }),
       }))
@@ -2067,7 +2007,7 @@ export class HouseController extends Component {
             cycle: others.length
               ? () => set({ selCirc: others[0], selPanel: null })
               : null,
-            fdot: `width:6px;height:6px;border-radius:50%;flex-shrink:0;background:${r.floor === 'second' ? '#3b6fb0' : r.floor === 'main' ? '#3f9a8c' : '#b07b3b'}`,
+            floorColor: FLOOR[r.floor] || FLOOR.main,
           };
         }),
         related: relatedRows(served[0]?.id).filter(
@@ -2100,21 +2040,21 @@ export class HouseController extends Component {
 
     // ---- LIGHTING ----
     const lsum = [
-      { label: 'TOTAL', val: String(this.bulbs.length), color: 'var(--t1)' },
+      { label: 'Total', val: String(this.bulbs.length), color: null },
       {
         label: 'OK',
         val: String(this.bulbs.filter((b) => b.st === 'ok').length),
-        color: '#5a9c6e',
+        color: STATUS.ok,
       },
       {
-        label: 'SOON',
+        label: 'Soon',
         val: String(this.bulbs.filter((b) => b.st === 'soon').length),
-        color: '#c0892f',
+        color: STATUS.soon,
       },
       {
-        label: 'OVERDUE',
+        label: 'Overdue',
         val: String(this.bulbs.filter((b) => b.st === 'overdue').length),
-        color: '#c0573b',
+        color: STATUS.overdue,
       },
     ];
     const lfDef = [
@@ -2129,7 +2069,6 @@ export class HouseController extends Component {
       label,
       on: S.lf === key,
       onClick: () => set({ lf: key }),
-      style: chipStyle(S.lf === key, '#e0a043'),
     }));
     // Room filter values: `rid:<roomId>` groups every display-name alias of a
     // model room; `name:<room>` keeps rooms that are not on the plan.
@@ -2176,10 +2115,10 @@ export class HouseController extends Component {
       color: this.stColor(b.st),
       kColor: this.kColor(b.k),
       selected: S.bulb === b.id,
-      rowStyle: rowStyleFor(S.bulb === b.id, '#e0a043'),
+      rowStyle: rowStyleFor(S.bulb === b.id, MODE_ACCENT.lighting),
       onClick: () => set({ bulb: b.id }),
     }));
-    const lcount = `${filtered.length} of ${this.bulbs.length} fixture records`;
+    const lcount = `${filtered.length} of ${this.bulbs.length}`;
     const lroomLabel = lroomOpts.find((o) => o.val === lroom)?.label || '';
     const sb = S.bulb ? this.bulbs.find((b) => b.id === S.bulb) : null;
     let bd = null;
@@ -2196,12 +2135,9 @@ export class HouseController extends Component {
         room: sb.room,
         fixture: sb.fixture,
         kColor: this.kColor(sb.k),
-        glow: this.hexA(this.kColor(sb.k), 0.7),
         color: this.stColor(sb.st),
         statusLabel: this.stLabel(sb.st) || 'OK',
         statusFull: `${this.stLabel(sb.st) || 'OK'} · recorded replacement ${sb.replaced} · ~${sb.life} yr rated life`,
-        statusBg: this.hexA(this.stColor(sb.st), 0.16),
-        statusBd: this.hexA(this.stColor(sb.st), 0.34),
         excluded: !bulbMatch(sb),
         specs: [
           { k: 'Wattage', v: `${sb.w} W` },
@@ -2254,7 +2190,7 @@ export class HouseController extends Component {
 
     // ---- NETWORK ----
     const netColor = {};
-    this.networks.forEach((n) => (netColor[n.id] = n.color));
+    this.networks.forEach((n) => (netColor[n.id] = networkColor(n.color)));
     const netName = {};
     this.networks.forEach((n) => (netName[n.id] = n.name));
     const gw = this.nodes[0];
@@ -2273,7 +2209,7 @@ export class HouseController extends Component {
       name: n.name,
       ssid: n.ssid,
       band: n.band,
-      color: n.color,
+      color: networkColor(n.color),
       members: this.nodes.filter((nd) => nd.nets.includes(n.id)).length,
     }));
     const nodeList = this.nodes.map((nd) => {
@@ -2293,7 +2229,7 @@ export class HouseController extends Component {
         netText: nd.nets.map((x) => netName[x]).join(', '),
         selected: isSel,
         onClick: () => set({ selNode: nd.id, selServer: null }),
-        rowStyle: rowStyleFor(isSel, '#3f9a8c'),
+        rowStyle: rowStyleFor(isSel, MODE_ACCENT.network),
       };
     });
     const snd = this.nodes.find((n) => n.id === S.selNode) || gw;
@@ -2355,11 +2291,7 @@ export class HouseController extends Component {
         power: z.power,
         selected: isSel,
         onClick: () => set({ selZone: z.id }),
-        cardStyle:
-          `padding:13px 14px;border-radius:8px;cursor:pointer;margin-bottom:9px;` +
-          (isSel
-            ? `background:var(--lift-06);box-shadow:inset 0 0 0 1.5px ${this.SOUND};`
-            : 'background:var(--lift-04);border:1px solid var(--lift-08);'),
+        cardStyle: rowStyleFor(isSel, MODE_ACCENT.sound),
       };
     });
     const sz = this.zones.find((z) => z.id === S.selZone) || this.zones[0];
@@ -2384,7 +2316,7 @@ export class HouseController extends Component {
     };
 
     // ---- SECURITY ----
-    const camStatusCol = (s) => (s === 'online' ? '#5a9c6e' : '#8a94a0');
+    const camStatusCol = (s) => (s === 'online' ? STATUS.ok : STATUS.idle);
     const camFilter = S.camFilter || 'all';
     const camFilterDef = [
       ['all', 'All'],
@@ -2397,7 +2329,6 @@ export class HouseController extends Component {
       label,
       on: camFilter === key,
       onClick: () => set({ camFilter: key }),
-      style: chipStyle(camFilter === key, '#c0573b'),
     }));
     const camMatch = (c) =>
       camFilter === 'all' ||
@@ -2414,7 +2345,7 @@ export class HouseController extends Component {
       statusLabel: c.status === 'online' ? 'Online' : 'Offline',
       selected: S.selCam === c.id,
       onClick: () => set({ selCam: c.id, feedGrid: false }),
-      rowStyle: rowStyleFor(S.selCam === c.id, '#c0573b'),
+      rowStyle: rowStyleFor(S.selCam === c.id, MODE_ACCENT.security),
     }));
     const camOnline = this.cameras.filter((c) => c.status === 'online').length;
     const camTotal = this.cameras.length;
@@ -2430,7 +2361,7 @@ export class HouseController extends Component {
       statusColor: camStatusCol(sc.status),
       statusLabel: scOnline ? 'Online' : 'Offline',
       offline: !scOnline,
-      liveColor: scOnline ? '#e5544a' : '#8a94a0',
+      liveColor: scOnline ? STATUS.live : STATUS.idle,
       liveLabel: 'DEMO PREVIEW',
       res: sc.res,
       watermark: sc.room.toUpperCase(),
@@ -2489,7 +2420,8 @@ export class HouseController extends Component {
       room: sc.room,
       res: sc.res,
       watermark: sc.room.toUpperCase(),
-      liveColor: histSel === 0 ? (scOnline ? '#e5544a' : '#8a94a0') : '#e0b46b',
+      liveColor:
+        histSel === 0 ? (scOnline ? STATUS.live : STATUS.idle) : STATUS.history,
       liveLabel: histSel === 0 ? 'DEMO PREVIEW' : 'DEMO HISTORY',
       time: histActive ? `${histActive.day} ${histActive.time}` : null,
       eventLabel: histActive
@@ -2505,21 +2437,23 @@ export class HouseController extends Component {
     const expandSub = `${sc.name} · ${camHist.length} demonstration events · generated, not recorded`;
     const maxAgo = Math.max(...camHist.map((h) => h.agoMin), 1);
     const pos = (agoMin) => 4 + (1 - agoMin / maxAgo) * 92;
-    const dotStyle = (left, sel, color) =>
-      `position:absolute;top:50%;transform:translate(-50%,-50%);width:${sel ? 14 : 10}px;height:${sel ? 14 : 10}px;border-radius:50%;background:${color};border:1.5px solid var(--marker-ring);cursor:pointer;left:${left}%`;
+    const dotStyle = (left, _sel, color) => `left:${left}%;--c:${color}`;
     const histTiles = [
       {
         idx: 0,
         label: 'Demo preview',
         sub: 'Recorded inventory; no live stream',
         aria: 'Demo preview (now)',
-        color: scOnline ? '#e5544a' : '#8a94a0',
+        color: scOnline ? STATUS.live : STATUS.idle,
         time: 'DEMO',
         selected: histSel === 0,
         watermark: sc.room.toUpperCase(),
         onClick: () => selectHist(0),
-        dotStyle: dotStyle(96, histSel === 0, scOnline ? '#e5544a' : '#8a94a0'),
-        wrapStyle: `cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid ${histSel === 0 ? '#c0573b' : 'var(--lift-06)'};flex-shrink:0`,
+        dotStyle: dotStyle(
+          96,
+          histSel === 0,
+          scOnline ? STATUS.live : STATUS.idle,
+        ),
       },
       ...camHist.map((hv, i) => ({
         idx: i + 1,
@@ -2532,7 +2466,6 @@ export class HouseController extends Component {
         watermark: sc.room.toUpperCase(),
         onClick: () => selectHist(i + 1),
         dotStyle: dotStyle(pos(hv.agoMin), histSel === i + 1, hv.color),
-        wrapStyle: `cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid ${histSel === i + 1 ? '#c0573b' : 'var(--lift-06)'};flex-shrink:0`,
       })),
     ];
     const oldest = camHist[camHist.length - 1];
@@ -2551,11 +2484,11 @@ export class HouseController extends Component {
       id: s.id,
       name: s.name,
       mount: s.mount,
-      dot: s.status === 'online' ? '#3f9a8c' : '#8a94a0',
+      dot: s.status === 'online' ? MODE_ACCENT.climate : STATUS.idle,
       badge: s.status === 'online' ? 'LIVE' : 'PLANNED',
       selected: S.selSensor === s.id,
       onClick: () => set({ selSensor: s.id }),
-      rowStyle: rowStyleFor(S.selSensor === s.id, '#3f9a8c'),
+      rowStyle: rowStyleFor(S.selSensor === s.id, MODE_ACCENT.climate),
     }));
     const ssn =
       this.sensors.find((x) => x.id === S.selSensor) || this.sensors[0];
@@ -2599,7 +2532,6 @@ export class HouseController extends Component {
       label,
       on: uf === key,
       onClick: () => set({ uf: key }),
-      style: chipStyle(uf === key, '#b07b3b'),
     }));
     const upMatch = (u) =>
       uf === 'all' ||
@@ -2634,30 +2566,27 @@ export class HouseController extends Component {
           : `${Math.round((u.used / u.life) * 100)}% of rated life used`,
       selected: S.selUp === u.id,
       onClick: () => set({ selUp: u.id }),
-      rowStyle: rowStyleFor(S.selUp === u.id, '#b07b3b').replace(
-        'display:flex;align-items:center;gap:9px;',
-        '',
-      ),
+      rowStyle: rowStyleFor(S.selUp === u.id, MODE_ACCENT.upkeep),
     }));
     const upSummary = [
       {
-        label: 'OVERDUE',
+        label: 'Overdue',
         val: String(this.upkeep.filter((u) => u.status === 'overdue').length),
-        color: '#c0573b',
+        color: STATUS.overdue,
       },
       {
-        label: 'DUE SOON',
+        label: 'Due soon',
         val: String(this.upkeep.filter((u) => u.status === 'soon').length),
-        color: '#c0892f',
+        color: STATUS.soon,
       },
       {
         label: 'OK',
         val: String(this.upkeep.filter((u) => u.status === 'ok').length),
-        color: '#5a9c6e',
+        color: STATUS.ok,
       },
     ];
     const upTotal = this.upkeep.length;
-    const upCount = `${upFiltered.length} of ${upTotal} tracked`;
+    const upCount = `${upFiltered.length} of ${upTotal}`;
     const su = this.upkeep.find((x) => x.id === S.selUp) || this.upkeep[0];
     const suRoom = this.roomById(su.roomId);
     const overrun =
@@ -2668,8 +2597,6 @@ export class HouseController extends Component {
       device: su.device,
       statusColor: this.stColor(su.status),
       statusLabel: this.stLabel(su.status) || 'OK',
-      statusBg: this.hexA(this.stColor(su.status), 0.16),
-      statusBd: this.hexA(this.stColor(su.status), 0.34),
       barPct: upPct(su),
       barColor: this.stColor(su.status),
       barMeaning: su.metric === 'level' ? 'remaining' : 'used',
@@ -2897,7 +2824,7 @@ export class HouseController extends Component {
     if (isLighting) {
       sceneOpt.bulbs = filtered;
       sceneOpt.selBulb = S.bulb;
-      sceneOpt.hiColor = '#e0a043';
+      sceneOpt.hiColor = MODE_ACCENT.lighting;
       sceneOpt.onBulbClick = (id) => set({ bulb: id });
       if (sb && this.bulbRoomId(sb.room))
         sceneOpt.locate = {
@@ -2908,24 +2835,24 @@ export class HouseController extends Component {
     }
     if (isNetwork) {
       sceneOpt.selNode = S.selNode;
-      sceneOpt.hiColor = '#3b6fb0';
+      sceneOpt.hiColor = MODE_ACCENT.network;
       sceneOpt.onNodeClick = (id) => set({ selNode: id, selServer: null });
       if (sndRoomId) sceneOpt.hiRooms = [sndRoomId];
     }
     if (isSound) {
-      sceneOpt.hiColor = this.SOUND;
+      sceneOpt.hiColor = MODE_ACCENT.sound;
       sceneOpt.hiRooms = this.zones.map((z) => z.roomId);
       sceneOpt.soundRoom = sz.roomId;
       sceneOpt.locate = {
         roomId: sz.roomId,
-        color: this.SOUND,
+        color: MODE_ACCENT.sound,
         label: `${sz.name} zone`,
       };
     }
     if (isSecurity) {
       sceneOpt.cameras = this.cameras;
       sceneOpt.selCam = S.selCam;
-      sceneOpt.hiColor = '#c0573b';
+      sceneOpt.hiColor = MODE_ACCENT.security;
       sceneOpt.onCamClick = (id) => set({ selCam: id, feedGrid: false });
       if (sc && sc.roomId && sc.type === 'Indoor')
         sceneOpt.hiRooms = [sc.roomId];
@@ -2933,14 +2860,14 @@ export class HouseController extends Component {
     if (isClimate) {
       sceneOpt.sensors = this.sensors;
       sceneOpt.selSensor = S.selSensor;
-      sceneOpt.hiColor = '#3f9a8c';
+      sceneOpt.hiColor = MODE_ACCENT.climate;
       sceneOpt.onSensorClick = (id) => set({ selSensor: id });
       if (ssn && ssn.roomId) sceneOpt.hiRooms = [ssn.roomId];
     }
     if (isUpkeep) {
       sceneOpt.upkeep = this.upkeep;
       sceneOpt.selUp = S.selUp;
-      sceneOpt.hiColor = '#b07b3b';
+      sceneOpt.hiColor = MODE_ACCENT.upkeep;
       sceneOpt.onUpkeepClick = (id) => set({ selUp: id });
       if (su && su.roomId) {
         sceneOpt.hiRooms = [su.roomId];
@@ -2960,101 +2887,95 @@ export class HouseController extends Component {
     // ---- prompt / hint / legend ----
     const showPrompt =
       (isElectrical && !selC && !selPanelRec) || (isLighting && !sb);
-    const promptTop = narrow ? L.topPx + 10 : 76;
-    const promptStyle = `position:absolute;top:${promptTop}px;left:${L.cx}px;max-width:calc(${L.freeW}px - 16px);transform:translateX(-50%);z-index:16;pointer-events:none`;
-    const promptInnerStyle = `font:500 12px ${FONT};color:var(--t2);background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:8px 16px;border:1px solid var(--lift-10);border-radius:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:floatIn .3s ease both;pointer-events:auto`;
+    const promptTop = narrow ? L.topPx + 10 : L.topPx + 4;
+    const promptStyle = `top:${promptTop}px;left:${L.cx}px;max-width:calc(${L.freeW}px - 24px)`;
     const promptText = isElectrical
-      ? 'Select a circuit or panel in the list — or a room in the model'
+      ? 'Pick a circuit, a panel, or a room'
       : isLighting
-        ? 'Select a fixture in the list — or a room to filter'
+        ? 'Pick a fixture, or a room to filter'
         : '';
     const showHint = !S.hintDismissed && isOverview && !showPrompt;
     const hintText = narrow
-      ? 'Drag to rotate · pinch to zoom · tap rooms or list rows'
-      : 'Drag to rotate · scroll to zoom · Shift+drag to pan · press ? for help';
-    let legendTitle = 'SYSTEMS',
+      ? 'Drag to rotate · pinch to zoom'
+      : 'Drag to rotate · scroll to zoom · Shift-drag to pan';
+    let legendTitle = 'Systems',
       legendItems = [],
       legendNote = '';
-    const sw = (c, sq) =>
-      `width:10px;height:10px;border-radius:${sq ? '2px' : '50%'};background:${c};flex-shrink:0`;
+    const sw = (c, sq) => ({ color: c, shape: sq ? 'sq' : 'dot' });
     if (isOverview) {
-      legendTitle = 'OVERVIEW';
+      legendTitle = 'Overview';
       legendItems = [
-        {
-          label: 'Breaker panel',
-          swatch: `width:14px;height:10px;border-radius:2px;background:var(--panel-marker);border:1px solid var(--panel-marker-bd);flex-shrink:0`,
-        },
-        { label: 'Flagged fixture', swatch: sw('#c0892f') },
-        { label: 'Network device', swatch: sw('#3b6fb0', true) },
+        { label: 'Breaker panel', ...sw('var(--panel-marker-bd)', true) },
+        { label: 'Flagged fixture', ...sw(STATUS.soon) },
+        { label: 'Network device', ...sw(MODE_ACCENT.network, true) },
       ];
     } else if (isElectrical) {
-      legendTitle = 'CIRCUIT TYPE';
-      legendItems = [
-        { label: 'Lighting', swatch: sw('#e0a043', true) },
-        { label: 'Outlets', swatch: sw('#3b6fb0', true) },
-        { label: 'Appliance', swatch: sw('#c0573b', true) },
-        { label: 'Mixed', swatch: sw('#3f9a8c', true) },
-      ];
+      legendTitle = 'Circuit type';
+      legendItems = ['Lighting', 'Outlets', 'Appliance', 'Mixed'].map((t) => ({
+        label: t,
+        ...sw(CIRCUIT_TYPE[t], true),
+      }));
       legendNote =
         'Wiring paths are schematic associations, not surveyed routes.';
     } else if (isLighting) {
-      legendTitle = 'FIXTURE STATUS';
+      legendTitle = 'Fixture status';
       legendItems = [
-        { label: 'OK', swatch: sw('#5a9c6e') },
-        { label: 'Due soon', swatch: sw('#c0892f') },
-        { label: 'Overdue', swatch: sw('#c0573b') },
+        { label: 'OK', ...sw(STATUS.ok) },
+        { label: 'Due soon', ...sw(STATUS.soon) },
+        { label: 'Overdue', ...sw(STATUS.overdue) },
       ];
     } else if (isNetwork) {
-      legendTitle = 'NETWORKS';
+      legendTitle = 'Networks';
       legendItems = [
-        { label: 'Family', swatch: sw('#3b6fb0', true) },
-        { label: 'IoT', swatch: sw('#3f9a8c', true) },
-        { label: 'Guest', swatch: sw('#c0892f', true) },
+        ...this.networks.map((n) => ({
+          label: n.name,
+          ...sw(networkColor(n.color), true),
+        })),
         {
-          label: 'Gateway (diamond) · discovered device',
-          swatch: sw('#c0892f', true),
+          label: 'Gateway (diamond)',
+          ...sw(MODE_ACCENT.network),
+          diamond: true,
         },
       ];
       legendNote =
         'Only the observed host-to-gateway association is drawn. Other uplinks are unknown; positions are schematic.';
     } else if (isSound) {
-      legendTitle = 'SOUND';
+      legendTitle = 'Sound';
       legendItems = [
-        { label: 'Surround zone', swatch: sw(this.SOUND) },
-        { label: 'Speaker (schematic)', swatch: sw(this.SOUND, true) },
+        { label: 'Surround zone', ...sw(MODE_ACCENT.sound) },
+        { label: 'Speaker (schematic)', ...sw(MODE_ACCENT.sound, true) },
       ];
       legendNote = 'Speaker squares are a generic placement sketch.';
     } else if (isSecurity) {
-      legendTitle = 'SECURITY';
+      legendTitle = 'Security';
       legendItems = [
         {
           label: 'Camera + illustrative coverage',
-          swatch: sw('#c0573b', true),
+          ...sw(MODE_ACCENT.security, true),
         },
-        { label: 'Offline camera', swatch: sw('#8a94a0', true) },
+        { label: 'Offline camera', ...sw(STATUS.idle, true) },
       ];
       legendNote =
         'Coverage cones ignore walls; positions are recorded, not surveyed.';
     } else if (isClimate) {
-      legendTitle = 'CLIMATE';
+      legendTitle = 'Climate';
       legendItems = [
         {
           label: 'Sensor (planned)',
-          swatch: `width:10px;height:10px;background:var(--t4-soft);border:1px dashed var(--t4);transform:rotate(45deg);flex-shrink:0`,
+          ...sw('var(--t4)'),
+          diamond: true,
+          ring: true,
         },
-        { label: 'Disconnected', swatch: sw('#8a94a0', true) },
+        { label: 'Disconnected', ...sw(STATUS.idle, true) },
       ];
     } else if (isUpkeep) {
-      legendTitle = 'REPLACEMENTS';
+      legendTitle = 'Replacements';
       legendItems = [
-        { label: 'OK', swatch: sw('#5a9c6e') },
-        { label: 'Due soon', swatch: sw('#c0892f') },
-        { label: 'Overdue', swatch: sw('#c0573b') },
-        {
-          label: 'Room marker shows its most urgent item',
-          swatch: sw('var(--t4)'),
-        },
+        { label: 'OK', ...sw(STATUS.ok) },
+        { label: 'Due soon', ...sw(STATUS.soon) },
+        { label: 'Overdue', ...sw(STATUS.overdue) },
       ];
+      legendNote = 'Each room marker shows its most urgent item.';
     }
 
     // ---- view controls ----
@@ -3076,13 +2997,13 @@ export class HouseController extends Component {
         rightHidden: !s.rightHidden,
         leftHidden: L.onePanel && s.rightHidden ? true : s.leftHidden,
       }));
-    const mapRight = narrow ? 8 : L.rightPx + 10;
-    const clusterRight = narrow ? 8 : mapRight + 6;
-    const ctrlBottom = narrow ? L.bottomPx + 10 : 18;
-    const isoPanelStyle = `position:absolute;top:calc(${narrow ? L.topPx + 10 : 74}px + env(safe-area-inset-top));right:${mapRight}px;z-index:30;width:236px;max-width:calc(100% - 16px);max-height:calc(100dvh - ${narrow ? L.topPx + 24 + L.bottomPx : 94}px);display:flex;flex-direction:column;background:var(--panel-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--lift-08);border-radius:14px;box-shadow:0 22px 54px -16px var(--shadow-2);color:var(--t1);overflow:hidden;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
+    const mapRight = narrow ? 8 : L.rightPx;
+    const clusterRight = narrow ? 8 : mapRight + 4;
+    const ctrlBottom = narrow ? L.bottomPx + 10 : L.G + 4;
+    const isoPanelStyle = `top:calc(${narrow ? L.topPx + 10 : L.topPx}px + env(safe-area-inset-top));right:${mapRight}px;max-height:calc(100dvh - ${narrow ? L.topPx + 24 + L.bottomPx : L.topPx + 40}px)`;
     const legendPanelStyle = narrow
-      ? `position:absolute;left:8px;bottom:calc(${ctrlBottom}px + env(safe-area-inset-bottom));max-width:calc(100% - 200px);z-index:16;display:flex;flex-direction:column;gap:6px;padding:10px 13px;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--lift-10);border-radius:12px`
-      : `position:absolute;right:${clusterRight + 190}px;bottom:18px;max-width:calc(100% - 16px);z-index:16;display:flex;flex-direction:column;gap:6px;padding:10px 13px;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--lift-10);border-radius:12px;transition:right .28s cubic-bezier(0.4,0,0.2,1)`;
+      ? `left:8px;bottom:calc(${ctrlBottom}px + env(safe-area-inset-bottom));max-width:calc(100% - 200px)`
+      : `right:${clusterRight}px;bottom:${ctrlBottom + 60}px;max-width:calc(100% - 16px)`;
     const labelsOn = S.showRoomLabels !== false;
     const toggleLabels = () =>
       set((s) => ({ showRoomLabels: !s.showRoomLabels }));
@@ -3094,56 +3015,46 @@ export class HouseController extends Component {
     const zoomPct = Math.round(S.zoom * 100) + '%';
     const atMin = S.zoom <= ZOOM_MIN + 1e-6,
       atMax = S.zoom >= ZOOM_MAX - 1e-6;
-    const _exBase = `flex:1;text-align:center;padding:6px 4px;border-radius:6px;font:600 10px ${MONO};letter-spacing:0.06em;cursor:pointer;user-select:none;border:1px solid;transition:background .12s,color .12s`;
-    const exStyle = (i) =>
-      `${_exBase};${explodeIdx === i ? 'border-color:rgba(224,160,67,.55);background:rgba(224,160,67,.15);color:var(--warn-text)' : 'border-color:var(--lift-12);background:var(--lift-04);color:var(--t3)'}`;
     const explodeBtns = [
       {
         key: 'full',
         label: 'Exploded',
         on: explodeIdx === 2,
-        style: exStyle(2),
         onClick: () => this.setExplode('full'),
       },
       {
         key: 'floors',
         label: 'Floors',
         on: explodeIdx === 1,
-        style: exStyle(1),
         onClick: () => this.setExplode('floors'),
       },
       {
         key: 'stacked',
         label: 'Stacked',
         on: explodeIdx === 0,
-        style: exStyle(0),
         onClick: () => this.setExplode('stacked'),
       },
     ];
-    const _voRow = `display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;user-select:none;font:400 12px ${FONT}`;
-    const voRow = (on, warn) =>
-      `${_voRow};color:${on ? (warn ? 'var(--warn-text)' : 'var(--acc-text)') : 'var(--t2)'};background:${on ? (warn ? 'rgba(224,160,67,.10)' : 'var(--acc-soft)') : 'var(--lift-04)'}`;
-    const _dot8 = 'width:7px;height:7px;border-radius:50%;flex-shrink:0';
-    const voToggle = (on, warn) =>
-      `${_dot8};background:${on ? (warn ? '#e0a043' : 'var(--acc-dot)') : 'var(--lift-18)'}`;
+    const voRow = () => '';
+    const voToggle = () => '';
     const viewOpts = {
       resetRow: {
         style: voRow(false),
         onClick: this.resetView,
         label: 'Reset orientation',
-        hint: 'yaw, tilt, zoom, pan',
+        hint: 'Angle, zoom, pan',
       },
       resetAllRow: {
         style: voRow(false),
         onClick: this.resetAll,
         label: 'Reset everything',
-        hint: 'orientation + isolation + separation',
+        hint: '+ isolation, floors',
       },
       fitRow: {
         style: voRow(false),
         onClick: this.fitVisible,
         label: 'Fit visible',
-        hint: 'zoom 100 %, centered',
+        hint: '100%, centred',
       },
       presets: [
         {
@@ -3198,7 +3109,6 @@ export class HouseController extends Component {
         label: t === 'system' ? 'System' : t === 'light' ? 'Light' : 'Dark',
         on: S.theme === t,
         onClick: () => this.setTheme(t),
-        style: `${_exBase};${S.theme === t ? 'border-color:var(--acc-border);background:var(--acc-bg);color:var(--acc-text)' : 'border-color:var(--lift-12);background:var(--lift-04);color:var(--t3)'}`,
       })),
       nudge: [
         {
@@ -3238,19 +3148,9 @@ export class HouseController extends Component {
           onClick: () => this.nudge('panX', 1),
         },
       ],
-      drawerStyle: `display:flex;flex-direction:column;gap:2px;padding:10px 10px 8px;border-bottom:1px solid var(--lift-06);max-height:calc(100dvh - ${ctrlBottom + L.topPx + (narrow ? 120 : 80)}px);overflow:auto`,
-      sectionLabelStyle: `font:500 10px ${MONO};color:var(--t4);letter-spacing:0.12em;margin:6px 0 4px`,
-      divStyle: 'height:1px;background:var(--lift-06);margin:4px 0',
-      presetStyle: `${_exBase};border-color:var(--lift-12);background:var(--lift-04);color:var(--t3)`,
-      nudgeStyle: `width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;user-select:none;color:var(--t2);background:var(--lift-06);border:1px solid var(--lift-10);flex-shrink:0`,
+      drawerStyle: `max-height:calc(100dvh - ${ctrlBottom + L.topPx + (narrow ? 120 : 80)}px)`,
     };
-    const zoomBarStyle =
-      'display:flex;align-items:center;gap:3px;padding:6px 7px';
-    const zoomBtnStyle = (disabled) =>
-      `width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:${disabled ? 'default' : 'pointer'};user-select:none;color:var(--t2);background:var(--lift-06);border:1px solid var(--lift-10);line-height:1;flex-shrink:0;opacity:${disabled ? 0.4 : 1}`;
-    const zoomPctStyle = `width:42px;text-align:center;font:600 11px ${MONO};color:var(--t3);letter-spacing:0.04em;flex-shrink:0`;
-    const viewOptsBtnStyle = `width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;user-select:none;flex-shrink:0;border:1px solid ${viewOptsOpen ? 'var(--acc-border)' : 'var(--lift-10)'};background:${viewOptsOpen ? 'var(--acc-bg)' : 'var(--lift-06)'};color:${viewOptsOpen ? 'var(--acc-text)' : 'var(--t2)'}`;
-    const ctrlClusterStyle = `position:absolute;bottom:calc(${ctrlBottom}px + env(safe-area-inset-bottom));right:calc(${clusterRight}px + env(safe-area-inset-right));z-index:22;display:flex;flex-direction:column;align-items:stretch;background:var(--glass-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--lift-10);border-radius:13px;box-shadow:0 12px 36px -8px var(--shadow-2);transition:right .28s cubic-bezier(.4,0,.2,1),bottom .28s cubic-bezier(.4,0,.2,1);overflow:visible`;
+    const ctrlClusterStyle = `bottom:calc(${ctrlBottom}px + env(safe-area-inset-bottom));right:calc(${clusterRight}px + env(safe-area-inset-right))`;
 
     // ---- ISOLATION ----
     const isoTotal = this.rooms.length;
@@ -3272,11 +3172,6 @@ export class HouseController extends Component {
         label,
         on,
         onClick: () => set({ isoFloor: key, isoRooms: [] }),
-        style:
-          `flex:1;text-align:center;padding:5px 4px;border-radius:6px;cursor:pointer;font:500 11px ${FONT};white-space:nowrap;` +
-          (on
-            ? 'background:#3b6fb0;color:#fff;border:1px solid #3b6fb0;'
-            : 'background:var(--lift-05);color:var(--t3);border:1px solid var(--lift-12);'),
       };
     });
     const floorOrder = ['second', 'main', 'basement'];
@@ -3300,11 +3195,6 @@ export class HouseController extends Component {
                   else cur.add(r.id);
                   return { isoRooms: [...cur], isoFloor: 'all' };
                 }),
-              style:
-                `padding:4px 9px;border-radius:13px;cursor:pointer;font:500 11px ${FONT};` +
-                (on
-                  ? 'background:#3b6fb0;color:#fff;border:1px solid #3b6fb0;'
-                  : 'background:var(--lift-05);color:var(--t3);border:1px solid var(--lift-12);'),
             };
           }),
       }));
@@ -3317,7 +3207,7 @@ export class HouseController extends Component {
     const closeIso = () => set({ isoPanel: false });
     const showIsoPanel = !!S.isoPanel;
     const isoCountLabel = isoActive
-      ? `Showing ${isoVisCount} of ${isoTotal} rooms · lists stay complete`
+      ? `${isoVisCount} of ${isoTotal} rooms shown · lists stay complete`
       : `Showing all ${isoTotal} rooms`;
     const isoWhat = isoRooms.length
       ? isoRooms.length === 1
@@ -3328,7 +3218,6 @@ export class HouseController extends Component {
         : '';
     const isoTopLabel = isoActive ? `Isolate · ${isoWhat}` : 'Isolate';
     const isoOn = isoActive || S.isoPanel;
-    const isoBtnTopStyle = `pointer-events:auto;padding:7px 12px;border-radius:8px;font:500 12px ${FONT};cursor:pointer;user-select:none;white-space:nowrap;border:1px solid ${isoOn ? 'var(--acc-border)' : 'var(--lift-10)'};background:${isoOn ? 'var(--acc-bg)' : 'transparent'};color:${isoOn ? 'var(--acc-text)' : 'var(--t2)'}`;
 
     // ---- announcements ----
     const selectionAnnounce = isOverview
@@ -3545,19 +3434,12 @@ export class HouseController extends Component {
       accent,
       light,
       nav,
-      navLabelStyle,
-      topbarStyle,
-      railStyle,
       listPanelStyle,
       detailPanelStyle,
-      idBoxStyle,
-      idSubStyle,
       headerSub,
-      searchWrapStyle,
-      searchInputStyle,
       searchPlaceholder,
       searchOpen,
-      controlsWrapStyle,
+      searchFocus: !!S.searchFocus,
       q,
       onSearch,
       onSearchFocus,
@@ -3583,10 +3465,6 @@ export class HouseController extends Component {
       showAllResults,
       searchSuggest,
       searchAnnounce,
-      resultsStyle,
-      stageGrad: baseGrad,
-      tintGrad,
-      tintColor: this.hexA(accent, light ? 0.13 : 0.2),
       panelsHidden: S.leftHidden && S.rightHidden,
       togglePanels: () =>
         set({
@@ -3628,22 +3506,14 @@ export class HouseController extends Component {
       closeViewOpts: () => set({ viewOptsOpen: false }),
       viewOpts,
       zoomPct,
-      zoomBarStyle,
-      zoomBtnStyle,
-      zoomPctStyle,
-      viewOptsBtnStyle,
       isoPanelStyle,
       legendPanelStyle,
       leftHidden,
       rightHidden,
       toggleLeft,
       toggleRight,
-      leftTabStyle: narrow
-        ? 'display:none'
-        : `position:absolute;top:50%;margin-top:-32px;z-index:20;cursor:pointer;left:${L.leftPx}px;transition:left .28s cubic-bezier(0.4,0,0.2,1);width:20px;height:64px;background:var(--tab);border:1px solid var(--lift-08);border-left:none;border-radius:0 8px 8px 0;display:flex;align-items:center;justify-content:center;color:var(--t3)`,
-      rightTabStyle: narrow
-        ? 'display:none'
-        : `position:absolute;top:50%;margin-top:-32px;z-index:20;cursor:pointer;right:${L.rightPx - 1}px;transition:right .28s cubic-bezier(0.4,0,0.2,1);width:20px;height:64px;background:var(--tab);border:1px solid var(--lift-08);border-right:none;border-radius:8px 0 0 8px;display:flex;align-items:center;justify-content:center;color:var(--t3)`,
+      leftTabStyle: `left:${L.leftPx - 17}px`,
+      rightTabStyle: `right:${L.rightPx - 17}px`,
       isoFloors,
       isoRoomGroups,
       isoClear,
@@ -3653,16 +3523,14 @@ export class HouseController extends Component {
       showIsoPanel,
       isoCountLabel,
       isoTopLabel,
-      isoBtnTopStyle,
+      isoOn,
       themeBtn: {
         onClick: () => this.setTheme(light ? 'dark' : 'light'),
         isLight: light,
         title: light ? 'Switch to dark theme' : 'Switch to light theme',
-        style: `flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;user-select:none;background:var(--lift-06);border:1px solid var(--lift-12);color:var(--t2);transition:background .15s`,
       },
       helpBtn: {
         onClick: () => set({ helpOpen: true }),
-        style: `flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;user-select:none;background:var(--lift-06);border:1px solid var(--lift-12);color:var(--t2);transition:background .15s`,
       },
       helpOpen: !!S.helpOpen,
       closeHelp: () => set({ helpOpen: false }),
@@ -3670,12 +3538,10 @@ export class HouseController extends Component {
       setShortcuts: this.setShortcuts,
       showPrompt,
       promptStyle,
-      promptInnerStyle,
       promptText,
       showHint,
       hintText,
       dismissHint: this.dismissHint,
-      logoMarkStyle: `width:18px;height:18px;border:1.5px solid ${accent};box-shadow:0 0 14px ${this.hexA(accent, 0.5)},inset 0 0 6px ${this.hexA(accent, 0.3)};transform:rotate(45deg);flex-shrink:0;transition:border-color .3s,box-shadow .3s`,
       showLegend: S.legend,
       legendTitle,
       legendItems,

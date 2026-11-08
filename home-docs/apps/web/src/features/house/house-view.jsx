@@ -1,5 +1,4 @@
 import { memo } from 'react';
-import { css } from '../../lib/css';
 import { StageBackground } from './stage-background';
 import { StageGrid } from './stage-grid';
 import { HouseStage } from './house-stage';
@@ -60,9 +59,9 @@ export function HouseView({ view, scene }) {
         data-dragging={scene.dragging ? 'true' : undefined}
         data-narrow={view.narrow ? 'true' : undefined}
         data-intro={view.intro ? 'true' : undefined}
-        style={css(
-          "position:relative;height:100%;width:100%;overflow:hidden;background:var(--bg);font-family:'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased",
-        )}
+        className="app"
+        data-mode={view.mode}
+        style={{ '--accent': view.accent }}
       >
         <a className="skip-link" href="#house-stage">
           Skip to the house model
