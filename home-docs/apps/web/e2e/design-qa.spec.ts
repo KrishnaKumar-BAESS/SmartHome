@@ -390,3 +390,28 @@ test('help shortcut descriptions keep a readable width on phones', async ({
   expect(widths.length).toBeGreaterThan(3);
   expect(Math.min(...widths)).toBeGreaterThan(0.9);
 });
+
+test('the search placeholder fits its field from tablet to desktop widths', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Phones use the one-word placeholder.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  for (const width of [768, 834, 899, 900, 1024, 1180, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect
+      .poll(
+        () =>
+          page.locator('.search-input').evaluate((input: HTMLInputElement) => {
+            const ctx = document.createElement('canvas').getContext('2d')!;
+            ctx.font = getComputedStyle(input).font;
+            return (
+              ctx.measureText(input.placeholder).width <= input.clientWidth
+            );
+          }),
+        { message: `placeholder fits at ${width}px` },
+      )
+      .toBe(true);
+  }
+});

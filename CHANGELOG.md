@@ -53,6 +53,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- The search placeholder shortens on tablet-width windows (under 900 px) and ellipsizes instead of clipping mid-word into the ⌘K hint.
 - On phones the help sheet stacks each control above its effect, so descriptions use the full width instead of a narrow wrapped column.
 - Truncated list and search labels show their full text in a tooltip on mouse hover; tooltips wrap long text within their 260 px width instead of overflowing.
 - Overview names the source of each attention count: "upkeep replacements due" in the alert card and "light fixture records" above the fixture list, so the two different totals no longer read as a contradiction.

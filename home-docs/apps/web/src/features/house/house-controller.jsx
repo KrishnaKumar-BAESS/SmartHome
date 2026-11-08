@@ -2141,9 +2141,12 @@ export class HouseController extends Component {
         ? `left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));height:${S.sheetFull ? `calc(100% - ${L.topPx + 16}px - env(safe-area-inset-top) - env(safe-area-inset-bottom))` : `${L.sheetH}px`};z-index:${S.sheetFull ? 37 : 19}`
         : `right:${G}px;top:${L.topPx}px;bottom:${G}px;width:${L.detW}px;z-index:18`) +
       (S.rightHidden ? `;transform:${hideRight}` : '');
+    // The search field shrinks with the window; keep its hint whole.
     const searchPlaceholder = narrow
       ? 'Search'
-      : 'Search rooms, circuits, lights, devices…';
+      : (S.vw || 1280) < 900
+        ? 'Search rooms, devices…'
+        : 'Search rooms, circuits, lights, devices…';
 
     // ---- shared dashboard data ----
     const due = this.bulbs.filter((b) => b.st !== 'ok');
