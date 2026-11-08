@@ -11,6 +11,7 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
+- Make home-docs installable on phone and tablet home screens: a web app manifest, standard, maskable and Apple touch icons under `assets/`, and standalone display; the host serves `.webmanifest` as `application/manifest+json`.
 - Show the running home-docs build in the UI: the version and commit (marked `-dirty` for uncommitted builds) beside the brand (commit only on tablets; click to copy), at the foot of View options and the help sheet with the build time, and in the print header.
 - Add `e2e/design-qa.spec.ts`: measured WCAG AA contrast for derived tones and model text in both themes, an 11 px text floor, 40 px coarse-pointer touch targets, and no overlapping panel-header items at 1024 px, no overlapping model labels, and model translucency that survives entrance fades.
 - Add a View options **Scroll gesture** setting (Auto, Pan, Zoom) that overrides trackpad/mouse detection.

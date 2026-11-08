@@ -22,6 +22,7 @@ export function createHouseServer(options: {
     '.svg': 'image/svg+xml',
     '.png': 'image/png',
     '.ico': 'image/x-icon',
+    '.webmanifest': 'application/manifest+json',
   };
   return createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
