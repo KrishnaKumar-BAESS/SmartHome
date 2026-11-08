@@ -415,3 +415,27 @@ test('the search placeholder fits its field from tablet to desktop widths', asyn
       .toBe(true);
   }
 });
+
+test('printed inventory keeps short columns on one line', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Print layout is device-independent.');
+  await page.goto('/');
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('.print-only')).toBeVisible();
+  const wrapped = await page.locator('.print-only td.nw').evaluateAll((cells) =>
+    cells
+      .filter((td) => {
+        const range = document.createRange();
+        range.selectNodeContents(td);
+        const tops = new Set(
+          [...range.getClientRects()].map((r) => Math.round(r.top)),
+        );
+        return tops.size > 1;
+      })
+      .map((td) => td.textContent),
+  );
+  expect(wrapped).toEqual([]);
+  expect(await page.locator('.print-only td.nw').count()).toBeGreaterThan(50);
+});

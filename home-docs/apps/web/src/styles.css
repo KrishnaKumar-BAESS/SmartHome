@@ -3367,20 +3367,35 @@ main[data-dragging='true'] #house-stage svg > * {
   .print-only table {
     width: 100%;
     border-collapse: collapse;
-    margin: 12px 0 18px;
+    margin: 6px 0 20px;
     page-break-inside: auto;
+    font-variant-numeric: tabular-nums;
   }
   .print-only caption {
     text-align: left;
-    font-weight: 600;
-    padding: 4px 0;
+    font-size: 12px;
+    font-weight: 650;
+    padding: 0 0 6px;
+    break-after: avoid;
   }
   .print-only th,
   .print-only td {
-    border: 1px solid #888;
-    padding: 3px 5px;
+    border: 0;
+    border-bottom: 0.5pt solid #c9ced4;
+    padding: 4px 10px 4px 0;
     text-align: left;
     vertical-align: top;
+  }
+  .print-only th {
+    border-bottom: 1pt solid #1b1f24;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #4a525c;
+  }
+  .print-only .nw {
+    white-space: nowrap;
   }
   .print-only tr {
     page-break-inside: avoid;

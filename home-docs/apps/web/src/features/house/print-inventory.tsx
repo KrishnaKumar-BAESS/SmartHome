@@ -35,13 +35,18 @@ function Table({
   head: string[];
   rows: Array<Array<string | number>>;
 }) {
+  // Short columns (codes, amps, dates, statuses) stay on one line on paper.
+  const short = head.map(
+    (h, j) =>
+      h.length <= 14 && rows.every((row) => String(row[j] ?? '').length <= 14),
+  );
   return (
     <table>
       <caption>{caption}</caption>
       <thead>
         <tr>
-          {head.map((h) => (
-            <th key={h} scope="col">
+          {head.map((h, j) => (
+            <th key={h} scope="col" className={short[j] ? 'nw' : undefined}>
               {h}
             </th>
           ))}
@@ -51,7 +56,9 @@ function Table({
         {rows.map((r, i) => (
           <tr key={i}>
             {r.map((c, j) => (
-              <td key={j}>{c}</td>
+              <td key={j} className={short[j] ? 'nw' : undefined}>
+                {c}
+              </td>
             ))}
           </tr>
         ))}
