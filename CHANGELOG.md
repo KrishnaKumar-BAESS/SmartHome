@@ -53,6 +53,8 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- Overview names the source of each attention count: "upkeep replacements due" in the alert card and "light fixture records" above the fixture list, so the two different totals no longer read as a contradiction.
+
 - Rebuild the home-docs interface on one design system: colour, radius, elevation and motion tokens in `styles.css`, one hex palette (`palette.ts`), and class-based primitives (buttons, chips, segmented controls, list rows, key-value cards, callouts, badges, switches) in place of inline style strings. Each view has its own accent, used for the brand mark, rail indicator, stage glow, selection and focus.
 - Model: world-lit walls, distance fade, floor plates under separated floors with label leaders, collision-free room labels, accent halos and named callouts for selections, quieter unselected camera cones, legible badges and panel codes, and isolation zooms in at most 1.6× the whole-house fit. Overlay fade-ins now end at each element's own opacity, so marker halos and selection glows keep their intended translucency.
 - Panels: default content when nothing is selected (breaker-panel cards, fixture health), overview composition bars, exception-only row badges, stacked long values, scroll-edge fades, merged duplicate alerts, a single live-cameras entry, and headers that wrap cleanly at compact widths.

@@ -3988,7 +3988,7 @@ export class HouseController extends Component {
       needs,
       alertText,
       alert: {
-        title: `${due.length} fixtures need attention`,
+        title: `${due.length} light fixture records`,
         sub: `${this.bulbs.filter((b) => b.st === 'overdue').length} overdue · ${this.bulbs.filter((b) => b.st === 'soon').length} due soon`,
       },
       roomDet,
@@ -4050,7 +4050,7 @@ export class HouseController extends Component {
       upDet,
       upAlertText,
       upAlert: {
-        title: `${upDue} replacements due`,
+        title: `${upDue} upkeep replacements due`,
         sub: `${upOverdue} overdue · ${upSoon} due soon`,
       },
       goClimate,
