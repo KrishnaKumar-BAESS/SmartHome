@@ -274,6 +274,7 @@ export function renderScene(house, opt = {}) {
       rid: r.id,
       room: r,
       isTop: true,
+      pts: tp,
     });
   });
   faces.sort((a, b) => b.depth - a.depth);
@@ -302,7 +303,7 @@ export function renderScene(house, opt = {}) {
             width: '190%',
             height: '190%',
           },
-          RE('feGaussianBlur', { stdDeviation: 13 }),
+          RE('feGaussianBlur', { stdDeviation: light ? 9 : 13 }),
         ),
       ),
     );
@@ -310,7 +311,7 @@ export function renderScene(house, opt = {}) {
       RE('path', {
         key: 'ground',
         d: polyD(gPts),
-        fill: light ? 'rgba(35,50,65,0.2)' : 'rgba(0,0,0,0.4)',
+        fill: light ? 'rgba(35,50,65,0.11)' : 'rgba(0,0,0,0.4)',
         filter: 'url(#groundShadow)',
         style: { pointerEvents: 'none' },
       }),
@@ -637,6 +638,23 @@ export function renderScene(house, opt = {}) {
         'g',
         { key: `floor-${f}`, className: 'marker', ...flCk },
         RE('title', null, `Isolate ${label}`),
+        // Hairline leader from the pill to the floor's nearest slab corner.
+        RE('line', {
+          x1: (lx + 10).toFixed(1),
+          y1: (ly - fs * 0.175).toFixed(1),
+          x2: minSx.toFixed(1),
+          y2: minSy.toFixed(1),
+          stroke: light ? 'rgba(16,24,40,0.22)' : 'rgba(255,255,255,0.22)',
+          strokeWidth: 1,
+          style: { pointerEvents: 'none' },
+        }),
+        RE('circle', {
+          cx: minSx.toFixed(1),
+          cy: minSy.toFixed(1),
+          r: 2.2,
+          fill: light ? 'rgba(16,24,40,0.35)' : 'rgba(255,255,255,0.4)',
+          style: { pointerEvents: 'none' },
+        }),
         RE('rect', {
           x: (lx - labelW - 10).toFixed(1),
           y: (ly - fs * 1.05).toFixed(1),
@@ -1346,6 +1364,22 @@ export function renderScene(house, opt = {}) {
   if (showRoomLabels) {
     const fs = 11 * ms;
     const placed = [...reserved];
+    const hiTops = faces
+      .filter((f) => f.isTop && isHi(f.rid))
+      .map((f) => f.pts);
+    const inPoly = (poly, x, y) => {
+      let inside = false;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const a = poly[i],
+          b = poly[j];
+        if (
+          a.sy > y !== b.sy > y &&
+          x < ((b.sx - a.sx) * (y - a.sy)) / (b.sy - a.sy) + a.sx
+        )
+          inside = !inside;
+      }
+      return inside;
+    };
     const hits = (b) =>
       placed.some(
         (o) => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0,
@@ -1377,6 +1411,20 @@ export function renderScene(house, opt = {}) {
           y1: c.sy + fs * 0.3,
         };
         if (!sel && hits(box)) return;
+        // Another floor's name must not sit on top of a highlighted room.
+        if (
+          !sel &&
+          hiTops.some((poly) =>
+            [
+              [box.x0, box.y0],
+              [box.x1, box.y0],
+              [box.x0, box.y1],
+              [box.x1, box.y1],
+              [(box.x0 + box.x1) / 2, (box.y0 + box.y1) / 2],
+            ].some(([x, y]) => inPoly(poly, x, y)),
+          )
+        )
+          return;
         placed.push(box);
         els.push(
           RE(

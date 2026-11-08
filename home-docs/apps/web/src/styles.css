@@ -86,9 +86,6 @@
 
   /* the active view's hue (overridden on <main>) */
   --accent: #7b83f6;
-  --lift-06: var(--fill-2);
-  --lift-12: var(--line-2);
-  --t4-soft: rgba(91, 106, 120, 0.14);
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
@@ -128,7 +125,6 @@
     0 30px 70px -24px rgba(0, 0, 0, 0.75), 0 10px 24px -12px rgba(0, 0, 0, 0.5);
   --scrollbar: rgba(255, 255, 255, 0.12);
   --scrollbar-hover: rgba(255, 255, 255, 0.24);
-  --t4-soft: rgba(142, 153, 166, 0.16);
 }
 /* Derived accent tokens. Custom properties resolve var() where they are
    declared, so they are re-declared on .app, where <main> sets --accent. */
@@ -581,7 +577,6 @@ html.theme-transition * {
 }
 
 /* ghost icon button — the one square button shape in the app */
-.icon-button,
 .icon-btn {
   appearance: none;
   width: var(--hit-sm);
@@ -614,7 +609,6 @@ html.theme-transition * {
   box-shadow: inset 0 0 0 1px var(--acc-border);
 }
 @media (hover: hover) {
-  .icon-button:hover:not(:disabled),
   .icon-btn:hover:not(:disabled) {
     background: var(--hover);
     color: var(--t1);
@@ -667,15 +661,6 @@ html.theme-transition * {
   color: color-mix(in oklab, var(--c) var(--mix-text), var(--t1));
   font-weight: 600;
 }
-.btn--solid {
-  --c: var(--accent);
-  background: color-mix(in oklab, var(--c) 92%, #000);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 8px 18px -8px color-mix(in oklab, var(--c) 80%, transparent);
-  color: #fff;
-  font-weight: 600;
-}
 @media (hover: hover) {
   .btn:hover:not(:disabled) {
     background: var(--press);
@@ -693,10 +678,6 @@ html.theme-transition * {
   .btn--tone:hover:not(:disabled) {
     background: color-mix(in oklab, var(--c) 20%, transparent);
     color: color-mix(in oklab, var(--c) var(--mix-text), var(--t1));
-  }
-  .btn--solid:hover:not(:disabled) {
-    background: var(--c);
-    color: #fff;
   }
 }
 
@@ -739,11 +720,6 @@ html.theme-transition * {
   background: color-mix(in oklab, var(--c) 14%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 42%, transparent);
   color: color-mix(in oklab, var(--c) var(--mix-text), var(--t1));
-}
-.row-button {
-  appearance: none;
-  border: 0;
-  width: 100%;
 }
 
 /* pill filters */
@@ -1150,6 +1126,21 @@ kbd {
 }
 .popover .chips {
   padding: 2px 8px 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    #000 calc(100% - 24px),
+    transparent
+  );
+  mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
+}
+.popover .chips::-webkit-scrollbar {
+  display: none;
+}
+.popover .chip {
+  flex-shrink: 0;
 }
 .result {
   display: flex;
@@ -1474,7 +1465,7 @@ kbd {
 }
 .panel-body {
   overflow: auto;
-  padding: 10px 10px 16px;
+  padding: 10px 10px 40px;
   overscroll-behavior: contain;
   flex: 1;
   min-height: 0;
@@ -1536,7 +1527,7 @@ kbd {
   }
 }
 .panel-inner {
-  padding: 18px 18px 24px;
+  padding: 18px 18px 44px;
 }
 .panel-head .chips,
 .panel-head .metrics,
@@ -1782,15 +1773,6 @@ kbd {
   margin-top: 14px;
   flex-wrap: wrap;
 }
-.det-tags {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-.det-block {
-  margin-top: 14px;
-}
 
 /* key / value list */
 .kv {
@@ -1976,6 +1958,99 @@ button.callout {
   opacity: 0.8;
 }
 
+/* default detail content: breaker panel cards and stacked bars */
+.panel-card {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 8px;
+  border-radius: var(--r-lg);
+  background: var(--fill);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  animation: contentIn var(--dur-4) var(--ease-out) both;
+}
+.panel-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.panel-card-code {
+  font: 600 12px var(--mono);
+}
+.panel-card .chev {
+  color: var(--t5);
+  transition: transform var(--dur-2) var(--ease-out);
+}
+@media (hover: hover) {
+  .panel-card:hover {
+    background: var(--hover);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+  }
+  .panel-card:hover .chev {
+    transform: translateX(2px);
+    color: var(--t2);
+  }
+}
+.stack-bar {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+.stack-bar--lg {
+  height: 10px;
+  margin-top: 12px;
+}
+.stack-bar > span {
+  --c: var(--t4);
+  flex-basis: 0;
+  background: var(--c);
+  transform-origin: left center;
+  animation: barGrow 0.9s var(--ease-out) both;
+}
+.panel-card-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 10px;
+  font: 500 11.5px var(--font);
+  color: var(--t4);
+}
+.panel-card .panel-card-legend {
+  margin-top: 0;
+}
+.panel-card-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.metric-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.metric-big {
+  font: 600 28px/1 var(--font);
+  letter-spacing: -0.03em;
+  color: var(--t1);
+}
+.link-row--more {
+  justify-content: space-between;
+  color: var(--acc-text);
+  font: 500 12.5px var(--font);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 11px 11px;
+}
+
 /* empty state */
 .empty {
   display: flex;
@@ -1986,21 +2061,6 @@ button.callout {
   padding: 48px 18px;
   color: var(--t4);
   font: 400 13px/1.5 var(--font);
-}
-.empty-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  color: var(--acc-text);
-  background: var(--acc-bg);
-  box-shadow: inset 0 0 0 1px var(--acc-border);
-  animation: pop var(--dur-4) var(--ease-spring) both;
-}
-.empty-icon svg {
-  width: 22px;
-  height: 22px;
 }
 .empty p {
   margin: 0;
@@ -2280,43 +2340,6 @@ button.callout {
 }
 .dock-bar [hidden] {
   display: none;
-}
-.dock-panels {
-  display: flex;
-  border-bottom: 1px solid var(--line);
-}
-.panel-toggle {
-  flex: 1;
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: var(--t2);
-  min-height: 42px;
-  padding: 0 12px;
-  cursor: pointer;
-  font: 500 12.5px var(--font);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-.panel-toggle[aria-pressed='true'] {
-  color: var(--acc-text);
-  background: color-mix(in oklab, var(--accent) 8%, transparent);
-}
-.panel-toggle + .panel-toggle {
-  border-left: 1px solid var(--line);
-}
-.dock-drawer {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 12px 10px 10px;
-  border-bottom: 1px solid var(--line);
-  overflow: auto;
-  width: 280px;
-  max-width: calc(100vw - 32px);
 }
 .dock-drawer .section-label {
   margin: 4px 4px 7px;
@@ -3040,6 +3063,46 @@ button.callout {
   .camera-review {
     padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
   }
+  .camera-review .dialog-head {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .camera-review .dialog-head > div:first-child {
+    flex-basis: 100%;
+  }
+  .camera-review .dialog-head h2 {
+    font-size: 15px;
+  }
+  .camera-review .dialog-head-actions {
+    width: 100%;
+  }
+  .camera-review .dialog-head-actions .dialog-button:last-child {
+    margin-left: auto;
+  }
+  .feed--big .feed-event {
+    bottom: 44px;
+    font-size: 11px;
+    padding: 5px 12px;
+  }
+}
+.feed--big .feed-mark {
+  font-size: clamp(20px, 5cqw, 42px);
+}
+.feed-live,
+.feed-name,
+.feed-dim {
+  white-space: nowrap;
+}
+.hist-tile .feed-dim {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.feed-event {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Room faces ease between selection states; geometry itself never animates. */
@@ -3109,7 +3172,6 @@ main[data-dragging='true'] .face {
 
 @media (forced-colors: active) {
   .icon-btn,
-  .icon-button,
   .chip,
   .chip-button,
   .btn,

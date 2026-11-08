@@ -143,17 +143,6 @@ function Badge({ label, color, plain }) {
   );
 }
 
-function Empty({ icon, text }) {
-  return (
-    <div className="empty">
-      <span className="empty-icon" aria-hidden="true">
-        <ModeIcon mode={icon} size={22} />
-      </span>
-      <p>{text}</p>
-    </div>
-  );
-}
-
 function DemoFeed({ det, big }) {
   return (
     <div
@@ -321,23 +310,6 @@ export function SystemDetails({ view }) {
               </h2>
               <button
                 type="button"
-                onClick={view.goLighting}
-                className="ia callout"
-                style={{ '--c': WARN }}
-              >
-                <span
-                  className="dot dot--pulse"
-                  style={{ '--c': WARN }}
-                  aria-hidden="true"
-                ></span>
-                <span className="grow">
-                  <span className="callout-title">{view.alert.title}</span>
-                  <span className="callout-sub">{view.alert.sub}</span>
-                </span>
-                <Icon name="arrowRight" size={13} className="chev" />
-              </button>
-              <button
-                type="button"
                 onClick={view.goUpkeep}
                 className="ia callout"
                 style={{ '--c': STATUS.overdue }}
@@ -354,8 +326,8 @@ export function SystemDetails({ view }) {
                 <Icon name="arrowRight" size={13} className="chev" />
               </button>
               <h3 className="section">
-                Fixtures needing attention
-                <span className="num">{(view.needs ?? []).length}</span>
+                {view.alert.title}
+                <span className="num">{view.alert.sub}</span>
               </h3>
               <div
                 className="links"
@@ -387,6 +359,14 @@ export function SystemDetails({ view }) {
                     </span>
                   </div>
                 ))}
+                <button
+                  type="button"
+                  className="ia link-row link-row--more"
+                  onClick={view.goLighting}
+                >
+                  <span className="row-main">Open in Lighting</span>
+                  <Icon name="arrowRight" size={13} className="chev" />
+                </button>
               </div>
               {view.roomDet ? null : (
                 <Note>Select a room in the model to see what it holds.</Note>
@@ -397,15 +377,80 @@ export function SystemDetails({ view }) {
           {view.isElectrical ? (
             <>
               {view.noSel ? (
-                <Empty
-                  icon="electrical"
-                  text="Select a circuit to light up the rooms it serves."
-                />
-              ) : null}
-              {view.noSel ? (
-                <Note style={{ justifyContent: 'center' }}>
-                  Drawn paths are schematic associations, not wiring routes.
-                </Note>
+                <>
+                  <h2 className="panel-title">Breaker panels</h2>
+                  <div className="det-sub" style={{ marginBottom: 14 }}>
+                    Select a circuit to light up the rooms it serves.
+                  </div>
+                  {(view.panelCards ?? []).map((pc, i) => (
+                    <button
+                      key={pc.id}
+                      type="button"
+                      className="ia panel-card"
+                      style={{ animationDelay: `${i * 60}ms` }}
+                      onClick={pc.open}
+                      aria-label={`Open ${pc.name}`}
+                    >
+                      <span className="panel-card-head">
+                        <span
+                          className="det-icon"
+                          style={{
+                            '--c': MODE_ACCENT.electrical,
+                            width: 34,
+                            height: 34,
+                            borderRadius: 10,
+                          }}
+                        >
+                          <span className="panel-card-code">{pc.short}</span>
+                        </span>
+                        <span className="row-main">
+                          <span
+                            className="row-title"
+                            style={{ display: 'block' }}
+                          >
+                            {pc.name}
+                          </span>
+                          <span
+                            className="row-sub"
+                            style={{ display: 'block' }}
+                          >
+                            {pc.loc}
+                          </span>
+                        </span>
+                        <Icon name="arrowRight" size={13} className="chev" />
+                      </span>
+                      <span className="stack-bar" aria-hidden="true">
+                        {pc.byType
+                          .filter((t) => t.count)
+                          .map((t) => (
+                            <span
+                              key={t.type}
+                              style={{ '--c': t.color, flexGrow: t.count }}
+                            />
+                          ))}
+                      </span>
+                      <span className="panel-card-legend">
+                        {pc.byType
+                          .filter((t) => t.count)
+                          .map((t) => (
+                            <span key={t.type}>
+                              <span
+                                className="dot dot--sq"
+                                style={{ '--c': t.color, width: 7, height: 7 }}
+                              ></span>
+                              {`${t.type} ${t.count}`}
+                            </span>
+                          ))}
+                        <span className="num" style={{ marginLeft: 'auto' }}>
+                          {`${pc.documented} of ${pc.total} spaces`}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                  <Note>
+                    Drawn paths are schematic associations, not wiring routes.
+                  </Note>
+                </>
               ) : null}
               {view.panelDet ? (
                 <>
@@ -568,10 +613,80 @@ export function SystemDetails({ view }) {
           {view.isLighting ? (
             <>
               {view.noBulb ? (
-                <Empty
-                  icon="lighting"
-                  text="Select a fixture to pin its room and see its specification."
-                />
+                <>
+                  <h2 className="panel-title">Fixture health</h2>
+                  <div className="det-sub" style={{ marginBottom: 14 }}>
+                    Select a fixture to pin its room and see its specification.
+                  </div>
+                  <div className="kv" style={{ padding: 14 }}>
+                    <div className="metric-row">
+                      <span className="metric-big num">{view.lsum[0].val}</span>
+                      <span className="det-sub" style={{ margin: 0 }}>
+                        fixture records
+                      </span>
+                    </div>
+                    <span
+                      className="stack-bar stack-bar--lg"
+                      aria-hidden="true"
+                    >
+                      {view.lsum.slice(1).map((m) => (
+                        <span
+                          key={m.label}
+                          style={{ '--c': m.color, flexGrow: Number(m.val) }}
+                        />
+                      ))}
+                    </span>
+                    <span className="panel-card-legend">
+                      {view.lsum.slice(1).map((m) => (
+                        <span key={m.label}>
+                          <span
+                            className="dot"
+                            style={{ '--c': m.color, width: 7, height: 7 }}
+                          ></span>
+                          {`${m.label} ${m.val}`}
+                        </span>
+                      ))}
+                    </span>
+                  </div>
+                  <h3 className="section">Most urgent</h3>
+                  <div className="links">
+                    {(view.lightingUrgent ?? []).map((b) => (
+                      <button
+                        key={b.id}
+                        type="button"
+                        className="ia link-row"
+                        onClick={b.onClick}
+                        aria-label={`${b.room}, ${b.fixture}, ${b.statusLabel}`}
+                      >
+                        <span
+                          className="dot"
+                          style={{ '--c': b.color }}
+                          aria-hidden="true"
+                        ></span>
+                        <span className="row-main">
+                          <span
+                            className="row-title"
+                            style={{ display: 'block' }}
+                          >
+                            {b.room}
+                          </span>
+                          <span
+                            className="row-sub"
+                            style={{ display: 'block' }}
+                          >
+                            {b.fixture}
+                          </span>
+                        </span>
+                        <span className="tag" style={{ '--c': b.color }}>
+                          {b.statusLabel}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <Note>
+                    {`Mock statuses (${view.snapshot} snapshot), not computed from today.`}
+                  </Note>
+                </>
               ) : null}
               {view.hasBulb ? (
                 <>

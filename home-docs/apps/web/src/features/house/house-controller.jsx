@@ -133,7 +133,6 @@ export class HouseController extends Component {
   panelPos = panelPos;
   nodeRoomId = nodeRoomId;
   zones = zones;
-  SOUND = MODE_ACCENT.sound;
 
   constructor(props) {
     super(props);
@@ -1941,9 +1940,6 @@ export class HouseController extends Component {
       { label: 'Finished basement', val: '~1,940 sq ft' },
       { label: 'Inventory snapshot', val: INVENTORY_SNAPSHOT },
     ];
-    const headerSub = SHOW_ADDRESS
-      ? '8502 Forrest St · April 147'
-      : 'April 147 · house atlas';
 
     // ---- selected room (overview) ----
     const selRoomRec = S.selRoom ? this.roomById(S.selRoom) : null;
@@ -2069,6 +2065,24 @@ export class HouseController extends Component {
         relatedRoom: served[0]?.name,
       };
     }
+    // Default Electrical details: one summary card per breaker panel.
+    const panelCards = this.boxes.map((bx) => {
+      const docs = this.circuits.filter((c) => c.box === bx.id);
+      return {
+        id: bx.id,
+        short: bx.short,
+        name: bx.name,
+        loc: bx.loc,
+        documented: docs.length,
+        total: bx.total,
+        byType: ['Lighting', 'Outlets', 'Appliance', 'Mixed'].map((t) => ({
+          type: t,
+          color: this.typeColor(t),
+          count: docs.filter((c) => c.type === t).length,
+        })),
+        open: () => set({ selPanel: bx.id, selCirc: null }),
+      };
+    });
     const panelDet = selPanelRec
       ? {
           id: selPanelRec.id,
@@ -2173,6 +2187,20 @@ export class HouseController extends Component {
       onClick: () => set({ bulb: b.id }),
     }));
     const lcount = `${filtered.length} of ${this.bulbs.length}`;
+    // Default Lighting details: the most urgent fixture records.
+    const urgentRank = { overdue: 0, soon: 1 };
+    const lightingUrgent = this.bulbs
+      .filter((b) => b.st === 'overdue' || b.st === 'soon')
+      .sort((a, b) => urgentRank[a.st] - urgentRank[b.st])
+      .slice(0, 3)
+      .map((b) => ({
+        id: b.id,
+        room: b.room,
+        fixture: b.fixture,
+        statusLabel: this.stLabel(b.st),
+        color: this.stColor(b.st),
+        onClick: () => set({ bulb: b.id }),
+      }));
     const lroomLabel = lroomOpts.find((o) => o.val === lroom)?.label || '';
     const sb = S.bulb ? this.bulbs.find((b) => b.id === S.bulb) : null;
     let bd = null;
@@ -3091,23 +3119,18 @@ export class HouseController extends Component {
         onClick: () => this.setExplode('stacked'),
       },
     ];
-    const voRow = () => '';
-    const voToggle = () => '';
     const viewOpts = {
       resetRow: {
-        style: voRow(false),
         onClick: this.resetView,
         label: 'Reset orientation',
         hint: 'Angle, zoom, pan',
       },
       resetAllRow: {
-        style: voRow(false),
         onClick: this.resetAll,
         label: 'Reset everything',
         hint: '+ isolation, floors',
       },
       fitRow: {
-        style: voRow(false),
         onClick: this.fitVisible,
         label: 'Fit visible',
         hint: '100%, centred',
@@ -3133,31 +3156,23 @@ export class HouseController extends Component {
       presetNote:
         'Model +Y faces south; presets use the prototype axes, not a surveyed scale.',
       autoRow: {
-        style: voRow(autoRotate, true),
         onClick: this.toggleAuto,
         on: autoRotate,
-        toggle: voToggle(autoRotate, true),
         label: 'Auto-spin',
       },
       labelsRow: {
-        style: voRow(labelsOn),
         onClick: toggleLabels,
         on: labelsOn,
-        toggle: voToggle(labelsOn),
         label: 'Room labels',
       },
       legendRow: {
-        style: voRow(!!S.legend),
         onClick: toggleLegend,
         on: !!S.legend,
-        toggle: voToggle(!!S.legend),
         label: 'Legend',
       },
       shortcutsRow: {
-        style: voRow(!!S.shortcuts),
         onClick: () => this.setShortcuts(!S.shortcuts),
         on: !!S.shortcuts,
-        toggle: voToggle(!!S.shortcuts),
         label: 'Single-key shortcuts',
       },
       theme: ['system', 'light', 'dark'].map((t) => ({
@@ -3492,7 +3507,6 @@ export class HouseController extends Component {
       nav,
       listPanelStyle,
       detailPanelStyle,
-      headerSub,
       searchPlaceholder,
       searchOpen,
       searchFocus: !!S.searchFocus,
@@ -3521,12 +3535,6 @@ export class HouseController extends Component {
       showAllResults,
       searchSuggest,
       searchAnnounce,
-      panelsHidden: S.leftHidden && S.rightHidden,
-      togglePanels: () =>
-        set({
-          leftHidden: !(S.leftHidden && S.rightHidden),
-          rightHidden: !(S.leftHidden && S.rightHidden),
-        }),
       isOverview,
       isElectrical,
       isLighting,
@@ -3619,6 +3627,8 @@ export class HouseController extends Component {
       noSel: !selC && !panelDet,
       circDet,
       panelDet,
+      panelCards,
+      lightingUrgent,
       lsum,
       lfilters,
       lroom,
