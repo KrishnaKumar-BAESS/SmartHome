@@ -3194,8 +3194,11 @@ export class HouseController extends Component {
     }
 
     // ---- prompt / hint / legend ----
+    // Phones skip the stage prompt: the details sheet already says it, and
+    // the pill would cover the top of the small model.
     const showPrompt =
-      (isElectrical && !selC && !selPanelRec) || (isLighting && !sb);
+      !narrow &&
+      ((isElectrical && !selC && !selPanelRec) || (isLighting && !sb));
     const promptTop = narrow ? L.topPx + 10 : L.topPx + 4;
     const promptStyle = `top:${promptTop}px;left:${L.cx}px;max-width:calc(${L.freeW}px - 24px)`;
     const promptText = isElectrical
