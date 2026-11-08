@@ -416,6 +416,9 @@ export function renderScene(house, opt = {}) {
 
   // Screen boxes that room labels must not cover (panel markers).
   const reserved = [];
+  // Name callouts for the selected item, drawn above everything else.
+  const callouts = [];
+  const floorBoxes = [];
 
   // ---- breaker panels (electrical infra) ----
   if (layer === 'overview' || layer === 'electrical') {
@@ -634,6 +637,12 @@ export function renderScene(house, opt = {}) {
           style: { cursor: 'pointer' },
         }
       : {};
+    floorBoxes.push({
+      x0: lx - labelW - 10,
+      x1: lx + 10,
+      y0: ly - fs * 1.05,
+      y1: ly + fs * 0.7,
+    });
     els.push(
       RE(
         'g',
@@ -967,6 +976,8 @@ export function renderScene(house, opt = {}) {
             : '#3a9e93'
           : STATUS.soon;
       const s = (isGw ? 14 : 11) * ms;
+      if (sel)
+        callouts.push({ x: p.x, y: p.y - s / 2 - 6, text: n.name, color: col });
       els.push(
         RE('rect', {
           key: `node-glow-${n.id}`,
@@ -1091,16 +1102,23 @@ export function renderScene(house, opt = {}) {
       const room = roomById(cam.roomId);
       const conflict = room && room.floor !== cam.floor;
       const label = `${cam.name}, ${cam.type} camera, recorded ${cam.status}${conflict ? ', floor mapping unverified' : ''}`;
+      if (sel)
+        callouts.push({
+          x: apex.sx,
+          y: apex.sy - 8 * ms,
+          text: cam.name,
+          color: col,
+        });
       els.push(
         RE(
           'path',
           {
             key: `cone-${cam.id}`,
             d: polyD([apex, ...arc]),
-            fill: house.hexA(col, sel ? 0.24 : 0.12),
+            fill: house.hexA(col, sel ? 0.26 : 0.07),
             stroke: col,
-            strokeWidth: sel ? 1.3 : 0.8,
-            strokeOpacity: sel ? 0.85 : 0.45,
+            strokeWidth: sel ? 1.4 : 0.8,
+            strokeOpacity: sel ? 0.9 : 0.28,
             strokeLinejoin: 'round',
             strokeDasharray: off ? '4 4' : '',
             onClick: opt.onCamClick ? () => opt.onCamClick(cam.id) : undefined,
@@ -1184,6 +1202,13 @@ export function renderScene(house, opt = {}) {
       const col = on ? MODE_ACCENT.climate : STATUS.idle;
       const cx = base.c.sx,
         cy = base.c.sy + 13 * ms;
+      if (sel)
+        callouts.push({
+          x: cx,
+          y: cy - 9 * ms,
+          text: `${sn.name} sensor`,
+          color: MODE_ACCENT.climate,
+        });
       if (sel)
         els.push(
           RE('circle', {
@@ -1305,6 +1330,13 @@ export function renderScene(house, opt = {}) {
       const [rx, ry] = cen2(r.verts);
       const foot = projR(locate.roomId, rx, ry, zt),
         head = projR(locate.roomId, rx, ry, zt + 0.95);
+      if (locate.label)
+        callouts.push({
+          x: head.sx,
+          y: head.sy - 9 * ms,
+          text: locate.label,
+          color: locate.color,
+        });
       els.push(
         RE(
           'g',
@@ -1453,6 +1485,71 @@ export function renderScene(house, opt = {}) {
         );
       });
   }
+
+  // ---- selection callouts: a named pill above the selected item ----
+  callouts.forEach((c, i) => {
+    const fs = 11 * ms;
+    const text = c.text.length > 30 ? `${c.text.slice(0, 29)}…` : c.text;
+    const w = text.length * fs * 0.56 + 30 * ms;
+    const h = fs * 2.1;
+    let x0 = c.x - w / 2;
+    const y0 = c.y - h - 7 * ms;
+    // Slide right of any floor label it would cover; the stem still points
+    // at the item because it is drawn from the pill's nearest edge.
+    floorBoxes.forEach((b) => {
+      if (x0 < b.x1 + 6 && x0 + w > b.x0 && y0 < b.y1 && y0 + h > b.y0)
+        x0 = b.x1 + 6;
+    });
+    const stemX = Math.min(Math.max(c.x, x0 + h / 2), x0 + w - h / 2);
+    els.push(
+      RE(
+        'g',
+        {
+          key: `callout-${i}`,
+          className: 'callout-pin',
+          style: { pointerEvents: 'none' },
+        },
+        RE('path', {
+          d: `M${(stemX - 5 * ms).toFixed(1)},${(y0 + h - 0.5).toFixed(1)} L${c.x.toFixed(1)},${(c.y - 1).toFixed(1)} L${(stemX + 5 * ms).toFixed(1)},${(y0 + h - 0.5).toFixed(1)} Z`,
+          fill: light ? '#ffffff' : '#1c212b',
+        }),
+        RE('rect', {
+          x: x0.toFixed(1),
+          y: y0.toFixed(1),
+          width: w.toFixed(1),
+          height: h.toFixed(1),
+          rx: (h / 2).toFixed(1),
+          fill: light ? '#ffffff' : '#1c212b',
+          stroke: light ? 'rgba(16,24,40,0.12)' : 'rgba(255,255,255,0.12)',
+          strokeWidth: 1,
+          style: {
+            filter: light
+              ? 'drop-shadow(0 4px 10px rgba(16,24,40,0.16))'
+              : 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
+          },
+        }),
+        RE(
+          'text',
+          {
+            x: (x0 + 22 * ms).toFixed(1),
+            y: (y0 + h / 2 + fs * 0.36).toFixed(1),
+            style: {
+              font: `600 ${fs}px 'Inter',system-ui,'Segoe UI',sans-serif`,
+              letterSpacing: '-0.01em',
+              fill: light ? '#0f1722' : '#eef2f7',
+            },
+          },
+          text,
+        ),
+        RE('circle', {
+          cx: (x0 + 13 * ms).toFixed(1),
+          cy: (y0 + h / 2).toFixed(1),
+          r: 3.5 * ms,
+          fill: c.color,
+        }),
+      ),
+    );
+  });
 
   // ---- hovered / focused room name preview ----
   if (S.hoverRoom && opt.onRoomClick) {

@@ -575,7 +575,14 @@ export function SystemList({ view }) {
                     <div className="row-title">{s.name}</div>
                     <div className="row-sub">{s.mount}</div>
                   </div>
-                  <span className="tag tag--plain">{s.badge}</span>
+                  {s.badge === 'PLANNED' ? null : (
+                    <span
+                      className="tag"
+                      style={{ '--c': MODE_ACCENT.climate }}
+                    >
+                      {s.badge}
+                    </span>
+                  )}
                 </Option>
               ))}
             </div>

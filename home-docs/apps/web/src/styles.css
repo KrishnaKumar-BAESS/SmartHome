@@ -3124,6 +3124,12 @@ button.callout {
 main[data-dragging='true'] .face {
   transition: none;
 }
+.callout-pin {
+  animation: fadeIn 0.35s var(--ease-out) both;
+}
+main[data-dragging='true'] .callout-pin rect {
+  filter: none !important;
+}
 .sel-glow {
   animation: fadeIn 0.6s var(--ease-out) both;
 }
