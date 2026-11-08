@@ -505,6 +505,10 @@ export function renderScene(house, opt = {}) {
       if (x0 < b.x1 + 6 && x0 + w > b.x0 && y0 < b.y1 && y0 + h > b.y0)
         x0 = b.x1 + 6;
     });
+    // Keep the pill inside the stage area left free by the side panels.
+    const minX = (L.leftPx || 0) + 8,
+      maxX = (L.vw || 960) - (L.rightPx || 0) - 8 - w;
+    x0 = Math.max(minX, Math.min(x0, maxX));
     return { fs, text, w, h, x0, y0 };
   };
 

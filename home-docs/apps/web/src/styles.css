@@ -1758,6 +1758,13 @@ kbd {
   margin-left: auto;
   font-weight: 500;
 }
+/* Narrow panels: the count drops to its own line instead of both halves
+   wrapping word by word. */
+.section {
+  flex-wrap: wrap;
+  white-space: nowrap;
+  row-gap: 2px;
+}
 
 /* title block in details */
 .det-top {
