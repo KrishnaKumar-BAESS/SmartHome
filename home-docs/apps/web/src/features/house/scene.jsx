@@ -487,6 +487,7 @@ export function renderScene(house, opt = {}) {
   // Name callouts for the selected item, drawn above everything else.
   const callouts = [];
   const floorBoxes = [];
+  const badgeBoxes = [];
   // Geometry of a callout pill, shared by the label pass and the drawing.
   const calloutBox = (c) => {
     const fs = 11 * ms;
@@ -864,6 +865,13 @@ export function renderScene(house, opt = {}) {
     });
   };
   const countBadge = (key, cx, cy, n, col) => {
+    badgeBoxes.push({
+      key,
+      x0: cx - 7 * ms,
+      x1: cx + 7 * ms,
+      y0: cy - 7 * ms,
+      y1: cy + 7 * ms,
+    });
     els.push(
       RE('circle', {
         key: `${key}-badge`,
@@ -1397,8 +1405,9 @@ export function renderScene(house, opt = {}) {
         // the room's records (and their most urgent status) visible.
         if (others.length) {
           const worstOther = worstStatus(others.map((it) => it.status));
-          const bx = ucx + 16 * ms,
-            by = ucy;
+          // Below-right of the pin's foot, clear of the callout above it.
+          const bx = ucx + 14 * ms,
+            by = ucy + 12 * ms;
           countBadge(
             `up-more-${rid}`,
             bx,
@@ -1622,6 +1631,28 @@ export function renderScene(house, opt = {}) {
           ),
         );
       });
+  }
+
+  // Count badges that a callout would cover give way to it.
+  if (callouts.length && badgeBoxes.length) {
+    const covered = new Set();
+    callouts.forEach((c) => {
+      const b = calloutBox(c);
+      badgeBoxes.forEach((g) => {
+        if (g.x0 < b.x0 + b.w && g.x1 > b.x0 && g.y0 < c.y && g.y1 > b.y0)
+          covered.add(g.key);
+      });
+    });
+    if (covered.size)
+      for (let i = els.length - 1; i >= 0; i--) {
+        const k = String(els[i]?.key ?? '');
+        if (
+          [...covered].some(
+            (c) => k === `${c}-badge` || k === `${c}-badge-text`,
+          )
+        )
+          els.splice(i, 1);
+      }
   }
 
   // ---- selection callouts: a named pill above the selected item ----

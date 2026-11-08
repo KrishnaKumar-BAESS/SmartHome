@@ -280,3 +280,58 @@ test('panel header items never overlap at compact widths', async ({
   }
   expect(overlaps).toEqual([]);
 });
+
+test('model labels and callouts never overlap', async ({ page, isMobile }) => {
+  const sizes = isMobile
+    ? [null]
+    : [
+        { width: 1440, height: 900 },
+        { width: 1280, height: 720 },
+        { width: 1024, height: 768 },
+      ];
+  const hits: string[] = [];
+  for (const size of sizes) {
+    if (size) await page.setViewportSize(size);
+    for (const hash of [
+      '#m=overview&s=kitchen_breakfast_room',
+      '#m=electrical&s=m10',
+      '#m=lighting&s=l3',
+      '#m=network&s=n1',
+      '#m=security&s=c5',
+      '#m=climate&s=ts3',
+      '#m=upkeep&s=u6',
+    ]) {
+      await open(page, 'light', hash);
+      for (const h of await page.evaluate(() => {
+        const boxes: { name: string; r: DOMRect }[] = [];
+        for (const t of document.querySelectorAll('#house-stage svg text')) {
+          if (t.closest('.callout-pin')) continue;
+          boxes.push({
+            name: t.textContent ?? '',
+            r: t.getBoundingClientRect(),
+          });
+        }
+        for (const c of document.querySelectorAll(
+          '#house-stage .callout-pin rect',
+        ))
+          boxes.push({
+            name: `callout ${c.parentElement?.textContent}`,
+            r: c.getBoundingClientRect(),
+          });
+        const out: string[] = [];
+        for (let i = 0; i < boxes.length; i++)
+          for (let j = i + 1; j < boxes.length; j++) {
+            const a = boxes[i].r,
+              b = boxes[j].r;
+            const ox = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+            const oy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+            if (ox > 2 && oy > 2)
+              out.push(`${boxes[i].name} × ${boxes[j].name}`);
+          }
+        return out;
+      }))
+        hits.push(`${size ? size.width : 'phone'} ${hash}: ${h}`);
+    }
+  }
+  expect(hits).toEqual([]);
+});

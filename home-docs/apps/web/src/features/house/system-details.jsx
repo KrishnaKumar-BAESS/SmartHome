@@ -995,6 +995,31 @@ export function SystemDetails({ view }) {
 
           {view.isSecurity ? (
             <>
+              {view.leftHidden ? (
+                <button
+                  type="button"
+                  onClick={view.openGrid}
+                  className="ia btn btn--tone btn--block"
+                  style={{
+                    '--c': MODE_ACCENT.security,
+                    justifyContent: 'flex-start',
+                    marginBottom: 16,
+                  }}
+                  aria-haspopup="dialog"
+                >
+                  <span
+                    className="dot dot--pulse"
+                    style={{ '--c': MODE_ACCENT.security }}
+                    aria-hidden="true"
+                  ></span>
+                  Live cameras
+                  <Icon
+                    name="grid"
+                    size={13}
+                    style={{ marginLeft: 'auto', opacity: 0.8 }}
+                  />
+                </button>
+              ) : null}
               <DemoFeed det={view.camDet} />
               <Note>
                 Mock camera details. The preview and event history are

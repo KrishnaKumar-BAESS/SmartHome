@@ -3131,6 +3131,12 @@ export class HouseController extends Component {
     const onRoomClick = (rid) => {
       const room = this.roomById(rid);
       if (!room) return;
+      // The second click of a double-click (which zooms) must not cycle to
+      // the next item in the room.
+      const now = performance.now();
+      const last = this._lastRoomClick;
+      this._lastRoomClick = { rid, t: now };
+      if (last && last.rid === rid && now - last.t < 340) return;
       const describe = (what) => {
         if (this.state.rightHidden)
           this.notify(`Selected ${what}`, {

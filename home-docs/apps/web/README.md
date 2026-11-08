@@ -14,8 +14,9 @@ For cross-subsystem context, read [architecture](../../../docs/architecture.md).
 | --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | [index.html](index.html)                                        | Document metadata and root/module entry                                            |
 | [src/main.tsx](src/main.tsx)                                    | Local fonts (Inter 400–600, Plex Mono 400–600), global CSS, Strict Mode root       |
-| [src/app.tsx](src/app.tsx)                                      | Error boundary and controller mount with the ink stage tone                        |
-| [vite.config.ts](vite.config.ts)                                | Vite/Vitest configuration and the font-preload plugin                              |
+| [src/app.tsx](src/app.tsx)                                      | Error boundary, development banner, and controller mount                           |
+| [vite.config.ts](vite.config.ts)                                | Vite/Vitest configuration, font preloads, and build identity (version, commit)     |
+| [src/build-info.ts](src/build-info.ts)                          | Build version, commit and time shown in the top bar, help sheet and print header   |
 | [scripts/bundle-budget.mjs](scripts/bundle-budget.mjs)          | Gzip bundle and font-face budget checked after every production build              |
 | [src/data/house.ts](src/data/house.ts)                          | Inventory collections, floor geometry, mapping exports, inferred types             |
 | [house-controller.jsx](src/features/house/house-controller.jsx) | Interaction state, view derivation, search index, mode data, animation lifecycle   |
@@ -23,14 +24,20 @@ For cross-subsystem context, read [architecture](../../../docs/architecture.md).
 | [house-stage.jsx](src/features/house/house-stage.jsx)           | SVG container and pointer/wheel event boundary                                     |
 | [scene.jsx](src/features/house/scene.jsx)                       | Project room polygons and system overlays to SVG elements                          |
 | [catalog.ts](src/features/house/catalog.ts)                     | Sound zones, room aliases, glossary, circuit-reference resolution, related records |
+| [palette.ts](src/features/house/palette.ts)                     | The single hex palette: view accents, statuses, circuit types, floors              |
 | [icons.tsx](src/features/house/icons.tsx)                       | One inline icon set on a 16-unit grid                                              |
-| [src/lib/css.ts](src/lib/css.ts)                                | Convert (and cache) preserved CSS declaration strings as React style objects       |
+| [mode-icons.tsx](src/features/house/mode-icons.tsx)             | View and room glyphs on a 20-unit grid                                             |
+| [segmented.tsx](src/features/house/segmented.tsx)               | Segmented control with a sliding thumb                                             |
+| [count-up.tsx](src/features/house/count-up.tsx)                 | Animated integer readouts (respects reduced motion)                                |
+| [tooltips.tsx](src/features/house/tooltips.tsx)                 | One delegated tooltip for `[data-tip]` elements (mouse hover, keyboard focus)      |
+| [src/lib/css.ts](src/lib/css.ts)                                | Convert (and cache) the few remaining layout declaration strings to style objects  |
+| [src/lib/use-indicator.ts](src/lib/use-indicator.ts)            | Measure the active option so a highlight can slide to it                           |
 | [src/lib/keyboard.ts](src/lib/keyboard.ts)                      | Enter/Space activation and listbox arrow-key movement                              |
 | [src/lib/motion.ts](src/lib/motion.ts)                          | Reduced-motion check and the shared `tween()`                                      |
 | [src/lib/url-state.ts](src/lib/url-state.ts)                    | Encode/decode the shareable view in the URL hash                                   |
 | [src/lib/export.ts](src/lib/export.ts)                          | CSV serialisation, download, and clipboard helpers                                 |
 | [src/lib/presence.ts](src/lib/presence.ts)                      | Keep closing overlays mounted for their exit transition                            |
-| [src/styles.css](src/styles.css)                                | Global styles, shared classes, and focus presentation                              |
+| [src/styles.css](src/styles.css)                                | Design tokens (colour, radius, elevation, motion) and all component classes        |
 
 ## View components
 
@@ -106,7 +113,12 @@ values as physical distances.
 
 ## Compatibility helpers
 
-`css()` is a small adapter for the preserved declaration strings. It splits
+Styling lives in `styles.css` as tokens and classes; components set per-item
+colours with custom properties (`--c`, `--ac`, `--accent`) taken from
+`palette.ts`. The scene renderer keeps hex values because it blends them.
+
+`css()` is a small adapter for the few remaining layout strings (panel
+positions computed by the controller). It splits
 declarations on semicolons and properties at their first colon, converts hyphenated
 names to React-style keys, and preserves custom properties. It is not a general
 CSS parser; arbitrary values containing semicolons are outside its simple model.

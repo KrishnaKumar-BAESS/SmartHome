@@ -362,3 +362,22 @@ test('double-click or double-tap zooms toward that spot', async ({
   } else await page.mouse.dblclick(x, y);
   await expect(page.locator('.dock-zoom')).toHaveText('180%');
 });
+
+test('double-clicking a room keeps its first item selected', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Covered by the desktop double-click');
+  // Main floor isolated so no upper room covers the kitchen.
+  await page.goto('/#m=electrical&f=main');
+  await expect(page.locator('main:not([data-intro])')).toHaveCount(1);
+  const room = page
+    .getByTestId('house-stage')
+    .getByRole('button', { name: /Kitchen & Breakfast, Main Floor/ });
+  await room.dblclick();
+  await expect(page.locator('.dock-zoom')).toHaveText('180%');
+  await expect(page.locator('#row-m03')).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+});

@@ -34,7 +34,8 @@ Run all three before committing, including for documentation changes.
 | ESLint           | [eslint.config.mjs](../eslint.config.mjs)                                                                                    | JS/TS recommended rules, hook usage/dependencies, component export rules; zero warnings |
 | Unit tests       | [house.test.ts](../home-docs/apps/web/src/data/house.test.ts), [css.test.ts](../home-docs/apps/web/src/lib/css.test.ts)      | Two inventory tests and one CSS-helper test                                             |
 | Production build | [vite.config.ts](../home-docs/apps/web/vite.config.ts), [bundle-budget.mjs](../home-docs/apps/web/scripts/bundle-budget.mjs) | Bundle generation succeeds and gzip JS/CSS plus shipped font faces stay within budget   |
-| Browser tests    | [house.spec.ts](../home-docs/apps/web/e2e/house.spec.ts)                                                                     | Ten scenarios across two Chromium projects, twenty cases total                          |
+| Browser tests    | [e2e/](../home-docs/apps/web/e2e/) (`house`, `agent-api`, `pihole` specs)                                                    | Behavior scenarios across desktop and mobile Chromium projects                          |
+| Design QA        | [design-qa.spec.ts](../home-docs/apps/web/e2e/design-qa.spec.ts)                                                             | AA contrast (UI and model text), 11 px text floor, 40 px touch targets, no overlaps     |
 
 ### Inventory preservation and integrity
 
