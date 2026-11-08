@@ -1469,6 +1469,7 @@ export function renderScene(house, opt = {}) {
           'g',
           {
             key: 'locate',
+            'data-locate': true,
             className: 'marker',
             style: { pointerEvents: 'none' },
           },

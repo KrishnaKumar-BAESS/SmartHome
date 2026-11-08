@@ -1212,6 +1212,11 @@ export class HouseController extends Component {
       if (this.detailsRef.current) this.detailsRef.current.scrollTop = 0;
       const row = document.getElementById(`row-${selKey.replace(':', '-')}`);
       row?.scrollIntoView({ block: 'nearest' });
+      // New selection in the same view, or opened from search: pan it into
+      // view if a panel hides it. Plain view switches leave the camera alone.
+      if ((S.mode === prev.mode || this._revealNext) && !S.intro)
+        this.revealSelection();
+      this._revealNext = false;
     }
     if (S.mode !== prev.mode) {
       document
@@ -1244,6 +1249,48 @@ export class HouseController extends Component {
       this.setState({ rightHidden: true });
     this.syncHash();
     this._agent?.publish();
+  }
+
+  /**
+   * After the scene redraws, if the selection's highlight or callout lies
+   * outside the stage area the panels leave free, glide the model so it sits
+   * in the middle of that area. Selections already in view stay put.
+   */
+  revealSelection() {
+    cancelAnimationFrame(this._revealRaf);
+    this._revealRaf = requestAnimationFrame(() => {
+      const L = this._layout,
+        stage = this._stage;
+      if (!L || !stage || this.state.dragging) return;
+      const marks = stage.querySelectorAll(
+        '.sel-glow, .callout-pin, [data-locate]',
+      );
+      if (!marks.length) return;
+      const sr = stage.getBoundingClientRect();
+      let x0 = 1e9,
+        y0 = 1e9,
+        x1 = -1e9,
+        y1 = -1e9;
+      marks.forEach((m) => {
+        const r = m.getBoundingClientRect();
+        x0 = Math.min(x0, r.left - sr.left);
+        y0 = Math.min(y0, r.top - sr.top);
+        x1 = Math.max(x1, r.right - sr.left);
+        y1 = Math.max(y1, r.bottom - sr.top);
+      });
+      const pad = 24;
+      const fx0 = L.leftPx + pad,
+        fx1 = L.vw - L.rightPx - pad,
+        fy0 = L.topPx + pad,
+        fy1 = L.vh - L.bottomPx - pad;
+      if (x0 >= fx0 && x1 <= fx1 && y0 >= fy0 && y1 <= fy1) return;
+      const dx = (fx0 + fx1) / 2 - (x0 + x1) / 2,
+        dy = (fy0 + fy1) / 2 - (y0 + y1) / 2;
+      this.tweenCamera(
+        { panX: this.state.panX + dx, panY: this.state.panY + dy },
+        520,
+      );
+    });
   }
 
   // The automation adapter exposes deliberate view controls, never React internals.
@@ -1689,6 +1736,7 @@ export class HouseController extends Component {
 
   chooseResult = (it, onCommit) => {
     const S = this.state;
+    this._revealNext = true;
     const recent = [
       it.focusId,
       ...(S.recent || []).filter((x) => x !== it.focusId),
