@@ -112,10 +112,48 @@ function SearchPopup({ view }) {
 
       {view.showSuggest ? (
         <>
+          {view.searchRecent.length ? (
+            <>
+              <div className="popover-head">
+                <span className="section-label">Recent</span>
+                <button
+                  type="button"
+                  className="ia link-button"
+                  onClick={view.clearRecent}
+                >
+                  Clear
+                </button>
+              </div>
+              {view.searchRecent.map((r) => (
+                <div
+                  key={r.id}
+                  id={r.id}
+                  onClick={r.onClick}
+                  className="result"
+                  role="option"
+                  aria-selected={r.active}
+                  tabIndex={-1}
+                >
+                  <span
+                    className="result-icon"
+                    style={{ '--c': r.accent }}
+                    aria-hidden="true"
+                  >
+                    <ModeIcon mode={CAT_ICON[r.cat] || 'overview'} size={15} />
+                  </span>
+                  <div className="result-main">
+                    <div className="result-title">{r.label}</div>
+                    <div className="result-sub">{r.sub}</div>
+                  </div>
+                  <Icon name="arrowRight" size={13} className="result-go" />
+                </div>
+              ))}
+            </>
+          ) : null}
           <div className="popover-head">
             <span className="section-label">Jump to</span>
           </div>
-          {(view.searchSuggest ?? []).map((s) => (
+          {(view.searchJump ?? []).map((s) => (
             <div
               key={s.id}
               id={s.id}

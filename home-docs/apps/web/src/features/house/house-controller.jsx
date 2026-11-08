@@ -48,6 +48,18 @@ const THEME_KEY = 'housedocs-theme';
 const SHORTCUTS_KEY = 'housedocs-shortcuts';
 const HINT_KEY = 'housedocs-hint';
 const SCROLL_KEY = 'housedocs-scroll';
+const RECENT_KEY = 'housedocs-recent';
+
+function readRecent() {
+  try {
+    const v = JSON.parse(readStorage(RECENT_KEY) || '[]');
+    return Array.isArray(v)
+      ? v.filter((x) => typeof x === 'string').slice(0, 4)
+      : [];
+  } catch {
+    return [];
+  }
+}
 const SHOW_ADDRESS = import.meta.env.VITE_SHOW_ADDRESS === 'true';
 
 /** State keys that only move the camera; panels never depend on them. */
@@ -204,6 +216,8 @@ export class HouseController extends Component {
       // Scroll gesture: 'auto' tells trackpad from mouse; 'pan' / 'zoom' force.
       scrollMode: (hasWindow && readStorage(SCROLL_KEY)) || 'auto',
       notice: null,
+      // Search history: focus ids of the last records opened from search.
+      recent: hasWindow ? readRecent() : [],
       // Phone details sheet: half height, or expanded to nearly full screen.
       sheetFull: false,
     };
@@ -1636,7 +1650,13 @@ export class HouseController extends Component {
 
   chooseResult = (it, onCommit) => {
     const S = this.state;
+    const recent = [
+      it.focusId,
+      ...(S.recent || []).filter((x) => x !== it.focusId),
+    ].slice(0, 4);
+    writeStorage(RECENT_KEY, JSON.stringify(recent));
     const patch = {
+      recent,
       ...it.patch,
       q: '',
       searchFocus: false,
@@ -1879,27 +1899,48 @@ export class HouseController extends Component {
       ['Front Doorbell', 'c1'],
       ['Wine Cellar', 'bsmt_wine_cellar'],
     ];
-    const searchSuggest = suggestDefs.map(([label, id, patch], i) => {
-      const it = id ? this.idx.find((x) => x.focusId === `row-${id}`) : null;
-      return {
-        id: `search-opt-${i}`,
-        label,
-        active: !ql && i === searchSel,
-        onClick: () => {
-          if (it) this.chooseResult(it);
-          else {
-            this.searchRef.current?.blur();
-            set({
-              ...patch,
-              q: '',
-              searchFocus: false,
-              searchSel: -1,
-              rightHidden: false,
-            });
-          }
-        },
-      };
-    });
+    const recentItems = (S.recent || [])
+      .map((fid) => this.idx.find((x) => x.focusId === fid))
+      .filter(Boolean);
+    const searchRecent = recentItems.map((it, i) => ({
+      id: `search-opt-${i}`,
+      label: it.label,
+      sub: it.sub,
+      cat: it.cat,
+      accent: it.accent,
+      active: !ql && i === searchSel,
+      onClick: () => this.chooseResult(it),
+    }));
+    const clearRecent = () => {
+      writeStorage(RECENT_KEY, '[]');
+      set({ recent: [], searchSel: -1 });
+    };
+    const recentIds = new Set(S.recent || []);
+    const searchJump = suggestDefs
+      .filter(([, id]) => !id || !recentIds.has(`row-${id}`))
+      .map(([label, id, patch], j) => {
+        const i = j + searchRecent.length;
+        const it = id ? this.idx.find((x) => x.focusId === `row-${id}`) : null;
+        return {
+          id: `search-opt-${i}`,
+          label,
+          active: !ql && i === searchSel,
+          onClick: () => {
+            if (it) this.chooseResult(it);
+            else {
+              this.searchRef.current?.blur();
+              set({
+                ...patch,
+                q: '',
+                searchFocus: false,
+                searchSel: -1,
+                rightHidden: false,
+              });
+            }
+          },
+        };
+      });
+    const searchSuggest = [...searchRecent, ...searchJump];
     const hasQ = ql.length > 0;
     const showResults = S.searchFocus && hasQ;
     const noResults = showResults && searchResults.length === 0;
@@ -3733,6 +3774,9 @@ export class HouseController extends Component {
       searchMore,
       showAllResults,
       searchSuggest,
+      searchRecent,
+      searchJump,
+      clearRecent,
       searchAnnounce,
       isOverview,
       isElectrical,
