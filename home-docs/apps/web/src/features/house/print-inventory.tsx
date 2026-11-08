@@ -11,6 +11,7 @@ import {
   upkeep,
 } from '../../data/house';
 import { INVENTORY_SNAPSHOT, zones } from './catalog';
+import { BUILD_LABEL } from '../../build-info';
 
 type Floor = keyof typeof floorLabels;
 
@@ -73,10 +74,10 @@ export function PrintInventory() {
     <section className="print-only" aria-hidden="true">
       <h1>HOUSE.SYS · placeholder / mock inventory</h1>
       <p>
-        Snapshot {INVENTORY_SNAPSHOT}. All entries are placeholder / mock data
-        unless marked REAL; statuses, dates, and usage values are not live
-        readings. Camera previews and event history in the app are
-        demonstrations and are not printed.
+        Snapshot {INVENTORY_SNAPSHOT} · printed from {BUILD_LABEL}. All entries
+        are placeholder / mock data unless marked REAL; statuses, dates, and
+        usage values are not live readings. Camera previews and event history in
+        the app are demonstrations and are not printed.
       </p>
       <Table
         caption="Rooms"

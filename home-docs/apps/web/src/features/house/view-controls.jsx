@@ -2,6 +2,7 @@ import { css } from '../../lib/css';
 import { usePresence } from '../../lib/presence';
 import { Icon } from './icons';
 import { Segmented } from './segmented';
+import { BUILD_LABEL } from '../../build-info';
 
 function ToggleRow({ row, icon }) {
   return (
@@ -96,8 +97,11 @@ function Drawer({ view }) {
       <ToggleRow row={o.legendRow} icon="legend" />
       <ToggleRow row={o.shortcutsRow} icon="list" />
       <div className="dock-divider"></div>
+      <div className="section-label">Scroll gesture</div>
+      <Segmented items={o.scroll} label="Scroll gesture" />
       <div className="section-label">Theme</div>
       <Segmented items={o.theme} label="Theme" />
+      <div className="drawer-build">{`Version ${BUILD_LABEL}`}</div>
     </div>
   );
 }

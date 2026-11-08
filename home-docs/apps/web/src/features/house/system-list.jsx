@@ -168,7 +168,14 @@ export function SystemList({ view }) {
                         '--c': s.accent,
                         animation: `contentIn var(--dur-4) var(--ease-out) ${i * 40}ms both`,
                       }}
-                      aria-label={`${s.label}: ${s.stat} ${s.sub}. Open ${s.label.toLowerCase()}`}
+                      aria-label={`${s.label}: ${s.stat} ${s.sub}.${
+                        s.bar
+                          ? ` Breakdown: ${s.bar
+                              .filter((b) => b.count)
+                              .map((b) => `${b.label} ${b.count}`)
+                              .join(', ')}.`
+                          : ''
+                      } Open ${s.label.toLowerCase()}`}
                     >
                       <span className="stat-head">
                         <span className="stat-icon">
@@ -184,11 +191,7 @@ export function SystemList({ view }) {
                       {s.bar ? (
                         <span
                           className="stack-bar stat-bar"
-                          role="img"
-                          aria-label={s.bar
-                            .filter((b) => b.count)
-                            .map((b) => `${b.label} ${b.count}`)
-                            .join(', ')}
+                          aria-hidden="true"
                           title={s.bar
                             .filter((b) => b.count)
                             .map((b) => `${b.label} ${b.count}`)

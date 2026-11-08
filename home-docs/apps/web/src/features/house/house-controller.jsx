@@ -32,6 +32,7 @@ import { prefersReducedMotion, tween } from '../../lib/motion';
 import { decodeUrlState, encodeUrlState } from '../../lib/url-state';
 import { toCsv, downloadText, copyText } from '../../lib/export';
 import { installAgentApi } from './agent-api';
+import { BUILD, BUILD_LABEL } from '../../build-info';
 import {
   MODE_ACCENT,
   STATUS,
@@ -46,6 +47,7 @@ import {
 const THEME_KEY = 'housedocs-theme';
 const SHORTCUTS_KEY = 'housedocs-shortcuts';
 const HINT_KEY = 'housedocs-hint';
+const SCROLL_KEY = 'housedocs-scroll';
 const SHOW_ADDRESS = import.meta.env.VITE_SHOW_ADDRESS === 'true';
 
 /** State keys that only move the camera; panels never depend on them. */
@@ -199,6 +201,8 @@ export class HouseController extends Component {
       systemDark: hasWindow ? systemPrefersDark() : false,
       shortcuts: hasWindow ? readStorage(SHORTCUTS_KEY) !== 'off' : true,
       hintDismissed: hasWindow ? readStorage(HINT_KEY) === '1' : true,
+      // Scroll gesture: 'auto' tells trackpad from mouse; 'pan' / 'zoom' force.
+      scrollMode: (hasWindow && readStorage(SCROLL_KEY)) || 'auto',
       notice: null,
     };
     if (hasWindow)
@@ -754,11 +758,20 @@ export class HouseController extends Component {
     const px = e.clientX - rect.left,
       py = e.clientY - rect.top;
     if (e.ctrlKey) {
+      // Safari may report the same pinch as gesture events too; let those win.
+      if (this._gestureScale) return;
       const d = Math.max(-25, Math.min(25, e.deltaY * (e.deltaMode ? 16 : 1)));
       this.zoomAt(Math.exp(-d * 0.011), px, py);
       return;
     }
-    if (this.wheelKind(e) === 'trackpad') {
+    const mode = this.state.scrollMode;
+    const kind =
+      mode === 'pan'
+        ? 'trackpad'
+        : mode === 'zoom'
+          ? 'mouse'
+          : this.wheelKind(e);
+    if (kind === 'trackpad') {
       const k = e.deltaMode ? 16 : 1;
       this.setState((s) => ({
         panX: s.panX - e.deltaX * k,
@@ -1037,6 +1050,11 @@ export class HouseController extends Component {
     }
     this.setState({ theme }, () => this.applyTheme());
     writeStorage(THEME_KEY, theme);
+  };
+
+  setScrollMode = (mode) => {
+    this.setState({ scrollMode: mode });
+    writeStorage(SCROLL_KEY, mode);
   };
 
   setShortcuts = (on) => {
@@ -3078,7 +3096,7 @@ export class HouseController extends Component {
         sceneOpt.locate = {
           roomId: this.bulbRoomId(sb.room),
           color: this.stColor(sb.st),
-          label: sb.fixture,
+          label: `${sb.room} · ${sb.fixture}`,
         };
     }
     if (isNetwork) {
@@ -3248,7 +3266,11 @@ export class HouseController extends Component {
     const mapRight = narrow ? 8 : L.rightPx;
     const clusterRight = narrow ? 8 : mapRight + 4;
     const ctrlBottom = narrow ? L.bottomPx + 10 : L.G + 4;
-    const isoPanelStyle = `top:calc(${narrow ? L.topPx + 10 : L.topPx}px + env(safe-area-inset-top));right:${mapRight}px;max-height:calc(100dvh - ${narrow ? L.topPx + 24 + L.bottomPx : L.topPx + 40}px)`;
+    // On phones the isolate panel sits above the details sheet (z-index) and
+    // may use the full height under the view row.
+    const isoPanelStyle = narrow
+      ? `top:calc(${L.topPx + 8}px + env(safe-area-inset-top));left:8px;right:8px;width:auto;max-width:none;bottom:calc(8px + env(safe-area-inset-bottom));z-index:36`
+      : `top:${L.topPx}px;right:${mapRight}px;max-height:calc(100dvh - ${L.topPx + 40}px)`;
     const legendPanelStyle = narrow
       ? `left:8px;bottom:calc(${ctrlBottom}px + env(safe-area-inset-bottom));max-width:calc(100% - 200px)`
       : `right:${clusterRight}px;bottom:${ctrlBottom + 60}px;max-width:calc(100% - 16px)`;
@@ -3339,6 +3361,16 @@ export class HouseController extends Component {
         on: !!S.shortcuts,
         label: 'Single-key shortcuts',
       },
+      scroll: [
+        ['auto', 'Auto'],
+        ['pan', 'Pan'],
+        ['zoom', 'Zoom'],
+      ].map(([key, label]) => ({
+        key,
+        label,
+        on: (S.scrollMode || 'auto') === key,
+        onClick: () => this.setScrollMode(key),
+      })),
       theme: ['system', 'light', 'dark'].map((t) => ({
         key: t,
         label: t === 'system' ? 'System' : t === 'light' ? 'Light' : 'Dark',
@@ -3734,6 +3766,11 @@ export class HouseController extends Component {
       closeViewOpts: () => set({ viewOptsOpen: false }),
       viewOpts,
       zoomPct,
+      copyVersion: () =>
+        this.copy(
+          `${BUILD_LABEL} (built ${BUILD.built})`,
+          `version ${BUILD_LABEL}`,
+        ),
       isoPanelStyle,
       legendPanelStyle,
       leftHidden,

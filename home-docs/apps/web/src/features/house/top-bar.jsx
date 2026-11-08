@@ -1,6 +1,6 @@
 import { usePresence } from '../../lib/presence';
 import { Icon } from './icons';
-import { BUILD_LABEL, builtAt } from '../../build-info';
+import { BUILD, BUILD_LABEL, builtAt } from '../../build-info';
 import { ModeIcon } from './mode-icons';
 
 const IS_MAC =
@@ -194,13 +194,16 @@ export function TopBar({ view }) {
             house<span>.sys</span>
           </h1>
           {narrow ? null : (
-            <span
-              className="build-tag"
-              data-tip={`Built ${builtAt()}`}
-              aria-label={`Version ${BUILD_LABEL}`}
+            <button
+              type="button"
+              className="ia build-tag"
+              onClick={view.copyVersion}
+              data-tip={`Built ${builtAt()} · click to copy`}
+              aria-label={`Version ${BUILD_LABEL}. Copy`}
             >
-              {BUILD_LABEL}
-            </span>
+              <span className="build-version">{`v${BUILD.version} · `}</span>
+              {BUILD.commit}
+            </button>
           )}
         </div>
       )}

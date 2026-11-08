@@ -26,6 +26,10 @@ const GESTURES = [
   ['Mouse wheel', 'Zoom toward the pointer'],
   ['Trackpad scroll', 'Two-finger scroll pans the model'],
   ['Trackpad pinch', 'Zoom toward your fingers'],
+  [
+    'Scroll gesture',
+    'View options → Auto, Pan or Zoom, if scrolling is misread',
+  ],
   ['Two fingers', 'Pinch to zoom, move to pan'],
   ['View options', 'Tap-only rotate, tilt, and pan buttons'],
 ];

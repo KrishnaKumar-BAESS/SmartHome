@@ -1027,12 +1027,27 @@ html.theme-transition * {
   color: var(--t5);
   font: 500 11px var(--mono);
   white-space: nowrap;
-  cursor: default;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .build-tag:hover {
+    color: var(--t2);
+    background: var(--press);
+  }
 }
 @media (max-width: 1100px) {
-  .build-tag {
+  .build-version {
     display: none;
   }
+}
+.build-tag {
+  appearance: none;
+  border: 0;
+}
+.drawer-build {
+  margin: 12px 4px 2px;
+  font: 500 11px var(--mono);
+  color: var(--t5);
 }
 .help-build {
   margin-top: 22px !important;
@@ -1136,10 +1151,13 @@ kbd {
   border-radius: var(--r-lg);
   transform-origin: top center;
 }
+/* Phones: the results sheet spans the screen under the search bar. */
 .popover--narrow {
-  left: -12px;
-  right: -12px;
-  max-height: calc(100dvh - 130px);
+  position: fixed;
+  top: calc(64px + env(safe-area-inset-top));
+  left: 8px;
+  right: 8px;
+  max-height: calc(100dvh - 80px - env(safe-area-inset-top));
 }
 .popover-head {
   display: flex;

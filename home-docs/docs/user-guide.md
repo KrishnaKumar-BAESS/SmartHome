@@ -70,6 +70,7 @@ Search is not a workbook search and does not query devices or the internet.
 | Pan on desktop              | Two-finger trackpad scroll, Shift-drag, middle-button drag, or right-button drag     | Move the projected model                                   |
 | Zoom                        | Mouse wheel toward the pointer, trackpad or touch pinch, or **+ / −**                | Adjust scale within 40–400%; buttons disable at the bounds |
 | Pan on touch                | Two-finger drag                                                                      | Move the projected model                                   |
+| Scroll gesture override     | **View options → Scroll gesture**: Auto, Pan or Zoom                                 | Force scrolling to pan or zoom if Auto misreads a device   |
 | Reset orientation           | **View options → Reset orientation**, or **0** / **r**                               | Restore yaw, pitch, zoom, and pan; stops auto-spin         |
 | Fit / presets               | **View options → Fit visible, Isometric, Plan, North up, Elevation**                 | Recentre or jump to a preset orientation                   |
 | Rotate, tilt, pan by button | **View options** arrow buttons, or arrow keys with the model focused (Shift for pan) | Tap- and keyboard-operable camera moves                    |

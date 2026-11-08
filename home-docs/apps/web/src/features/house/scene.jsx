@@ -278,6 +278,46 @@ export function renderScene(house, opt = {}) {
       pts: tp,
     });
   });
+  // ---- floor plates: a thin slab under each separated floor ----
+  // They fade in with separation (absent when stacked) and sort just behind
+  // their own floor's rooms so each floor reads as one object.
+  const plateT = Math.max(0, Math.min(1, (eT - 0.25) / 0.6));
+  const platePts = {};
+  if (plateT > 0.01)
+    ['basement', 'main', 'second'].forEach((fl) => {
+      const rs = house.rooms.filter((r) => r.floor === fl && vis(r));
+      if (!rs.length) return;
+      let x0 = 1e9,
+        y0 = 1e9,
+        x1 = -1e9,
+        y1 = -1e9;
+      rs.forEach((r) => {
+        const o = offOf(r.id);
+        r.verts.forEach(([x, y]) => {
+          x0 = Math.min(x0, x + o.ox);
+          y0 = Math.min(y0, y + o.oy);
+          x1 = Math.max(x1, x + o.ox);
+          y1 = Math.max(y1, y + o.oy);
+        });
+      });
+      const pad = 0.35,
+        z = drawBase(fl) - 0.03;
+      const pts = [
+        project(x0 - pad, y0 - pad, z),
+        project(x1 + pad, y0 - pad, z),
+        project(x1 + pad, y1 + pad, z),
+        project(x0 - pad, y1 + pad, z),
+      ];
+      platePts[fl] = pts;
+      const own = faces.filter((fc) => fc.room && fc.room.floor === fl);
+      faces.push({
+        key: `plate-${fl}`,
+        plate: true,
+        d: polyD(pts),
+        depth: Math.max(...own.map((fc) => fc.depth)) + 0.01,
+        op: plateT * introP(fl),
+      });
+    });
   faces.sort((a, b) => b.depth - a.depth);
 
   const els = [];
@@ -324,6 +364,22 @@ export function renderScene(house, opt = {}) {
     ? []
     : faces.filter((f) => f.isTop && isHi(f.rid));
   faces.forEach((f) => {
+    if (f.plate) {
+      els.push(
+        RE('path', {
+          key: f.key,
+          className: 'plate',
+          d: f.d,
+          fill: light ? 'rgba(16,24,40,0.04)' : 'rgba(255,255,255,0.03)',
+          stroke: light ? 'rgba(16,24,40,0.12)' : 'rgba(255,255,255,0.09)',
+          strokeWidth: 1,
+          strokeLinejoin: 'round',
+          opacity: f.op,
+          style: { pointerEvents: 'none' },
+        }),
+      );
+      return;
+    }
     const clickable = opt.onRoomClick && f.rid;
     const rProps = clickable
       ? {
@@ -607,6 +663,13 @@ export function renderScene(house, opt = {}) {
       });
     });
     if (minSx === 1e9) return;
+    const roomMinSx = minSx;
+    // With plates showing, the leader points at the plate's nearest corner.
+    if (platePts[f] && plateT > 0.5) {
+      const corner = platePts[f].reduce((a, b) => (b.sx < a.sx ? b : a));
+      minSx = corner.sx;
+      minSy = corner.sy;
+    }
     const fullLabel = house.floorLabels[f];
     const fs = 11 * ms;
     // Inter semibold averages ≈ 0.56em per glyph.
@@ -616,7 +679,7 @@ export function renderScene(house, opt = {}) {
     // architectural level code instead.
     // Phones always use the short codes: the model fills the width there.
     const fits =
-      !L.narrow && !L.short && minSx - 18 >= minX + widthOf(fullLabel);
+      !L.narrow && !L.short && roomMinSx - 18 >= minX + widthOf(fullLabel);
     const visibleLabel = fits
       ? fullLabel
       : { second: 'L2', main: 'L1', basement: 'B1' }[f];
