@@ -1139,7 +1139,7 @@ export function renderScene(house, opt = {}) {
     const base = roomCeil(opt.soundRoom);
     if (base) {
       const cx = base.c.sx,
-        cy = base.c.sy + 16 * ms;
+        cy = base.c.sy + 24 * ms;
       const offs = [
         [-22, -12],
         [0, -16],
@@ -1311,9 +1311,10 @@ export function renderScene(house, opt = {}) {
       const cx = base.c.sx,
         cy = base.c.sy + 13 * ms;
       if (sel)
+        // Above the room name, not between the name and the marker.
         callouts.push({
           x: cx,
-          y: cy - 9 * ms,
+          y: base.c.sy - 13 * ms,
           text: `${sn.name} sensor`,
           color: MODE_ACCENT.climate,
         });
