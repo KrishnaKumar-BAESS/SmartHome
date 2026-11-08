@@ -1275,26 +1275,39 @@ export function renderScene(house, opt = {}) {
           style: { pointerEvents: 'none' },
         }),
       );
-      if (conflict)
+      if (conflict) {
+        // Floor mapping unverified: a small amber badge beside the camera.
+        const bx = apex.sx + 11 * ms,
+          by = apex.sy - 9 * ms;
         els.push(
           RE(
-            'text',
-            {
-              key: `cam-conflict-${cam.id}`,
-              x: (apex.sx + 8 * ms).toFixed(1),
-              y: (apex.sy - 6 * ms).toFixed(1),
-              style: {
-                font: `700 ${10 * ms}px 'Inter',system-ui,sans-serif`,
-                fill: STATUS.soon,
-                paintOrder: 'stroke',
-                stroke: labelHalo,
-                strokeWidth: 2.5,
-                pointerEvents: 'none',
+            'g',
+            { key: `cam-conflict-${cam.id}`, style: { pointerEvents: 'none' } },
+            RE('title', null, 'Floor mapping unverified'),
+            RE('circle', {
+              cx: bx.toFixed(1),
+              cy: by.toFixed(1),
+              r: 7.5 * ms,
+              fill: house.mixHex(STATUS.soon, '#000000', 0.4),
+              stroke: markerRing,
+              strokeWidth: 1.2,
+            }),
+            RE(
+              'text',
+              {
+                x: bx.toFixed(1),
+                y: (by + 4 * ms).toFixed(1),
+                textAnchor: 'middle',
+                style: {
+                  font: `700 ${11 * ms}px 'Inter',system-ui,sans-serif`,
+                  fill: '#ffffff',
+                },
               },
-            },
-            '?',
+              '?',
+            ),
           ),
         );
+      }
       if (opt.onCamClick)
         els.push(
           hit(`cam-hit-${cam.id}`, apex.sx, apex.sy, 11 * ms, label, () =>

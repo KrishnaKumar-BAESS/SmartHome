@@ -3263,6 +3263,7 @@ export class HouseController extends Component {
           ...sw(MODE_ACCENT.security, true),
         },
         { label: 'Offline camera', ...sw(STATUS.idle, true) },
+        { label: '? Floor mapping unverified', ...sw(STATUS.soon) },
       ];
       legendNote =
         'Coverage cones ignore walls; positions are recorded, not surveyed.';

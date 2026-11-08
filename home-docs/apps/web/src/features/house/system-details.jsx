@@ -995,34 +995,6 @@ export function SystemDetails({ view }) {
 
           {view.isSecurity ? (
             <>
-              <button
-                type="button"
-                onClick={view.openGrid}
-                className="ia btn btn--tone btn--block"
-                style={{
-                  '--c': MODE_ACCENT.security,
-                  justifyContent: 'flex-start',
-                }}
-                aria-haspopup="dialog"
-              >
-                <span
-                  className="dot dot--pulse"
-                  style={{ '--c': MODE_ACCENT.security }}
-                  aria-hidden="true"
-                ></span>
-                Open live cameras
-                <span
-                  style={{
-                    marginLeft: 'auto',
-                    font: '600 11px var(--mono)',
-                    letterSpacing: '0.1em',
-                    opacity: 0.8,
-                  }}
-                >
-                  XFINITY
-                </span>
-              </button>
-              <div style={{ height: 16 }}></div>
               <DemoFeed det={view.camDet} />
               <Note>
                 Mock camera details. The preview and event history are
