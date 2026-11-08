@@ -59,6 +59,7 @@ export function HouseView({ view, scene }) {
         aria-label="Home documentation"
         data-dragging={scene.dragging ? 'true' : undefined}
         data-narrow={view.narrow ? 'true' : undefined}
+        data-intro={view.intro ? 'true' : undefined}
         style={css(
           "position:relative;height:100%;width:100%;overflow:hidden;background:var(--bg);font-family:'Inter',system-ui,'Segoe UI',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased",
         )}

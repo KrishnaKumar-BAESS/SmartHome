@@ -47,7 +47,16 @@ export function renderScene(house, opt = {}) {
   const EXPL = eT <= 1 ? eT * 1.0 : 1.0 + (eT - 1) * 0.9;
   const floorIdx = { basement: 0, main: 1, second: 2 };
   const baseElev = { basement: -0.9, main: 0, second: 1.1 };
-  const drawBase = (f) => baseElev[f] + floorIdx[f] * EXPL;
+  const layoutBase = (f) => baseElev[f] + floorIdx[f] * EXPL;
+  // First-load intro: each floor drops into place in turn, basement first.
+  // Bounds use the settled layout so the camera fit holds still meanwhile.
+  const introT = typeof S.introT === 'number' ? S.introT : 1;
+  const introP = (f) => {
+    if (introT >= 1) return 1;
+    const t = Math.min(1, Math.max(0, (introT - floorIdx[f] * 0.2) / 0.6));
+    return 1 - Math.pow(1 - t, 3);
+  };
+  const drawBase = (f) => layoutBase(f) + (1 - introP(f)) * 3.2;
 
   let bx0 = 1e9,
     bx1 = -1e9,
@@ -57,7 +66,7 @@ export function renderScene(house, opt = {}) {
     bz1 = -1e9;
   house.rooms.forEach((r) => {
     if (!vis(r)) return;
-    const zb = drawBase(r.floor),
+    const zb = layoutBase(r.floor),
       zt = zb + r.height;
     r.verts.forEach(([vx, vy]) => {
       if (vx < bx0) bx0 = vx;
@@ -197,7 +206,8 @@ export function renderScene(house, opt = {}) {
     const wallFill = sel
       ? house.mix(top, hiColor, 0.32)
       : darken(top, wallShade);
-    const faceOp = hasFocus ? (sel ? 1 : hov ? 0.55 : dimOp) : 1;
+    const faceOp =
+      (hasFocus ? (sel ? 1 : hov ? 0.55 : dimOp) : 1) * introP(r.floor);
     let area2 = 0;
     for (let i = 0; i < n; i++) {
       const a = r.verts[i],
@@ -341,6 +351,9 @@ export function renderScene(house, opt = {}) {
       ),
     );
   });
+
+  // Markers and labels join once every floor has landed (see styles.css).
+  if (introT < 1) return els;
 
   // ---- breaker panels (electrical infra) ----
   if (layer === 'overview' || layer === 'electrical') {

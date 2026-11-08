@@ -11,6 +11,8 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
+- Add a first-load intro to home-docs: the basement, main and second floors drop into place in turn while the camera eases round, the top bar, rail and panels slide in, and markers and labels fade in last. Any click, key or wheel input settles it at once; reduced-motion users start on the settled view.
+
 - Label all home-docs inventory as placeholder / mock data, with MOCK DATA tags on every list and detail panel, and add REAL DATA tags for household-recorded entries: the water softener's location (moved from the garage to the basement boiler room) and its first refill log entry (2 bags of pellets, 2026-11-07). Owner-confirmed corrections live in `household-corrections.fixture.json`; the agent API reports `provenance.default: 'mock'`.
 
 - Show a persistent development disclaimer on every home-docs view and add a LAN host for built assets and the read-only Pi-hole summary.

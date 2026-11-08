@@ -253,6 +253,41 @@ input::placeholder {
   animation: countUp 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
+/* First-load intro. The controller sets main[data-intro] while the floors
+   drop in (scene.jsx), then clears it once markers and labels have faded in.
+   Keyframes use the individual `translate` property so they compose with the
+   inline transforms that hide and show panels. */
+@keyframes introSlide {
+  from {
+    opacity: 0;
+    translate: var(--intro-from, 0 -10px);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+main[data-intro] header {
+  animation: introSlide 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both;
+}
+main[data-intro] .nav-rail {
+  --intro-from: -18px 0;
+  animation: introSlide 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s both;
+}
+main[data-intro] #panel-left,
+main[data-intro] #toggle-left {
+  --intro-from: -24px 0;
+  animation: introSlide 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 0.45s both;
+}
+main[data-intro] #panel-right,
+main[data-intro] #toggle-right {
+  --intro-from: 24px 0;
+  animation: introSlide 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 0.55s both;
+}
+main[data-intro] #house-stage svg > :not(.face) {
+  animation: fadeIn 0.5s ease both;
+}
+
 body {
   min-width: 320px;
   background: var(--bg);

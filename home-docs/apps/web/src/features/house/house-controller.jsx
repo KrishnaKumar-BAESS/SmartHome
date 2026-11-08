@@ -45,6 +45,7 @@ const CAMERA_KEYS = new Set([
   'panX',
   'panY',
   'explodeT',
+  'introT',
   'hoverRoom',
   'dragging',
 ]);
@@ -163,6 +164,9 @@ export class HouseController extends Component {
       ...HOME,
       explode: 'full',
       explodeT: 2,
+      // 0→1 drives the first-load intro; reduced motion starts settled.
+      introT: prefersReducedMotion() ? 1 : 0,
+      intro: !prefersReducedMotion(),
       legend: false,
       autoRotate: false,
       isoFloor: 'all',
@@ -682,6 +686,7 @@ export class HouseController extends Component {
   }
 
   stopInertia() {
+    this.finishIntro();
     if (this._inertiaRAF) {
       cancelAnimationFrame(this._inertiaRAF);
       this._inertiaRAF = null;
@@ -743,6 +748,45 @@ export class HouseController extends Component {
     else if (what === 'panY') to.panY += dir * step;
     this.tweenCamera(to, 180);
   };
+
+  /** First-load intro: floors drop in while the camera eases round to its view. */
+  startIntro() {
+    if (!this.state.intro) return;
+    const yaw = this.state.yaw;
+    this._introTarget = yaw;
+    // Any input anywhere (panels included) settles the model first.
+    this._onIntroInput = () => this.finishIntro();
+    for (const type of ['pointerdown', 'keydown', 'wheel'])
+      window.addEventListener(type, this._onIntroInput, {
+        capture: true,
+        passive: true,
+      });
+    this._introTween = tween(
+      { introT: 0, yaw: yaw - 40 },
+      { introT: 1, yaw },
+      1700,
+      (v, done) => {
+        this.setState(v);
+        if (done) this.endIntro();
+      },
+    );
+  }
+
+  /** Settles the intro at once so it never fights the user's input. */
+  finishIntro() {
+    if (!this._introTween) return;
+    this._introTween.cancel();
+    this.setState({ introT: 1, yaw: this._introTarget });
+    this.endIntro();
+  }
+
+  endIntro() {
+    this._introTween = null;
+    for (const type of ['pointerdown', 'keydown', 'wheel'])
+      window.removeEventListener(type, this._onIntroInput, { capture: true });
+    // Keep the flag briefly so markers, labels and panels finish fading in.
+    this._introTimer = setTimeout(() => this.setState({ intro: false }), 700);
+  }
 
   pick(keys) {
     const out = {};
@@ -916,6 +960,7 @@ export class HouseController extends Component {
       this.setState({
         explodeT: ['stacked', 'floors', 'full'].indexOf(this.state.explode),
       });
+    this.startIntro();
     this._agent = installAgentApi({
       read: () => this.agentState(),
       index: this.idx,
@@ -956,6 +1001,7 @@ export class HouseController extends Component {
     if (this._autoRAF) cancelAnimationFrame(this._autoRAF);
     clearTimeout(this._noticeT);
     clearTimeout(this._themeT);
+    clearTimeout(this._introTimer);
   }
 
   componentDidUpdate(_, prev) {
@@ -1488,7 +1534,7 @@ export class HouseController extends Component {
   deriveScene(view) {
     const S = this.state;
     const c = this._sceneCache;
-    const camKey = `${S.yaw}|${S.pitch}|${S.zoom}|${S.panX}|${S.panY}|${S.explodeT}|${S.hoverRoom}|${S.dragging}`;
+    const camKey = `${S.yaw}|${S.pitch}|${S.zoom}|${S.panX}|${S.panY}|${S.explodeT}|${S.introT}|${S.hoverRoom}|${S.dragging}`;
     if (c && c.opt === view.sceneOpt && c.camKey === camKey) return c.scene;
     const scene = {
       els: renderScene(this, view.sceneOpt),
@@ -3491,6 +3537,7 @@ export class HouseController extends Component {
     return {
       layout: L,
       narrow,
+      intro: !!S.intro,
       short: L.short,
       isNarrow: narrow,
       mode: S.mode,

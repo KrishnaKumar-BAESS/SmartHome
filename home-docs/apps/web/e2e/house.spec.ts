@@ -267,6 +267,8 @@ test('floor isolation and view controls preserve model interaction', async ({
   await page.goto('/');
   const faces = page.getByTestId('house-stage').locator('svg path.face');
   await expect(faces.first()).toBeAttached();
+  // Visible walls depend on the camera angle, which the intro is still turning.
+  await expect(page.locator('main[data-intro]')).toHaveCount(0);
   const originalCount = await faces.count();
   await page.getByRole('button', { name: 'Isolate', exact: true }).click();
   await page.getByRole('button', { name: 'Basement', exact: true }).click();
