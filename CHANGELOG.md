@@ -53,6 +53,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- The home-docs host compresses text assets (Brotli, or gzip as a fallback) once per file off the event loop and sends `Vary: Accept-Encoding`; the main bundle transfers at about 110 kB instead of 423 kB, which matters most over Tailscale and mobile data.
 - Search, Isolate and View options reference their popups with `aria-controls` only while the popup exists, so assistive technology never follows a dangling reference; a design QA test audits every view for unnamed controls, duplicate ids and broken ARIA references.
 - On phones the active mode tab no longer sits clipped under the mode row's edge fade (the row keeps end padding while scrolled).
 - The Pi-hole stats dialog closes with **Close** and the shared close icon, matching the other dialogs.

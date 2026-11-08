@@ -1,6 +1,11 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
+import { promisify } from 'node:util';
+import { brotliCompress, constants, gzip } from 'node:zlib';
+
+const brotli = promisify(brotliCompress);
+const gz = promisify(gzip);
 import { isAllowedHousePeer } from './network-access.js';
 import { createPiholeService } from './pihole-service.js';
 
@@ -23,6 +28,39 @@ export function createHouseServer(options: {
     '.png': 'image/png',
     '.ico': 'image/x-icon',
     '.webmanifest': 'application/manifest+json',
+  };
+  // Text assets are compressed once per file and encoding (off the event
+  // loop), then reused; a release's files never change while it runs.
+  const compressible = new Set([
+    '.html',
+    '.js',
+    '.css',
+    '.svg',
+    '.webmanifest',
+  ]);
+  const encoded = new Map<string, Promise<Buffer>>();
+  const encode = (file: string, data: Buffer, accept: string) => {
+    if (!compressible.has(extname(file)) || data.length < 1024) return null;
+    const enc = /\bbr\b/.test(accept)
+      ? 'br'
+      : /\bgzip\b/.test(accept)
+        ? 'gzip'
+        : null;
+    if (!enc) return null;
+    const key = `${enc}:${file}`;
+    let body = encoded.get(key);
+    if (!body) {
+      body =
+        enc === 'br'
+          ? brotli(data, {
+              params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+            })
+          : gz(data, { level: 9 });
+      encoded.set(key, body);
+      // A failed compression is retried on the next request, not cached.
+      body.catch(() => encoded.delete(key));
+    }
+    return { enc, body };
   };
   return createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -85,8 +123,16 @@ export function createHouseServer(options: {
           ? 'public, max-age=31536000, immutable'
           : 'no-cache',
       );
-      res.setHeader('Content-Length', data.length);
-      res.end(req.method === 'HEAD' ? undefined : data);
+      res.setHeader('Vary', 'Accept-Encoding');
+      const packed = encode(
+        file,
+        data,
+        String(req.headers['accept-encoding'] ?? ''),
+      );
+      if (packed) res.setHeader('Content-Encoding', packed.enc);
+      const body = packed ? await packed.body : data;
+      res.setHeader('Content-Length', body.length);
+      res.end(req.method === 'HEAD' ? undefined : body);
     } catch {
       res.writeHead(404).end('Not found');
     }

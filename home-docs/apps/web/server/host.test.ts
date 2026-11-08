@@ -75,4 +75,52 @@ describe('LAN host', () => {
     ).toMatchObject({ state: 'setup' });
     expect(await (await fetch(`${base}/healthz`)).text()).toBe('ok');
   });
+  it('compresses text assets for clients that accept it', async () => {
+    root = await mkdtemp(join(tmpdir(), 'house-host-'));
+    await mkdir(join(root, 'assets'));
+    const js = `console.log(${JSON.stringify('x'.repeat(4000))});`;
+    await writeFile(join(root, 'index.html'), '<h1>ok</h1>');
+    await writeFile(join(root, 'assets/app.js'), js);
+    await writeFile(join(root, 'assets/icon.png'), Buffer.alloc(4096));
+    const options = {
+      root,
+      host: '127.0.0.1',
+      port: 0,
+      piholeUrl: 'http://192.168.0.254',
+      piholePassword: '',
+    };
+    server = createHouseServer(options);
+    server.listen(0, '127.0.0.1');
+    await once(server, 'listening');
+    options.port = (server.address() as AddressInfo).port;
+    const get = (path: string, encoding: string) =>
+      new Promise<{ headers: Record<string, unknown>; size: number }>(
+        (done, fail) => {
+          const req = request(
+            `http://127.0.0.1:${options.port}${path}`,
+            { headers: { 'Accept-Encoding': encoding } },
+            (response) => {
+              let size = 0;
+              response.on('data', (chunk: Buffer) => (size += chunk.length));
+              response.on('end', () =>
+                done({ headers: response.headers, size }),
+              );
+            },
+          );
+          req.on('error', fail);
+          req.end();
+        },
+      );
+    const br = await get('/assets/app.js', 'gzip, deflate, br');
+    expect(br.headers['content-encoding']).toBe('br');
+    expect(br.headers.vary).toBe('Accept-Encoding');
+    expect(br.size).toBeLessThan(js.length / 10);
+    const gz = await get('/assets/app.js', 'gzip');
+    expect(gz.headers['content-encoding']).toBe('gzip');
+    const plain = await get('/assets/app.js', 'identity');
+    expect(plain.headers['content-encoding']).toBeUndefined();
+    expect(plain.size).toBe(js.length);
+    const png = await get('/assets/icon.png', 'br');
+    expect(png.headers['content-encoding']).toBeUndefined();
+  });
 });
