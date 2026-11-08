@@ -57,7 +57,7 @@ states and are not descriptions of the current application layout.
 - Panels: default content when nothing is selected (breaker-panel cards, fixture health), overview composition bars, exception-only row badges, stacked long values, scroll-edge fades, merged duplicate alerts, a single live-cameras entry, and headers that wrap cleanly at compact widths.
 - Search: ⌘K / Ctrl+K, category icons, recent records, a keyboard footer, and full-screen results on phones.
 - Motion: sliding rail and segmented indicators, spring panels, count-up stats, overlay fades on view change, a circular theme reveal, and a selection that glides into view when a panel hides it; reduced motion is respected throughout.
-- Input: trackpad two-finger scroll pans and pinch zooms (with a Scroll gesture override), mouse wheel zooms, double-click or double-tap zooms to a spot, and model markers get styled tooltips.
+- Input: trackpad two-finger scroll pans and pinch zooms (with a Scroll gesture override), mouse wheel zooms, double-click or double-tap zooms to a spot, Escape steps back out of a selection, and model markers get styled tooltips.
 - Phone and tablet: one-row dock, expandable details sheet with a draggable grip, a larger model, side-rail layout for landscape phones, and full-screen isolate.
 - Accessibility: AA contrast for UI and model text in both themes, an 11 px text floor, 40 px touch targets on coarse pointers, chrome before the model in tab order, and in-place focus outlines in the model.
 - The CSS gzip budget rises to 14 kB because styling moved out of the JS bundle; the page gains an SVG favicon and a branded loading state.

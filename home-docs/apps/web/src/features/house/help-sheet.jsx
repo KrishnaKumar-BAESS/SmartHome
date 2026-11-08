@@ -11,7 +11,10 @@ const SHORTCUTS = [
   ['+ / −', 'Zoom in / out'],
   ['0 or r', 'Reset orientation'],
   ['?', 'This help'],
-  ['Esc', 'Close popovers and overlays, clear search'],
+  [
+    'Esc',
+    'Close popovers and overlays, clear search, then clear the selection',
+  ],
 ];
 const MODEL_KEYS = [
   ['Tab', 'Move between rooms and markers in the model'],

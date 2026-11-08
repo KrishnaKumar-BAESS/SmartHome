@@ -381,3 +381,14 @@ test('double-clicking a room keeps its first item selected', async ({
     'true',
   );
 });
+
+test('Escape steps back out of a selection', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Keyboard behaviour');
+  await page.goto('/#m=lighting&s=l3');
+  await expect(page.locator('main:not([data-intro])')).toHaveCount(1);
+  await page.locator('#row-l3').focus();
+  await page.keyboard.press('Escape');
+  await expect(
+    page.getByRole('heading', { name: 'Fixture health' }),
+  ).toBeVisible();
+});

@@ -1453,6 +1453,12 @@ export class HouseController extends Component {
       if (S.viewOptsOpen) this.setState({ viewOptsOpen: false });
       else if (S.isoPanel) this.setState({ isoPanel: false });
       else if (S.notice) this.dismissNotice();
+      // Then step back out of a selection to the view's summary.
+      else if (S.mode === 'overview' && S.selRoom)
+        this.setState({ selRoom: null });
+      else if (S.mode === 'electrical' && (S.selCirc || S.selPanel))
+        this.setState({ selCirc: null, selPanel: null });
+      else if (S.mode === 'lighting' && S.bulb) this.setState({ bulb: null });
       return;
     }
     if (inField || overlay) return;
