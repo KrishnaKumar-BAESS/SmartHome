@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import { promisify } from 'node:util';
 import { brotliCompress, constants, gzip } from 'node:zlib';
@@ -62,6 +62,21 @@ export function createHouseServer(options: {
     }
     return { enc, body };
   };
+  // Warm the Brotli cache at start so the first visitor is not kept waiting.
+  void readdir(resolve(root, 'assets'))
+    .then((names) =>
+      Promise.all(
+        ['index.html', ...names.map((n) => `assets/${n}`)].map(async (file) => {
+          const packed = encode(
+            file,
+            await readFile(resolve(root, file)),
+            'br',
+          );
+          await packed?.body;
+        }),
+      ),
+    )
+    .catch(() => {});
   return createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
