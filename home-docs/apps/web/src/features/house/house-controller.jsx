@@ -1746,7 +1746,7 @@ export class HouseController extends Component {
         ? railRight
         : railRight + listW + G;
     const rightPx = narrow ? 0 : S.rightHidden ? G : G + detW + G;
-    const sheetH = narrow ? Math.round(vh * (vh < 520 ? 0.46 : 0.4)) : 0;
+    const sheetH = narrow ? Math.round(vh * (vh < 520 ? 0.46 : 0.34)) : 0;
     const topPx = narrow ? 108 : G + 56 + G;
     const bottomPx = narrow ? (S.rightHidden ? 0 : sheetH + 8) : G;
     const freeW = Math.max(120, vw - leftPx - rightPx);
