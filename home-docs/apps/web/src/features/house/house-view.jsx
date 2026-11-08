@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { lazy, memo, Suspense } from 'react';
 import { StageBackground } from './stage-background';
 import { StageGrid } from './stage-grid';
 import { HouseStage } from './house-stage';
@@ -13,12 +13,20 @@ import { SystemDetails } from './system-details';
 import { DetailsToggle } from './details-toggle';
 import { SceneLegend } from './scene-legend';
 import { ViewControls } from './view-controls';
-import { LiveCameras } from './live-cameras';
-import { CameraViewer } from './camera-viewer';
-import { HelpSheet } from './help-sheet';
 import { NoticeToast } from './notice-toast';
 import { PrintInventory } from './print-inventory';
 import { Tooltips } from './tooltips';
+
+// Dialogs load on first open, keeping them out of the initial bundle.
+const LiveCameras = lazy(() =>
+  import('./live-cameras').then((m) => ({ default: m.LiveCameras })),
+);
+const CameraViewer = lazy(() =>
+  import('./camera-viewer').then((m) => ({ default: m.CameraViewer })),
+);
+const HelpSheet = lazy(() =>
+  import('./help-sheet').then((m) => ({ default: m.HelpSheet })),
+);
 
 // Everything except the stage only depends on `view`, which the controller
 // keeps referentially stable while the camera moves, so these skip
@@ -37,11 +45,13 @@ const Chrome = memo(function Chrome({ view }) {
       <SceneLegend view={view} />
       <ViewControls view={view} />
       <NoticeToast view={view} />
-      {view.isSecurity && view.showGrid ? (
-        <LiveCameras onClose={view.closeGrid} />
-      ) : null}
-      <CameraViewer view={view} />
-      <HelpSheet view={view} />
+      <Suspense fallback={null}>
+        {view.isSecurity && view.showGrid ? (
+          <LiveCameras onClose={view.closeGrid} />
+        ) : null}
+        {view.showCamExpanded ? <CameraViewer view={view} /> : null}
+        {view.helpOpen ? <HelpSheet view={view} /> : null}
+      </Suspense>
       <Tooltips />
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {view.selectionAnnounce}
