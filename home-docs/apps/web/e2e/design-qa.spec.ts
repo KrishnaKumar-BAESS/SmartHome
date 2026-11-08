@@ -462,3 +462,77 @@ test('the active mode tab on phones sits clear of the scroll edge fade', async (
       .toBe(true);
   }
 });
+
+const ariaAudit = (page: Page) =>
+  page.evaluate(() => {
+    const shown = (e: Element) =>
+      !e.closest('[inert],[hidden],[aria-hidden="true"]') &&
+      (e as HTMLElement).getClientRects().length > 0;
+    const named = (e: Element) =>
+      !!(
+        e.getAttribute('aria-label') ||
+        (e.getAttribute('aria-labelledby') ?? '')
+          .split(/\s+/)
+          .some((id) => document.getElementById(id)?.textContent?.trim()) ||
+        e.textContent?.trim() ||
+        (e as HTMLElement).title ||
+        (e as HTMLInputElement).labels?.length
+      );
+    const controls = [
+      ...document.querySelectorAll(
+        'button,a[href],[role=button],[role=option],input,select,[tabindex]:not([tabindex="-1"])',
+      ),
+    ].filter(shown);
+    const ids = [...document.querySelectorAll('[id]')].map((e) => e.id);
+    const problems: string[] = [];
+    for (const e of controls)
+      if (!named(e)) problems.push(`unnamed ${e.outerHTML.slice(0, 80)}`);
+    for (const id of new Set(ids.filter((x, i) => ids.indexOf(x) !== i)))
+      problems.push(`duplicate id ${id}`);
+    for (const attr of [
+      'aria-controls',
+      'aria-labelledby',
+      'aria-describedby',
+      'aria-activedescendant',
+    ])
+      document.querySelectorAll(`[${attr}]`).forEach((e) =>
+        e
+          .getAttribute(attr)!
+          .split(/\s+/)
+          .filter(Boolean)
+          .forEach((id) => {
+            if (!document.getElementById(id))
+              problems.push(`${attr}=${id} missing`);
+          }),
+      );
+    return [...new Set(problems)];
+  });
+
+test('every view keeps controls named and ARIA references valid', async ({
+  page,
+  isMobile,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const mode of [
+    'overview',
+    'electrical',
+    'lighting',
+    'network',
+    'sound',
+    'security',
+    'climate',
+    'upkeep',
+  ]) {
+    await page.goto(`/#m=${mode}`);
+    expect(await ariaAudit(page), mode).toEqual([]);
+  }
+  await page.getByRole('combobox', { name: 'Search home inventory' }).focus();
+  await expect(page.locator('#search-listbox')).toBeVisible();
+  expect(await ariaAudit(page), 'search open').toEqual([]);
+  await page.keyboard.press('Escape');
+  if (!isMobile) {
+    await page.getByRole('button', { name: 'View options' }).click();
+    await expect(page.locator('#view-options')).toBeVisible();
+    expect(await ariaAudit(page), 'view options open').toEqual([]);
+  }
+});

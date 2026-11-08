@@ -266,7 +266,7 @@ export function TopBar({ view }) {
           aria-autocomplete="list"
           aria-haspopup="listbox"
           aria-expanded={view.searchExpanded}
-          aria-controls="search-listbox"
+          aria-controls={view.searchExpanded ? 'search-listbox' : undefined}
           aria-activedescendant={view.searchActiveId}
           autoComplete="off"
           spellCheck={false}
@@ -305,7 +305,7 @@ export function TopBar({ view }) {
             onClick={view.toggleIso}
             className={`ia btn ${view.isoOn ? 'is-on' : 'btn--ghost'}`}
             aria-expanded={view.showIsoPanel}
-            aria-controls="isolation-panel"
+            aria-controls={view.showIsoPanel ? 'isolation-panel' : undefined}
             data-popover="iso"
           >
             <Icon name="layers" size={14} />

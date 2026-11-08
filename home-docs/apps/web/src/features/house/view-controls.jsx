@@ -198,7 +198,7 @@ export function ViewControls({ view }) {
           aria-label="View options"
           data-tip={view.viewOptsOpen ? undefined : 'View options'}
           aria-expanded={view.viewOptsOpen}
-          aria-controls="view-options"
+          aria-controls={view.viewOptsOpen ? 'view-options' : undefined}
         >
           <Icon name="sliders" size={15} />
         </button>
