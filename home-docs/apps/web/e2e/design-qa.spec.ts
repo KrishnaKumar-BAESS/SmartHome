@@ -367,3 +367,26 @@ test('model translucency survives entrance fades', async ({
   }
   expect(wrong).toEqual([]);
 });
+
+test('help shortcut descriptions keep a readable width on phones', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'Phone layout only.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page
+    .getByRole('button', { name: 'Help and keyboard shortcuts' })
+    .click();
+  const widths = await page
+    .locator('.keys')
+    .first()
+    .evaluate((table) => {
+      const tw = table.getBoundingClientRect().width;
+      return [...table.querySelectorAll('td')].map(
+        (td) => td.getBoundingClientRect().width / tw,
+      );
+    });
+  expect(widths.length).toBeGreaterThan(3);
+  expect(Math.min(...widths)).toBeGreaterThan(0.9);
+});
