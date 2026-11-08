@@ -380,8 +380,8 @@ export function renderScene(house, opt = {}) {
       const p = project(pp.x + po.ox, pp.y + po.oy, drawBase(pp.floor) + 0.55);
       const active = (selC && selC.box === bid) || opt.selPanel === bid;
       const bx = B[bid];
-      const w = 26 * ms,
-        h = 17 * ms;
+      const w = 28 * ms,
+        h = 18 * ms;
       reserved.push({
         x0: p.sx - w / 2 - 2,
         x1: p.sx + w / 2 + 2,
@@ -435,10 +435,10 @@ export function renderScene(house, opt = {}) {
             'text',
             {
               x: p.sx.toFixed(1),
-              y: (p.sy - 4 - h / 2 + 3.5 * ms).toFixed(1),
+              y: (p.sy - 4 - h / 2 + 3.8 * ms).toFixed(1),
               textAnchor: 'middle',
               style: {
-                font: `600 ${9.5 * ms}px 'IBM Plex Mono',monospace`,
+                font: `600 ${10.5 * ms}px 'IBM Plex Mono',monospace`,
                 fill: active ? '#ffffff' : light ? '#4a5867' : '#c8d1dc',
                 pointerEvents: 'none',
               },
@@ -565,7 +565,8 @@ export function renderScene(house, opt = {}) {
     const minX = Math.max(22, opt.floorLabelMinX || 0);
     // When the full name would be pushed onto the model, use the short
     // architectural level code instead.
-    const fits = minSx - 18 >= minX + widthOf(fullLabel);
+    // Phones always use the short codes: the model fills the width there.
+    const fits = !L.narrow && minSx - 18 >= minX + widthOf(fullLabel);
     const visibleLabel = fits
       ? fullLabel
       : { second: 'L2', main: 'L1', basement: 'B1' }[f];
@@ -1299,7 +1300,7 @@ export function renderScene(house, opt = {}) {
   // that would collide with one already placed is left out; the hover
   // pill still names that room.
   if (showRoomLabels) {
-    const fs = 10.5 * ms;
+    const fs = 11 * ms;
     const placed = [...reserved];
     const hits = (b) =>
       placed.some(

@@ -52,7 +52,7 @@
   --t3: #4a5867;
   --t4: #5b6a78;
   --t5: #627080;
-  --t6: #687786;
+  --t6: #637180;
   --placeholder: #627080;
   --mix-text: 54%;
 
@@ -141,8 +141,8 @@
 }
 @media (pointer: coarse) {
   :root {
-    --hit: 40px;
-    --hit-sm: 36px;
+    --hit: 44px;
+    --hit-sm: 40px;
   }
 }
 
@@ -360,9 +360,27 @@ main[data-intro] #house-stage svg > :not(.face) {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
+/* In the model, focus follows the shapes instead of drawing a box: rooms
+   take a heavy accent edge (plus the hover name pill), markers a ring. */
 svg [tabindex]:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 3px;
+  outline: none;
+}
+svg .face:focus-visible {
+  stroke: var(--focus);
+  stroke-width: 2.5px;
+}
+svg circle[tabindex]:focus-visible,
+svg rect[tabindex]:focus-visible {
+  stroke: var(--focus);
+  stroke-width: 2px;
+}
+svg g[tabindex]:focus-visible rect {
+  stroke: var(--focus);
+  stroke-width: 2px;
+}
+#house-stage:focus-visible {
+  outline-offset: -4px;
+  border-radius: var(--r-xl);
 }
 .skip-link {
   position: absolute;
@@ -521,7 +539,8 @@ svg [tabindex]:focus-visible {
   color: var(--t1);
 }
 /* Compositor relief while the model is being dragged. */
-main[data-dragging='true'] .surface {
+main[data-dragging='true'] .surface,
+main[data-dragging='true'] .surface-pop {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -897,8 +916,8 @@ html.theme-transition * {
   border-radius: var(--r-xs);
   background: color-mix(in oklab, var(--c) 13%, transparent);
   color: color-mix(in oklab, var(--c) var(--mix-text), var(--t1));
-  font: 600 10px var(--mono);
-  letter-spacing: 0.04em;
+  font: 600 11px var(--font);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   white-space: nowrap;
   flex-shrink: 0;
@@ -911,7 +930,7 @@ html.theme-transition * {
 .tag--lg {
   height: 24px;
   padding: 0 9px;
-  font-size: 10.5px;
+  font-size: 11px;
 }
 .tone-text {
   --c: var(--t4);
@@ -924,13 +943,13 @@ html.theme-transition * {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  height: 18px;
-  padding: 0 7px 0 6px;
+  height: 20px;
+  padding: 0 8px 0 7px;
   border-radius: var(--r-pill);
   background: color-mix(in oklab, var(--c) 12%, transparent);
   color: color-mix(in oklab, var(--c) var(--mix-text), var(--t1));
-  font: 600 9px var(--mono);
-  letter-spacing: 0.08em;
+  font: 600 11px var(--font);
+  letter-spacing: 0.03em;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -1214,7 +1233,7 @@ kbd {
 .popover-foot kbd {
   height: 18px;
   min-width: 18px;
-  font-size: 10.5px;
+  font-size: 11px;
 }
 .search-keys {
   display: inline-flex;
@@ -1335,7 +1354,7 @@ kbd {
   transition: transform var(--dur-3) var(--ease-spring);
 }
 .nav-label {
-  font: 500 10.5px var(--font);
+  font: 500 11px var(--font);
   letter-spacing: 0.005em;
 }
 .nav-rail-row .nav-label {
@@ -2109,7 +2128,7 @@ button.callout {
 }
 .metric-label {
   margin-top: 4px;
-  font: 500 10.5px var(--font);
+  font: 500 11px var(--font);
   color: var(--t4);
 }
 .metric--big .metric-value {
@@ -2482,10 +2501,11 @@ button.callout {
   height: 18px;
   min-width: 18px;
   padding: 0 5px;
+  font-size: 11px;
   background: rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
   color: #c8d1dc;
-  font-size: 10.5px;
+  font-size: 11px;
 }
 .tooltip[data-side='bottom'] {
   transform: translateX(-50%);
@@ -2523,10 +2543,39 @@ button.callout {
     var(--shadow-md);
   isolation: isolate;
 }
-.feed--big {
+.feed-stage {
   flex: 1;
   min-height: 0;
-  aspect-ratio: auto;
+  display: grid;
+  place-items: center;
+  container-type: size;
+}
+/* Letterboxed 16:9 at whatever size the dialog allows. */
+.feed--big {
+  width: min(100cqw, 100cqh * 16 / 9);
+  aspect-ratio: 16 / 9;
+}
+.feed::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 50% 45%,
+      transparent 55%,
+      rgba(0, 0, 0, 0.55) 100%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+}
+.feed-top,
+.feed-bottom,
+.feed-event,
+.feed-offline {
+  z-index: 2;
 }
 .feed-bg {
   position: absolute;
@@ -2548,10 +2597,15 @@ button.callout {
   background:
     repeating-linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.05) 0 1px,
+      rgba(255, 255, 255, 0.07) 0 1px,
       transparent 1px 40px
     ),
-    linear-gradient(180deg, transparent, rgba(40, 60, 80, 0.22));
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.05) 0 1px,
+      transparent 1px 28px
+    ),
+    linear-gradient(180deg, rgba(90, 120, 150, 0.12), rgba(40, 60, 80, 0.28));
   transform: perspective(180px) rotateX(58deg);
   transform-origin: bottom;
 }
@@ -2602,7 +2656,7 @@ button.callout {
   justify-content: space-between;
   gap: 8px;
   padding: 10px 12px;
-  font: 600 10.5px var(--mono);
+  font: 600 11px var(--mono);
   color: #dfe7ee;
 }
 .feed-top {
@@ -2683,8 +2737,8 @@ button.callout {
   transform: translate(-50%, -50%);
   display: grid;
   place-items: center;
-  border-radius: 4px;
-  font: 600 8.5px var(--mono);
+  border-radius: 5px;
+  font: 600 11px var(--mono);
   color: #fff;
   box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.4);
   animation: pop var(--dur-4) var(--ease-spring) both;
@@ -2845,7 +2899,7 @@ button.callout {
     transform var(--dur-3) var(--ease-spring),
     box-shadow var(--dur-2);
 }
-.timeline-dot[aria-selected='true'] {
+.timeline-dot[data-selected] {
   transform: scale(1.35);
   box-shadow:
     0 0 0 2px #0b0e13,
@@ -2858,9 +2912,7 @@ button.callout {
 }
 @media (pointer: coarse) {
   .timeline-dot {
-    width: 18px;
-    height: 18px;
-    margin: -9px 0 0 -9px;
+    pointer-events: none;
   }
 }
 .hist-tile {
@@ -2890,7 +2942,7 @@ button.callout {
 .hist-tile .feed-top,
 .hist-tile .feed-bottom {
   padding: 6px 8px;
-  font-size: 10px;
+  font-size: 11px;
 }
 .hist-tile .feed-mark {
   font-size: 12px;
@@ -2999,6 +3051,42 @@ button.callout {
 }
 main[data-dragging='true'] .face {
   transition: none;
+}
+
+@media (pointer: coarse) {
+  /* Every touch target clears 40 px. */
+  .chip,
+  .seg-btn,
+  .group-head,
+  .chip-button,
+  .btn {
+    min-height: 40px;
+  }
+  .btn {
+    min-width: 40px;
+  }
+  .nav-rail-row .nav-button {
+    height: 40px;
+  }
+  .search {
+    height: 44px;
+  }
+  .sheet-grip-hit {
+    height: 40px;
+  }
+  .side-panel--sheet .panel-inner {
+    padding-top: 4px;
+  }
+  .skip-link {
+    padding: 12px 14px;
+  }
+  .hint {
+    min-height: 48px;
+  }
+  .hint .chip-button,
+  .iso-panel .chip {
+    min-height: 40px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

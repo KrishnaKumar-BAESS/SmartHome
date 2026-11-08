@@ -61,6 +61,11 @@ function Viewer({ view }) {
   }, []);
   const narrow = view.narrow;
   const f = view.bigFeed;
+  // On touch screens the timeline is a read-only overview; the event tiles
+  // (large, spaced) are the controls, since dots sit closer than a finger.
+  const coarse =
+    typeof window !== 'undefined' &&
+    !!window.matchMedia?.('(pointer: coarse)').matches;
   return (
     <dialog
       ref={ref}
@@ -130,36 +135,40 @@ function Viewer({ view }) {
           )}
         >
           <div
-            role="img"
-            aria-label={`${f.name}: ${f.eventLabel}. Demonstration, not recorded video.`}
-            className="feed feed--big"
+            className="feed-stage"
             style={narrow ? { minHeight: 160 } : undefined}
           >
-            <div className="feed-bg"></div>
-            <div className="feed-floor"></div>
-            <div className="feed-mark">{f.watermark}</div>
-            <div className="feed-scan"></div>
-            {f.showOffline ? (
-              <div className="feed-offline">NO SIGNAL</div>
-            ) : null}
-            <div className="feed-top" style={{ padding: '14px 16px' }}>
-              <span className="feed-live" style={{ '--c': f.liveColor }}>
-                <span
-                  className="dot dot--pulse"
-                  style={{ '--c': f.liveColor }}
-                />
-                {f.liveLabel}
-              </span>
-              <span>{f.res}</span>
-            </div>
-            <div className="feed-event" key={f.eventLabel}>
-              {f.eventLabel}
-            </div>
-            <div className="feed-bottom" style={{ padding: '14px 16px' }}>
-              <span className="feed-name">{`${f.name} · ${f.room}`}</span>
-              <span className="feed-dim">
-                {f.time ? f.time : <FeedClock />}
-              </span>
+            <div
+              role="img"
+              aria-label={`${f.name}: ${f.eventLabel}. Demonstration, not recorded video.`}
+              className="feed feed--big"
+            >
+              <div className="feed-bg"></div>
+              <div className="feed-floor"></div>
+              <div className="feed-mark">{f.watermark}</div>
+              <div className="feed-scan"></div>
+              {f.showOffline ? (
+                <div className="feed-offline">NO SIGNAL</div>
+              ) : null}
+              <div className="feed-top" style={{ padding: '14px 16px' }}>
+                <span className="feed-live" style={{ '--c': f.liveColor }}>
+                  <span
+                    className="dot dot--pulse"
+                    style={{ '--c': f.liveColor }}
+                  />
+                  {f.liveLabel}
+                </span>
+                <span>{f.res}</span>
+              </div>
+              <div className="feed-event" key={f.eventLabel}>
+                {f.eventLabel}
+              </div>
+              <div className="feed-bottom" style={{ padding: '14px 16px' }}>
+                <span className="feed-name">{`${f.name} · ${f.room}`}</span>
+                <span className="feed-dim">
+                  {f.time ? f.time : <FeedClock />}
+                </span>
+              </div>
             </div>
           </div>
           <div className="review-panel">
@@ -167,9 +176,14 @@ function Viewer({ view }) {
               <span className="review-label">Events</span>
               <div
                 className="timeline"
-                role="listbox"
-                aria-label="Event timeline, oldest on the left, now on the right"
-                aria-orientation="horizontal"
+                role={coarse ? undefined : 'listbox'}
+                aria-hidden={coarse || undefined}
+                aria-label={
+                  coarse
+                    ? undefined
+                    : 'Event timeline, oldest on the left, now on the right'
+                }
+                aria-orientation={coarse ? undefined : 'horizontal'}
               >
                 <div
                   className="timeline-fill"
@@ -179,15 +193,16 @@ function Viewer({ view }) {
                 {(view.histTiles ?? []).map((t) => (
                   <div
                     key={t.idx}
-                    onClick={t.onClick}
+                    onClick={coarse ? undefined : t.onClick}
                     style={css(t.dotStyle)}
                     className="timeline-dot"
-                    role="option"
-                    aria-selected={t.selected}
-                    aria-label={t.aria}
-                    tabIndex={0}
-                    onKeyDown={optionOnKey}
-                    title={t.aria}
+                    role={coarse ? undefined : 'option'}
+                    aria-selected={coarse ? undefined : t.selected}
+                    data-selected={t.selected || undefined}
+                    aria-label={coarse ? undefined : t.aria}
+                    tabIndex={coarse ? undefined : 0}
+                    onKeyDown={coarse ? undefined : optionOnKey}
+                    title={coarse ? undefined : t.aria}
                   ></div>
                 ))}
               </div>

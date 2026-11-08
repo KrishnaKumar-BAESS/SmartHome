@@ -84,7 +84,7 @@
   animation: sheetIn var(--dur-4) var(--ease-out) both;
 }
 .live-cameras-tag {
-  font: 600 9px var(--mono);
+  font: 600 11px var(--mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #efc05e;

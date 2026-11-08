@@ -357,7 +357,7 @@ export class HouseController extends Component {
   spk(arr) {
     return arr.map((p, i) => {
       const col = p.t === 'seat' ? 'var(--t4)' : SPEAKER[p.t] || SPEAKER.main;
-      const sz = p.t === 'seat' ? 18 : 16;
+      const sz = p.t === 'seat' ? 20 : 22;
       return {
         key: `${p.t}-${i}`,
         label: p.t === 'seat' ? '' : p.l,

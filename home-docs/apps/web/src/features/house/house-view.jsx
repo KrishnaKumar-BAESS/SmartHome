@@ -70,9 +70,11 @@ export function HouseView({ view, scene }) {
         </a>
         <StageBackground view={view} />
         <StageGrid view={view} />
+        {/* Chrome comes first in the DOM so Tab reaches search and the
+            views before the model's many rooms; z-index keeps it on top. */}
+        <Chrome view={view} />
         <HouseStage view={view} scene={scene} />
         <StageVignette view={view} />
-        <Chrome view={view} />
       </main>
       <PrintInventory />
     </>

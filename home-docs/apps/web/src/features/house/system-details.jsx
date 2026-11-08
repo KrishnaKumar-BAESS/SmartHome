@@ -883,7 +883,7 @@ export function SystemDetails({ view }) {
                 <span
                   style={{
                     marginLeft: 'auto',
-                    font: '600 10px var(--mono)',
+                    font: '600 11px var(--mono)',
                     letterSpacing: '0.1em',
                     opacity: 0.8,
                   }}
