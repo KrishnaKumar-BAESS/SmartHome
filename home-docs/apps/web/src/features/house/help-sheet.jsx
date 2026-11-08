@@ -6,6 +6,7 @@ const REPO = 'https://github.com/KrishnaKumar-BAESS/SmartHome';
 const SHORTCUTS = [
   ['1 – 8', 'Switch view (Overview … Upkeep)'],
   ['/', 'Focus search'],
+  ['⌘K or Ctrl+K', 'Focus search (always on)'],
   ['+ / −', 'Zoom in / out'],
   ['0 or r', 'Reset orientation'],
   ['?', 'This help'],

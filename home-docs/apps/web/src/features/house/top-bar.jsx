@@ -2,6 +2,10 @@ import { usePresence } from '../../lib/presence';
 import { Icon } from './icons';
 import { ModeIcon } from './mode-icons';
 
+const IS_MAC =
+  typeof navigator !== 'undefined' &&
+  /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+
 const CAT_ICON = {
   Room: 'room',
   Circuit: 'electrical',
@@ -133,6 +137,20 @@ function SearchPopup({ view }) {
           ))}
         </>
       ) : null}
+      {view.narrow ? null : (
+        <div className="popover-foot" aria-hidden="true">
+          <span>
+            <kbd>↑</kbd>
+            <kbd>↓</kbd> Navigate
+          </span>
+          <span>
+            <kbd>↵</kbd> Open
+          </span>
+          <span>
+            <kbd>esc</kbd> Close
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -213,8 +231,9 @@ export function TopBar({ view }) {
             <Icon name="close" size={11} strokeWidth={1.8} />
           </button>
         ) : !narrow && !view.searchFocus ? (
-          <span className="kbd" aria-hidden="true">
-            /
+          <span className="search-keys" aria-hidden="true">
+            <kbd>{IS_MAC ? '⌘' : 'Ctrl'}</kbd>
+            <kbd>K</kbd>
           </span>
         ) : null}
         <SearchPopup view={view} />

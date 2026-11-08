@@ -1181,6 +1181,22 @@ export class HouseController extends Component {
   }
 
   handleKey(e) {
+    // ⌘K / Ctrl+K opens search from anywhere, even inside other fields;
+    // it is a chord, so it works with single-key shortcuts turned off.
+    if (
+      (e.metaKey || e.ctrlKey) &&
+      !e.altKey &&
+      !e.shiftKey &&
+      e.key.toLowerCase() === 'k' &&
+      !this.state.camExpanded &&
+      !this.state.feedGrid &&
+      !this.state.helpOpen
+    ) {
+      e.preventDefault();
+      this.searchRef.current?.focus();
+      this.searchRef.current?.select();
+      return;
+    }
     if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
     const S = this.state;
     const t = e.target;

@@ -723,63 +723,36 @@ export function renderScene(house, opt = {}) {
     HIT = 8 * ms;
 
   // ---- OVERVIEW: flagged bulbs + mesh nodes ----
+  // One tidy row of markers under each room label: flagged fixtures, then
+  // devices. Devices with an owner-confirmed position keep that spot.
   if (layer === 'overview') {
-    const byRoom = {};
+    const rows = {};
+    const rowOf = (rid) => (rows[rid] = rows[rid] || []);
     house.bulbs
       .filter((b) => b.st !== 'ok')
       .forEach((b) => {
         const rid = house.bulbRoomId(b.room);
-        if (!rid) return;
-        (byRoom[rid] = byRoom[rid] || []).push(b);
+        if (rid) rowOf(rid).push({ kind: 'bulb', b });
       });
-    Object.keys(byRoom).forEach((rid) => {
-      const arr = byRoom[rid];
-      const base = roomCeil(rid);
-      if (!base) return;
-      arr.forEach((b, i) => {
-        const ox = (i - (arr.length - 1) / 2) * SPACING;
-        const bcx = base.c.sx + ox,
-          bcy = base.c.sy + 13 * ms;
-        pushGlowDot(`ov-bulb-${b.id}`, bcx, bcy, house.stColor(b.st), 4, false);
-        if (opt.onBulbClick)
-          els.push(
-            hit(
-              `ov-bulb-hit-${b.id}`,
-              bcx,
-              bcy,
-              HIT,
-              `${b.room} — ${b.fixture}, ${b.st === 'overdue' ? 'overdue' : 'due soon'}`,
-              () => opt.onBulbClick(b.id),
-            ),
-          );
-      });
-    });
+    const placedNodes = [];
     house.nodes.forEach((n) => {
       const rid = house.nodeRoomId[n.room];
-      const base = rid ? roomCeil(rid) : null;
-      if (!base) return;
-      const point = n.position
-        ? projR(
-            rid,
-            n.position.x,
-            n.position.y,
-            drawBase(base.r.floor) + n.position.z,
-          )
-        : base.c;
-      const cx = point.sx,
-        cy = point.sy - (n.position ? 0 : 13 * ms);
+      if (!rid) return;
+      if (n.position) placedNodes.push({ n, rid });
+      else rowOf(rid).push({ kind: 'node', n });
+    });
+    const drawNode = (n, cx, cy) => {
       els.push(
         RE('rect', {
           key: `ov-node-${n.id}`,
-          x: (cx - 5 * ms).toFixed(1),
-          y: (cy - 5 * ms).toFixed(1),
-          width: 10 * ms,
-          height: 10 * ms,
-          rx: 3,
+          x: (cx - 4.5 * ms).toFixed(1),
+          y: (cy - 4.5 * ms).toFixed(1),
+          width: 9 * ms,
+          height: 9 * ms,
+          rx: 2.5 * ms,
           fill: n.status === 'warn' ? STATUS.soon : MODE_ACCENT.network,
-          opacity: 0.9,
           stroke: markerRing,
-          strokeWidth: 1,
+          strokeWidth: 1.2,
           style: { pointerEvents: 'none' },
         }),
       );
@@ -789,12 +762,46 @@ export function renderScene(house, opt = {}) {
             `ov-node-hit-${n.id}`,
             cx,
             cy,
-            11 * ms,
+            HIT,
             `${n.name}, ${n.role}${n.status === 'warn' ? ', recorded weak' : ''}`,
             () => opt.onNodeClick(n.id),
             'rect',
           ),
         );
+    };
+    Object.keys(rows).forEach((rid) => {
+      const arr = rows[rid];
+      const base = roomCeil(rid);
+      if (!base) return;
+      arr.forEach((it, i) => {
+        const cx = base.c.sx + (i - (arr.length - 1) / 2) * SPACING,
+          cy = base.c.sy + 13 * ms;
+        if (it.kind === 'node') return drawNode(it.n, cx, cy);
+        const b = it.b;
+        pushGlowDot(`ov-bulb-${b.id}`, cx, cy, house.stColor(b.st), 4, false);
+        if (opt.onBulbClick)
+          els.push(
+            hit(
+              `ov-bulb-hit-${b.id}`,
+              cx,
+              cy,
+              HIT,
+              `${b.room} — ${b.fixture}, ${b.st === 'overdue' ? 'overdue' : 'due soon'}`,
+              () => opt.onBulbClick(b.id),
+            ),
+          );
+      });
+    });
+    placedNodes.forEach(({ n, rid }) => {
+      const base = roomCeil(rid);
+      if (!base) return;
+      const point = projR(
+        rid,
+        n.position.x,
+        n.position.y,
+        drawBase(base.r.floor) + n.position.z,
+      );
+      drawNode(n, point.sx, point.sy);
     });
   }
 
@@ -848,7 +855,7 @@ export function renderScene(house, opt = {}) {
               drawBase(base.r.floor) + n.position.z,
             )
           : base.c;
-        pos[n.id] = { x: point.sx, y: point.sy - (n.position ? 0 : 12 * ms) };
+        pos[n.id] = { x: point.sx, y: point.sy + (n.position ? 0 : 14 * ms) };
       }
     });
     const gw = house.nodes[0];
@@ -948,7 +955,7 @@ export function renderScene(house, opt = {}) {
     const base = roomCeil(opt.soundRoom);
     if (base) {
       const cx = base.c.sx,
-        cy = base.c.sy;
+        cy = base.c.sy + 16 * ms;
       const offs = [
         [-22, -12],
         [0, -16],
@@ -1232,7 +1239,7 @@ export function renderScene(house, opt = {}) {
       const zt = drawBase(r.floor) + r.height;
       const [rx, ry] = cen2(r.verts);
       const foot = projR(locate.roomId, rx, ry, zt),
-        head = projR(locate.roomId, rx, ry, zt + 0.62);
+        head = projR(locate.roomId, rx, ry, zt + 0.95);
       els.push(
         RE(
           'g',

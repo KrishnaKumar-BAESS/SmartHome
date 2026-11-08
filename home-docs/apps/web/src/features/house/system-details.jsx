@@ -826,7 +826,7 @@ export function SystemDetails({ view }) {
                 >
                   <Icon name="bolt" size={14} style={{ color: 'var(--t4)' }} />
                   <span
-                    className="row-main row-sub"
+                    className="row-main row-sub row-sub--wrap"
                     style={{ color: 'var(--t2)' }}
                   >
                     {view.zoneDet.power}
