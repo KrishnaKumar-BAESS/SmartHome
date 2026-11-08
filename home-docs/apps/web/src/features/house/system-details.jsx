@@ -607,7 +607,7 @@ export function SystemDetails({ view }) {
                             onClick={r.cycle}
                             aria-label={`Show the next of ${r.otherCount + 1} circuits serving ${r.name}`}
                           >
-                            {`+${r.otherCount} more`}
+                            {`+${r.otherCount} circuit${r.otherCount === 1 ? '' : 's'}`}
                           </button>
                         ) : null}
                       </div>
