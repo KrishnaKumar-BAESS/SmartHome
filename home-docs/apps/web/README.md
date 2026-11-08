@@ -146,6 +146,18 @@ adapter, backend API, service worker, or persistent editing flow.
 `VITE_SHOW_ADDRESS=true` (see [.env.example](.env.example)) opts in to showing
 the street address.
 
+## Offline shell
+
+`public/sw.js` is a service worker registered by `src/lib/offline.ts` only on
+secure origins (the private HTTPS hostnames). Browsers never run it on the
+plain-HTTP LAN address, on localhost, or in the embedded camera player. The page
+is network-first with the last good copy as an offline fallback; hashed
+`/assets/` files are cache-first; `/api/*` and `/healthz` are never cached. When
+the cached page is shown because the host is unreachable, a notice says so. To
+retire it, replace `sw.js` with one that unregisters itself and deletes its
+caches; the host serves `/sw.js` with `no-cache`, so browsers pick that up on
+their next visit.
+
 ## Verification and change guidance
 
 [Unit tests](src/data/house.test.ts) protect migration parity and selected

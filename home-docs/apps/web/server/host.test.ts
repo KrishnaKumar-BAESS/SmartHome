@@ -74,6 +74,14 @@ describe('LAN host', () => {
       await (await fetch(`${base}/api/pihole/stats`)).json(),
     ).toMatchObject({ state: 'setup' });
     expect(await (await fetch(`${base}/healthz`)).text()).toBe('ok');
+    await writeFile(
+      join(root, 'sw.js'),
+      'self.addEventListener("fetch", () => {});',
+    );
+    const sw = await fetch(`${base}/sw.js`);
+    expect(sw.status).toBe(200);
+    expect(sw.headers.get('cache-control')).toBe('no-cache');
+    expect(sw.headers.get('content-type')).toContain('javascript');
   });
   it('compresses text assets for clients that accept it', async () => {
     root = await mkdtemp(join(tmpdir(), 'house-host-'));

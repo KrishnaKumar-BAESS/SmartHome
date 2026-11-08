@@ -121,6 +121,7 @@ export function createHouseServer(options: {
       if (
         path !== '/' &&
         path !== '/index.html' &&
+        path !== '/sw.js' &&
         !/^\/assets\/[a-zA-Z0-9_.-]+$/.test(path)
       ) {
         res.writeHead(404).end('Not found');

@@ -9,6 +9,7 @@ import '@fontsource/ibm-plex-mono/latin-400.css';
 import '@fontsource/ibm-plex-mono/latin-500.css';
 import '@fontsource/ibm-plex-mono/latin-600.css';
 import { App } from './app';
+import { registerOffline } from './lib/offline';
 import './styles.css';
 
 const root = document.getElementById('root');
@@ -19,3 +20,4 @@ createRoot(root).render(
     <App />
   </StrictMode>,
 );
+registerOffline();

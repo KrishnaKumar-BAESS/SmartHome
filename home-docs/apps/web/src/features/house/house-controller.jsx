@@ -30,6 +30,7 @@ import { renderScene } from './scene';
 import { HouseView } from './house-view';
 import { prefersReducedMotion, tween } from '../../lib/motion';
 import { decodeUrlState, encodeUrlState } from '../../lib/url-state';
+import { servedOffline } from '../../lib/offline';
 import { toCsv, downloadText, copyText } from '../../lib/export';
 import { installAgentApi } from './agent-api';
 import { BUILD, BUILD_LABEL } from '../../build-info';
@@ -1149,6 +1150,10 @@ export class HouseController extends Component {
   // ------------------------------------------------------------- lifecycle
   componentDidMount() {
     this.applyTheme();
+    // The installed app opened without the house server: say so plainly.
+    void servedOffline().then((offline) => {
+      if (offline) this.notify('Offline · showing the last loaded copy');
+    });
     this._mq = window.matchMedia?.('(prefers-color-scheme: dark)');
     this._onMq = (e) =>
       this.setState({ systemDark: e.matches }, () => this.applyTheme());
