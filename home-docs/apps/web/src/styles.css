@@ -1593,6 +1593,31 @@ kbd {
     animation-timeline: scroll(self);
   }
 }
+/* Short windows (landscape phones): the mode rail scrolls, so its edges fade
+   toward the modes that are out of view. Taller windows keep the rail's
+   shadow unmasked. */
+@media (max-height: 640px) {
+  @supports (animation-timeline: scroll()) {
+    .nav-rail--wide {
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade-top),
+        #000 calc(100% - var(--fade-bottom)),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade-top),
+        #000 calc(100% - var(--fade-bottom)),
+        transparent 100%
+      );
+      animation: scrollEdges linear both;
+      animation-timeline: scroll(self);
+    }
+  }
+}
 .panel-inner {
   padding: 18px 18px 44px;
 }

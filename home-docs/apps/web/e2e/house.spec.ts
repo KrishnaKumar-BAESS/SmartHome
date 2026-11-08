@@ -416,3 +416,21 @@ test('hovering a truncated list label shows its full text', async ({
   await fits.hover();
   await expect(page.locator('.tooltip')).toHaveCount(0);
 });
+
+test('narrowing a window into the phone layout closes the list so the model stays visible', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Starts from a wide window.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 1000, height: 700 });
+  await page.goto('/#m=lighting');
+  const list = page.locator('#panel-left');
+  await expect(list).not.toHaveAttribute('inert', '');
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(list).toHaveAttribute('inert', '');
+  await page.evaluate(() => (location.hash = '#m=network'));
+  await expect(list).toHaveAttribute('inert', '');
+  await page.getByRole('button', { name: 'List' }).click();
+  await expect(list).not.toHaveAttribute('inert', '');
+});

@@ -53,6 +53,8 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- Narrowing a window into the phone layout (split view, a rotated tablet, or a resized desktop window) closes the List, so the List and the Details sheet no longer cover the whole model; the List button reopens it.
+- On short windows such as landscape phones, the mode rail fades at its scrolling edge so the modes below the fold are discoverable.
 - The search placeholder shortens on tablet-width windows (under 900 px) and ellipsizes instead of clipping mid-word into the ⌘K hint.
 - On phones the help sheet stacks each control above its effect, so descriptions use the full width instead of a narrow wrapped column.
 - Truncated list and search labels show their full text in a tooltip on mouse hover; tooltips wrap long text within their 260 px width instead of overflowing.

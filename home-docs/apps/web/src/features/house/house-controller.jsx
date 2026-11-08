@@ -891,8 +891,15 @@ export class HouseController extends Component {
         if (!r) return;
         const w = Math.round(r.width),
           h = Math.round(r.height);
-        if (w && h && (w !== this.state.vw || h !== this.state.vh))
-          this.setState({ vw: w, vh: h });
+        if (!w || !h || (w === this.state.vw && h === this.state.vh)) return;
+        // Crossing into the phone layout (a narrowed window, split view, or a
+        // rotated tablet) closes the List so it and the Details sheet do not
+        // cover the whole model; the List button brings it back.
+        const toPhone =
+          isNarrow(w, h) && !isNarrow(this.state.vw || w, this.state.vh || h);
+        this.setState(
+          toPhone ? { vw: w, vh: h, leftHidden: true } : { vw: w, vh: h },
+        );
       });
       this._resize.observe(element);
     }
