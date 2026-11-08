@@ -1,11 +1,11 @@
-import { useRef } from 'react';
+import { useRef, type MouseEvent } from 'react';
 import { useIndicator } from '../../lib/use-indicator';
 
 export type SegmentItem = {
   key: string;
   label: string;
   on: boolean;
-  onClick: () => void;
+  onClick: (e?: MouseEvent<HTMLButtonElement>) => void;
 };
 
 /** Mutually exclusive options with a thumb that slides to the active one. */
@@ -47,7 +47,7 @@ export function Segmented({
           className="seg-btn"
           aria-pressed={item.on}
           data-active={item.on ? 'true' : undefined}
-          onClick={item.onClick}
+          onClick={(e) => item.onClick(e)}
         >
           {item.label}
         </button>

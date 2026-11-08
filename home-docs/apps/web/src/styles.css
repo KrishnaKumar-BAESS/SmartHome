@@ -544,6 +544,15 @@ main[data-dragging='true'] .surface-pop {
 html[data-hidden='true'] * {
   animation-play-state: paused !important;
 }
+/* Theme reveal (view transitions): the new theme is clipped in by script. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 1;
+}
 /* Theme switches cross-fade the main surfaces for a moment. */
 html.theme-transition,
 html.theme-transition * {

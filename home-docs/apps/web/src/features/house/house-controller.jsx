@@ -1,4 +1,5 @@
 import { Component, createRef } from 'react';
+import { flushSync } from 'react-dom';
 import {
   boxes,
   circuits,
@@ -908,8 +909,49 @@ export class HouseController extends Component {
       meta.setAttribute('content', t === 'dark' ? '#0b0e13' : '#eef1f5');
   }
 
-  setTheme = (theme) => {
+  setTheme = (theme, origin) => {
     const root = document.documentElement;
+    const changes =
+      this.effectiveTheme({ ...this.state, theme }) !==
+      this.effectiveTheme(this.state);
+    // A circular reveal grows from the control that changed the theme.
+    // Browsers without view transitions keep the colour cross-fade below.
+    if (
+      changes &&
+      typeof document.startViewTransition === 'function' &&
+      !prefersReducedMotion()
+    ) {
+      const r = origin?.getBoundingClientRect?.();
+      const x = r ? r.left + r.width / 2 : window.innerWidth / 2;
+      const y = r ? r.top + r.height / 2 : window.innerHeight / 2;
+      const radius = Math.hypot(
+        Math.max(x, window.innerWidth - x),
+        Math.max(y, window.innerHeight - y),
+      );
+      const vt = document.startViewTransition(() => {
+        flushSync(() => this.setState({ theme }));
+        this.applyTheme();
+      });
+      vt.ready
+        .then(() =>
+          root.animate(
+            {
+              clipPath: [
+                `circle(0px at ${x}px ${y}px)`,
+                `circle(${radius}px at ${x}px ${y}px)`,
+              ],
+            },
+            {
+              duration: 560,
+              easing: 'cubic-bezier(0.32, 0.72, 0, 1)',
+              pseudoElement: '::view-transition-new(root)',
+            },
+          ),
+        )
+        .catch(() => {});
+      writeStorage(THEME_KEY, theme);
+      return;
+    }
     if (!prefersReducedMotion()) {
       root.classList.add('theme-transition');
       clearTimeout(this._themeT);
@@ -3179,7 +3221,7 @@ export class HouseController extends Component {
         key: t,
         label: t === 'system' ? 'System' : t === 'light' ? 'Light' : 'Dark',
         on: S.theme === t,
-        onClick: () => this.setTheme(t),
+        onClick: (e) => this.setTheme(t, e?.currentTarget),
       })),
       nudge: [
         {
@@ -3589,7 +3631,8 @@ export class HouseController extends Component {
       isoTopLabel,
       isoOn,
       themeBtn: {
-        onClick: () => this.setTheme(light ? 'dark' : 'light'),
+        onClick: (e) =>
+          this.setTheme(light ? 'dark' : 'light', e.currentTarget),
         isLight: light,
         title: light ? 'Switch to dark theme' : 'Switch to light theme',
       },
