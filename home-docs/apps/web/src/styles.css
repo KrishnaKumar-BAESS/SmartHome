@@ -1314,6 +1314,12 @@ kbd {
 }
 /* Scrolling rows drop their end padding; a spacer keeps the last tab clear
    of the edge fade, and scroll padding does the same for scrollIntoView. */
+/* A full-height sheet is the whole screen's content: opaque, so the hint and
+   dock beneath it do not ghost through the glass. */
+.side-panel--sheet[data-full='true'] {
+  background:
+    linear-gradient(var(--glass-strong), var(--glass-strong)), var(--bg);
+}
 .nav-rail-row::after {
   content: '';
   flex: 0 0 10px;

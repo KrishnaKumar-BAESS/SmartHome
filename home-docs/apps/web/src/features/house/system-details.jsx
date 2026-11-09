@@ -244,6 +244,7 @@ export function SystemDetails({ view }) {
       className={`side-panel surface ${view.narrow ? 'side-panel--sheet' : ''}`}
       style={css(view.detailPanelStyle)}
       data-hidden={view.rightHidden ? 'true' : undefined}
+      data-full={view.narrow && view.sheetFull ? 'true' : undefined}
       aria-label={`${view.modeLabel} details`}
       inert={view.rightHidden ? true : undefined}
     >

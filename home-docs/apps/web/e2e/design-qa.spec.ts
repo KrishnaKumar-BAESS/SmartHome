@@ -536,3 +536,20 @@ test('every view keeps controls named and ARIA references valid', async ({
     expect(await ariaAudit(page), 'view options open').toEqual([]);
   }
 });
+
+test('the full-height phone sheet is opaque', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'Phone sheet only.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.locator('.sheet-grip-hit').click();
+  const sheet = page.locator('#panel-right');
+  await expect(sheet).toHaveAttribute('data-full', 'true');
+  const layers = await sheet.evaluate(
+    (el) => getComputedStyle(el).backgroundImage,
+  );
+  expect(layers).toContain('linear-gradient');
+  const base = await sheet.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  expect(base).toMatch(/^rgb\(/);
+});
