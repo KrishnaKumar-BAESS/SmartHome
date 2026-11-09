@@ -16,17 +16,30 @@ import { ViewControls } from './view-controls';
 import { NoticeToast } from './notice-toast';
 import { PrintInventory } from './print-inventory';
 import { Tooltips } from './tooltips';
+import { offlineCapable } from '../../lib/offline';
 
 // Dialogs load on first open, keeping them out of the initial bundle.
+const loadLiveCameras = () => import('./live-cameras');
+const loadCameraViewer = () => import('./camera-viewer');
+const loadHelpSheet = () => import('./help-sheet');
 const LiveCameras = lazy(() =>
-  import('./live-cameras').then((m) => ({ default: m.LiveCameras })),
+  loadLiveCameras().then((m) => ({ default: m.LiveCameras })),
 );
 const CameraViewer = lazy(() =>
-  import('./camera-viewer').then((m) => ({ default: m.CameraViewer })),
+  loadCameraViewer().then((m) => ({ default: m.CameraViewer })),
 );
 const HelpSheet = lazy(() =>
-  import('./help-sheet').then((m) => ({ default: m.HelpSheet })),
+  loadHelpSheet().then((m) => ({ default: m.HelpSheet })),
 );
+// Where the app works offline, fetch the dialogs once the page is idle so the
+// offline copy can still open them.
+if (offlineCapable()) {
+  const idle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 2000));
+  idle(() => {
+    for (const load of [loadLiveCameras, loadCameraViewer, loadHelpSheet])
+      void load().catch(() => {});
+  });
+}
 
 // Everything except the stage only depends on `view`, which the controller
 // keeps referentially stable while the camera moves, so these skip

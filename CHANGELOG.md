@@ -11,7 +11,7 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
-- Add an offline shell for the installed app on the private HTTPS hostnames: a conservative service worker keeps the last loaded copy and its hashed assets, never caches Pi-hole or health responses, and the app says when it is showing that copy because the house server is unreachable. Plain-HTTP LAN addresses cannot run service workers and are unchanged.
+- Add an offline shell for the installed app on the private HTTPS hostnames: a conservative service worker keeps the last loaded copy and its hashed assets, never caches Pi-hole or health responses, and the app says when it is showing that copy because the house server is unreachable. Plain-HTTP LAN addresses cannot run service workers and are unchanged. Its dialogs (help, camera review, live cameras) are fetched once the page is idle so the offline copy can open them.
 - Make home-docs installable on phone and tablet home screens: a web app manifest, standard, maskable and Apple touch icons under `assets/`, and standalone display; the host serves `.webmanifest` as `application/manifest+json`.
 - Show the running home-docs build in the UI: the version and commit (marked `-dirty` for uncommitted builds) beside the brand (commit only on tablets; click to copy), at the foot of View options and the help sheet with the build time, and in the print header.
 - Add `e2e/design-qa.spec.ts`: measured WCAG AA contrast for derived tones and model text in both themes, an 11 px text floor, 40 px coarse-pointer touch targets, and no overlapping panel-header items at 1024 px, no overlapping model labels, and model translucency that survives entrance fades.
