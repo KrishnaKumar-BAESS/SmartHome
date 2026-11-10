@@ -509,9 +509,19 @@ test('Lighting and Upkeep share one status filter vocabulary', async ({
       .map((t) => t.trim())
       .filter((t) => t !== 'Smart');
   };
+  const tiles = () =>
+    page
+      .locator('#panel-left .metrics')
+      .first()
+      .evaluate((m) =>
+        [...m.children].map((c) => c.lastElementChild?.textContent?.trim()),
+      );
   const lighting = await chips('lighting');
+  const lightingTiles = await tiles();
   expect(lighting).toEqual(['All', 'Needs attention', 'Due soon', 'Overdue']);
   expect(await chips('upkeep')).toEqual(lighting);
+  expect(await tiles()).toEqual(lightingTiles);
+  expect(lightingTiles).toEqual(['Total', 'OK', 'Due soon', 'Overdue']);
   if (isMobile) await page.getByRole('button', { name: 'List' }).click();
   await page
     .locator('#panel-left')

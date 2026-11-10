@@ -3012,11 +3012,13 @@ export class HouseController extends Component {
       onClick: () => set({ selUp: u.id }),
       rowStyle: rowStyleFor(S.selUp === u.id, MODE_ACCENT.upkeep),
     }));
+    // Same tiles, same order as Lighting: Total · OK · Due soon · Overdue.
     const upSummary = [
+      { label: 'Total', val: String(this.upkeep.length), color: null },
       {
-        label: 'Overdue',
-        val: String(this.upkeep.filter((u) => u.status === 'overdue').length),
-        color: STATUS.overdue,
+        label: 'OK',
+        val: String(this.upkeep.filter((u) => u.status === 'ok').length),
+        color: STATUS.ok,
       },
       {
         label: 'Due soon',
@@ -3024,9 +3026,9 @@ export class HouseController extends Component {
         color: STATUS.soon,
       },
       {
-        label: 'OK',
-        val: String(this.upkeep.filter((u) => u.status === 'ok').length),
-        color: STATUS.ok,
+        label: 'Overdue',
+        val: String(this.upkeep.filter((u) => u.status === 'overdue').length),
+        color: STATUS.overdue,
       },
     ];
     const upTotal = this.upkeep.length;
