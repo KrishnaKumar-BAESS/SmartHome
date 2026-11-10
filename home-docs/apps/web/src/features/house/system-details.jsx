@@ -434,6 +434,10 @@ export function SystemDetails({ view }) {
                             {pc.loc}
                           </span>
                         </span>
+                        <span className="panel-card-spaces">
+                          <span className="num">{`${pc.documented}/${pc.total}`}</span>
+                          spaces
+                        </span>
                         <Icon name="arrowRight" size={13} className="chev" />
                       </span>
                       <span className="stack-bar" aria-hidden="true">
@@ -458,9 +462,6 @@ export function SystemDetails({ view }) {
                               {`${t.type} ${t.count}`}
                             </span>
                           ))}
-                        <span className="num" style={{ marginLeft: 'auto' }}>
-                          {`${pc.documented} of ${pc.total} spaces`}
-                        </span>
                       </span>
                     </button>
                   ))}
