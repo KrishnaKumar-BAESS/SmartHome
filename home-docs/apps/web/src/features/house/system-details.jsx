@@ -395,10 +395,18 @@ export function SystemDetails({ view }) {
             <>
               {view.noSel ? (
                 <>
-                  <h2 className="panel-title">Breaker panels</h2>
-                  <div className="det-sub" style={{ marginBottom: 14 }}>
-                    Select a circuit to light up the rooms it serves.
-                  </div>
+                  {/* Desktop shows this on the stage; phones hide the stage pill. */}
+                  <h2
+                    className="panel-title"
+                    style={view.narrow ? undefined : { marginBottom: 14 }}
+                  >
+                    Breaker panels
+                  </h2>
+                  {view.narrow ? (
+                    <div className="det-sub" style={{ marginBottom: 14 }}>
+                      Select a circuit to light up the rooms it serves.
+                    </div>
+                  ) : null}
                   {(view.panelCards ?? []).map((pc, i) => (
                     <button
                       key={pc.id}
@@ -632,10 +640,19 @@ export function SystemDetails({ view }) {
             <>
               {view.noBulb ? (
                 <>
-                  <h2 className="panel-title">Fixture health</h2>
-                  <div className="det-sub" style={{ marginBottom: 14 }}>
-                    Select a fixture to pin its room and see its specification.
-                  </div>
+                  {/* Desktop shows this on the stage; phones hide the stage pill. */}
+                  <h2
+                    className="panel-title"
+                    style={view.narrow ? undefined : { marginBottom: 14 }}
+                  >
+                    Fixture health
+                  </h2>
+                  {view.narrow ? (
+                    <div className="det-sub" style={{ marginBottom: 14 }}>
+                      Select a fixture to pin its room and see its
+                      specification.
+                    </div>
+                  ) : null}
                   <div className="kv" style={{ padding: 14 }}>
                     <div className="metric-row">
                       <span className="metric-big num">{view.lsum[0].val}</span>

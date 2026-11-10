@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- 0.58.0: on desktop, Electrical and Lighting give their "pick a circuit / fixture" instruction once, on the stage, instead of repeating it under the panel heading; phones keep it in the details sheet. A design QA test checks it appears exactly once.
 - 0.57.0: Upkeep's summary tiles match Lighting's: Total · OK · Due soon · Overdue, in that order.
 - 0.56.0: Lighting and Upkeep share one status filter vocabulary (All · Needs attention · Due soon · Overdue); Upkeep gains a Due soon filter and Lighting's "Soon" reads "Due soon" to match the status tags.
 - 0.55.0: list headers count records consistently: filterable lists read "N of M" (Circuits previously read "24 shown"), and Sound zones shows its zone count.

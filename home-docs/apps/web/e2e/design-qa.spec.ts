@@ -630,3 +630,32 @@ test('detail specs never repeat the title or subtitle', async ({
   }
   expect(repeats).toEqual([]);
 });
+
+test('each mode states its pick instruction once', async ({ page }) => {
+  await page.goto('/');
+  const nav = page.getByRole('navigation', { name: 'Documentation views' });
+  for (const [mode, pattern] of [
+    ['Electrical', /\b(pick|select) a circuit/i],
+    ['Lighting', /\b(pick|select) a fixture/i],
+  ] as const) {
+    await nav.getByRole('button', { name: mode, exact: true }).click();
+    await page.waitForTimeout(300);
+    const shown = await page.evaluate((source) => {
+      const re = new RegExp(source, 'i');
+      return [...document.querySelectorAll('body *')].filter((el) => {
+        const own = [...el.childNodes]
+          .filter((n) => n.nodeType === 3)
+          .map((n) => n.textContent)
+          .join('');
+        if (!re.test(own)) return false;
+        const r = el.getBoundingClientRect();
+        return (
+          r.width > 0 &&
+          r.height > 0 &&
+          getComputedStyle(el).visibility !== 'hidden'
+        );
+      }).length;
+    }, pattern.source);
+    expect(shown, mode).toBe(1);
+  }
+});
