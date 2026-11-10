@@ -1003,3 +1003,26 @@ test('panel toggles stay fully on screen when their panel is hidden', async ({
       .toBe(true);
   }
 });
+
+test('circuit names read in full in the list', async ({ page }, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#m=electrical');
+  if (info.project.name === 'mobile')
+    await page.getByRole('button', { name: 'List', exact: true }).click();
+  const rows = page.locator('#panel-left [role=option]');
+  await expect(rows.first()).toBeVisible();
+  const cut = await rows.evaluateAll((els) =>
+    els
+      .map((e) => e.querySelector<HTMLElement>('.row-title'))
+      .filter((t) => t && t.scrollWidth > t.clientWidth + 1)
+      .map((t) => t!.textContent),
+  );
+  expect(cut).toEqual([]);
+  // Like every other list: a name line, then amperage and type beneath it.
+  await expect(
+    rows
+      .filter({ has: page.locator('.row-tag') })
+      .first()
+      .locator('.row-sub'),
+  ).toHaveText(/\d+\u00a0A · \w+/);
+});

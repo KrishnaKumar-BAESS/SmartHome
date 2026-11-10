@@ -288,8 +288,10 @@ export function SystemList({ view }) {
                         aria-hidden="true"
                       ></span>
                       <span className="row-tag">{c.tag}</span>
-                      <span className="row-main row-title">{c.label}</span>
-                      <span className="row-meta">{c.amp}</span>
+                      <div className="row-main">
+                        <div className="row-title">{c.label}</div>
+                        <div className="row-sub">{`${c.amp} · ${c.typeLabel}`}</div>
+                      </div>
                     </Option>
                   ))}
                 </div>
