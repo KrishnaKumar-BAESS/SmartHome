@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- 0.72.0: circuit rows are the same 49 px as every other two-line list row; the tag's mono font had reset the name line's height and made them 53 px. A design QA test compares row heights across modes.
 - 0.71.0: circuit rows set their tag on the name's line (it sat 7 px low, between the two lines) and indent the amperage line to start under the name. The circuit-name design QA test now checks both.
 - 0.70.0: Electrical list rows use the same two lines as every other list: tag and circuit name, then amperage and type ("15 A · Lighting"). Ten of the 24 circuit names were cut off on desktop when amperage shared their line. A design QA test checks that no circuit name is cut off.
 - 0.69.0: with the details panel hidden, its "Show the details panel" tab tucks inside the window; it used to hang half off the right edge (at every width, and by default from 768 to 900 px). A design QA test checks it at 1440 and 768 px.

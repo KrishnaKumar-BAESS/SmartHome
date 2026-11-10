@@ -1051,3 +1051,27 @@ test('circuit names read in full in the list', async ({ page }, info) => {
     });
   expect(Math.abs(tagRight - subLeft)).toBeLessThan(2);
 });
+
+test('two-line list rows share one height across modes', async ({
+  page,
+  isMobile,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const height = async (hash: string, sel: string) => {
+    await page.goto('/' + hash);
+    if (isMobile)
+      await page.getByRole('button', { name: 'List', exact: true }).click();
+    const row = page.locator(sel).first();
+    await expect(row).toBeVisible();
+    return row.evaluate((e) => e.getBoundingClientRect().height);
+  };
+  const plain = await height(
+    '#m=lighting',
+    '#panel-left [role=option]:has(.row-sub)',
+  );
+  const circuit = await height(
+    '#m=electrical',
+    '#panel-left [role=option]:has(.row-tag)',
+  );
+  expect(Math.abs(circuit - plain)).toBeLessThan(1);
+});

@@ -1751,6 +1751,8 @@ kbd {
 .row-title .row-tag {
   display: inline-block;
   vertical-align: baseline;
+  /* The mono shorthand resets line-height; keep the name line its height. */
+  line-height: 1;
 }
 /* Hanging indent: the line beneath starts under the name, not the tag. */
 .row-title:has(> .row-tag) + .row-sub {
