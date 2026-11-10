@@ -814,3 +814,29 @@ test('the phone list is opaque over the model', async ({ page, isMobile }) => {
   expect(layers).toContain('linear-gradient');
   expect(base).toMatch(/^rgb\(/);
 });
+
+test('amperage reads "15 A" everywhere', async ({ page }, info) => {
+  await page.goto('/');
+  const texts: string[] = [];
+  const grab = async () => texts.push(await page.locator('body').innerText());
+  await page
+    .getByRole('navigation', { name: 'Documentation views' })
+    .getByRole('button', { name: 'Electrical', exact: true })
+    .click();
+  if (info.project.name === 'mobile')
+    await page.getByRole('button', { name: 'List', exact: true }).click();
+  await grab();
+  await page.locator('#panel-left [role=option]').first().click();
+  await grab();
+  await page.keyboard.press('Escape');
+  const search = page.getByRole('combobox', { name: 'Search home inventory' });
+  await search.click();
+  await search.fill('theater');
+  await expect(
+    page.getByRole('listbox', { name: 'Search results' }),
+  ).toBeVisible();
+  await grab();
+  const joined = texts.join('\n');
+  expect(joined.match(/\b\d+A\b/g) ?? []).toEqual([]);
+  expect(joined).toMatch(/\b\d+\u00a0A\b/);
+});

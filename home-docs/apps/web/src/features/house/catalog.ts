@@ -190,7 +190,7 @@ export function relatedForRoom(roomId: string): RelatedRecord[] {
         kind: 'circuit',
         id: c.id,
         label: `${circuitTag(c.id)} · ${c.label}`,
-        sub: `${c.amp} A · ${c.type}`,
+        sub: `${c.amp}\u00a0A · ${c.type}`,
         accent: ACCENT.circuit,
       });
   }
