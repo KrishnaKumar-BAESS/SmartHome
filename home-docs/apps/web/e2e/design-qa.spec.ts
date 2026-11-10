@@ -1075,3 +1075,67 @@ test('two-line list rows share one height across modes', async ({
   );
   expect(Math.abs(circuit - plain)).toBeLessThan(1);
 });
+
+test('detail panels keep one vertical rhythm', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Same panel markup on every device.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const nav = page.getByRole('navigation', { name: 'Documentation views' });
+  const off: string[] = [];
+  for (const mode of [
+    'Electrical',
+    'Lighting',
+    'Network',
+    'Sound',
+    'Security',
+    'Climate',
+    'Upkeep',
+  ]) {
+    await nav.getByRole('button', { name: mode, exact: true }).click();
+    await page
+      .locator('#panel-left [role=option]:has(.row-title)')
+      .first()
+      .click();
+    await expect(page.locator('#panel-right .det-head')).toBeVisible();
+    await page.waitForTimeout(300);
+    off.push(
+      ...(await page.evaluate((m) => {
+        const parent = document.querySelector(
+          '#panel-right .det-head',
+        )!.parentElement!;
+        const kids = [...parent.children].filter(
+          (k) => k.getBoundingClientRect().height > 0,
+        );
+        const out: string[] = [];
+        const cls = (k: Element) => String(k.className).split(' ')[0];
+        for (let i = 1; i < kids.length; i++) {
+          const a = cls(kids[i - 1]),
+            b = cls(kids[i]);
+          if (a === 'det-top') continue;
+          const gap = Math.round(
+            kids[i].getBoundingClientRect().top -
+              kids[i - 1].getBoundingClientRect().bottom,
+          );
+          // 14 between blocks; notes hug the block above; sections open
+          // with 22; lists follow their section label; pairs group at 8.
+          const want =
+            b === 'note'
+              ? 12
+              : b === 'section'
+                ? 22
+                : a === 'section'
+                  ? 8
+                  : a === 'det-lead' && b === 'det-meta'
+                    ? 6
+                    : a === b
+                      ? 8
+                      : 14;
+          if (gap !== want)
+            out.push(`${m}: ${a} → ${b} ${gap}px (want ${want})`);
+        }
+        return out;
+      }, mode)),
+    );
+  }
+  expect(off).toEqual([]);
+});

@@ -739,7 +739,7 @@ export function SystemDetails({ view }) {
                   </div>
                   <div
                     className="callout"
-                    style={{ '--c': view.bd.color, marginTop: 16 }}
+                    style={{ '--c': view.bd.color, marginTop: 14 }}
                   >
                     <span
                       className="dot"
@@ -754,7 +754,7 @@ export function SystemDetails({ view }) {
                   <Specs rows={view.bd.specs} />
                   <div
                     className="callout callout--plain"
-                    style={{ marginTop: 10 }}
+                    style={{ marginTop: 14 }}
                   >
                     <Icon name="pin" size={14} />
                     <span className="grow">{view.locate.floorLabel}</span>
@@ -939,7 +939,7 @@ export function SystemDetails({ view }) {
                   {view.zoneDet.config}
                 </abbr>
               </div>
-              <div className="det-meta" style={{ marginTop: 12 }}>
+              <div className="det-meta" style={{ marginTop: 14 }}>
                 {`${view.zoneDet.config.split(' ')[0]} = ${view.zoneDet.configNote}.`}
               </div>
               <div
@@ -974,7 +974,7 @@ export function SystemDetails({ view }) {
                   </div>
                 ))}
               </dl>
-              <div className="links" style={{ marginTop: 10 }}>
+              <div className="links" style={{ marginTop: 14 }}>
                 <div
                   className="link-row link-row--static"
                   style={{ flexWrap: 'wrap' }}
@@ -1051,7 +1051,7 @@ export function SystemDetails({ view }) {
               </Note>
               <div
                 className="det-head det-head--center"
-                style={{ marginTop: 16 }}
+                style={{ marginTop: 14 }}
               >
                 <div className="det-head-main">
                   <h2 className="det-title">{view.camDet.name}</h2>
@@ -1093,7 +1093,7 @@ export function SystemDetails({ view }) {
                 type="button"
                 onClick={view.openExpand}
                 className="ia btn btn--tone btn--block"
-                style={{ '--c': MODE_ACCENT.security, marginTop: 12 }}
+                style={{ '--c': MODE_ACCENT.security, marginTop: 14 }}
                 aria-haspopup="dialog"
               >
                 <Icon name="expand" size={14} />
@@ -1119,7 +1119,7 @@ export function SystemDetails({ view }) {
                 <Badge label="Planned" color={WARN} />
               </div>
               {/* The Planned badge says why these are empty; no banner repeats it. */}
-              <div className="metrics" style={{ marginTop: 16 }}>
+              <div className="metrics" style={{ marginTop: 14 }}>
                 {['Temperature °F', 'Humidity %RH'].map((l) => (
                   <div key={l} className="metric metric--big">
                     <div className="metric-value">
@@ -1254,7 +1254,7 @@ export function SystemDetails({ view }) {
                 className="callout"
                 style={{
                   '--c': view.upDet.statusColor,
-                  marginTop: 10,
+                  marginTop: 14,
                   alignItems: 'flex-start',
                   fontWeight: 400,
                 }}
