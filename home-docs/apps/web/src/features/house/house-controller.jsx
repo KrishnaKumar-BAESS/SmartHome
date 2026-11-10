@@ -2465,7 +2465,7 @@ export class HouseController extends Component {
         color: STATUS.ok,
       },
       {
-        label: 'Soon',
+        label: 'Due soon',
         val: String(this.bulbs.filter((b) => b.st === 'soon').length),
         color: STATUS.soon,
       },
@@ -2478,7 +2478,7 @@ export class HouseController extends Component {
     const lfDef = [
       ['all', 'All'],
       ['due', 'Needs attention'],
-      ['soon', 'Soon'],
+      ['soon', 'Due soon'],
       ['overdue', 'Overdue'],
       ['smart', 'Smart'],
     ];
@@ -2962,21 +2962,24 @@ export class HouseController extends Component {
             : `${u.used}/${u.life} mo used`
           : `${u.used}% remaining`;
     const uf = S.uf || 'all';
+    // Same filter vocabulary as Lighting.
     const ufDef = [
       ['all', 'All'],
-      ['due', 'Due'],
+      ['due', 'Needs attention'],
+      ['soon', 'Due soon'],
       ['overdue', 'Overdue'],
     ];
     const ufilters = ufDef.map(([key, label]) => ({
       key,
       label,
       on: uf === key,
-      color: key === 'overdue' ? STATUS.overdue : null,
+      color: key === 'overdue' || key === 'soon' ? STATUS[key] : null,
       onClick: () => set({ uf: key }),
     }));
     const upMatch = (u) =>
       uf === 'all' ||
       (uf === 'due' && u.status !== 'ok') ||
+      (uf === 'soon' && u.status === 'soon') ||
       (uf === 'overdue' && u.status === 'overdue');
     const urgency = { overdue: 0, soon: 1, ok: 2 };
     const upFiltered = this.upkeep

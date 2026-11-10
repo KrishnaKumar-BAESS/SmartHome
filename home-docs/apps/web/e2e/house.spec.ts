@@ -493,3 +493,31 @@ test('list headers count filtered records the same way', async ({ page }) => {
   expect(counts.upkeep).toMatch(/^\d+ of \d+$/);
   expect(counts.sound).toMatch(/^\d+ zones?$/);
 });
+
+test('Lighting and Upkeep share one status filter vocabulary', async ({
+  page,
+  isMobile,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const chips = async (mode: string) => {
+    await page.goto(`/#m=${mode}`);
+    return (
+      await page
+        .locator('#panel-left .panel-head .chips button')
+        .allTextContents()
+    )
+      .map((t) => t.trim())
+      .filter((t) => t !== 'Smart');
+  };
+  const lighting = await chips('lighting');
+  expect(lighting).toEqual(['All', 'Needs attention', 'Due soon', 'Overdue']);
+  expect(await chips('upkeep')).toEqual(lighting);
+  if (isMobile) await page.getByRole('button', { name: 'List' }).click();
+  await page
+    .locator('#panel-left')
+    .getByRole('button', { name: 'Due soon', exact: true })
+    .click();
+  await expect(page.locator('#panel-left .panel-count').first()).toHaveText(
+    '3 of 7',
+  );
+});

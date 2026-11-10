@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- 0.56.0: Lighting and Upkeep share one status filter vocabulary (All · Needs attention · Due soon · Overdue); Upkeep gains a Due soon filter and Lighting's "Soon" reads "Due soon" to match the status tags.
 - 0.55.0: list headers count records consistently: filterable lists read "N of M" (Circuits previously read "24 shown"), and Sound zones shows its zone count.
 - 0.54.0: detail panels no longer repeat their heading in the specs (upkeep Device rows, network Model rows that match the device name); upkeep notes use the info icon instead of a music note. A design QA test checks every view for repeated headings.
 - 0.53.0: sound-zone speaker markers sit on their schematic positions (the pop-in animation had replaced their centring transform, shifting every marker 11 px and clipping the subwoofers); the `pop` animation now animates `scale` so it cannot override a positioning transform. Climate sensor details show the floor under the name instead of repeating the mount.
