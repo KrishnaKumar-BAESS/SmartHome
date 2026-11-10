@@ -553,3 +553,30 @@ test('the full-height phone sheet is opaque', async ({ page, isMobile }) => {
   );
   expect(base).toMatch(/^rgb\(/);
 });
+
+test('speaker markers sit centred on their schematic positions', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Same layout on every device.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#m=sound');
+  await page.locator('#panel-left [role=option]').first().click();
+  const map = page.locator('.speaker-map');
+  await expect(map).toBeVisible();
+  await page.waitForTimeout(600);
+  const off = await map.evaluate((m) => {
+    const box = m.getBoundingClientRect();
+    return [...m.querySelectorAll<HTMLElement>('.speaker')].map((el) => {
+      const r = el.getBoundingClientRect();
+      const x = box.left + (parseFloat(el.style.left) / 100) * box.width;
+      const y = box.top + (parseFloat(el.style.top) / 100) * box.height;
+      return Math.max(
+        Math.abs(r.left + r.width / 2 - x),
+        Math.abs(r.top + r.height / 2 - y),
+      );
+    });
+  });
+  expect(off.length).toBeGreaterThan(10);
+  expect(Math.max(...off)).toBeLessThan(1.5);
+});

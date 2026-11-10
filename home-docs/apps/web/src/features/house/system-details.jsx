@@ -1092,7 +1092,7 @@ export function SystemDetails({ view }) {
                 </span>
                 <div className="det-head-main">
                   <h2 className="det-title">{view.sensorDet.name}</h2>
-                  <div className="det-sub">{view.sensorDet.mount}</div>
+                  <div className="det-sub">{view.sensorDet.floorLabel}</div>
                 </div>
                 <Badge label="Planned" color={WARN} />
               </div>
@@ -1126,7 +1126,6 @@ export function SystemDetails({ view }) {
                     v: view.sensorDet.target,
                     note: view.sensorDet.targetNote,
                   },
-                  { k: 'Floor', v: view.sensorDet.floorLabel },
                 ]}
               />
               <Note>
