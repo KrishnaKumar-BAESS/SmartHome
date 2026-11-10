@@ -586,7 +586,10 @@ export function SystemList({ view }) {
               role="listbox"
               aria-label="Planned sensors"
             >
-              <div className="callout" style={{ '--c': '#ec9a35', margin: 4 }}>
+              <div
+                className="callout"
+                style={{ '--c': '#ec9a35', margin: '0 0 6px' }}
+              >
                 <Icon name="info" size={14} />
                 <span className="grow">
                   Temperature and humidity sensors are planned — none connected

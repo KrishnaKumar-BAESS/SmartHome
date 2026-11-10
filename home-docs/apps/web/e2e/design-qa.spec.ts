@@ -1139,3 +1139,23 @@ test('detail panels keep one vertical rhythm', async ({ page, isMobile }) => {
   }
   expect(off).toEqual([]);
 });
+
+test('list callouts share the rows edges', async ({ page, isMobile }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const mode of ['climate', 'network']) {
+    await page.goto('/#m=' + mode);
+    if (isMobile)
+      await page.getByRole('button', { name: 'List', exact: true }).click();
+    const panel = page.locator('#panel-left');
+    await expect(panel.locator('[role=option]').first()).toBeVisible();
+    const [callout, row] = await panel.evaluate((p) =>
+      [p.querySelector('.callout')!, p.querySelector('[role=option]')!].map(
+        (e) => {
+          const r = e.getBoundingClientRect();
+          return [Math.round(r.left), Math.round(r.right)];
+        },
+      ),
+    );
+    expect(callout, mode).toEqual(row);
+  }
+});

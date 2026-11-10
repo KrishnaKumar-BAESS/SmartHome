@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- 0.74.0: the Climate list's "sensors are planned" alert lines up with the rows below it; it was inset 4 px more on each side. A design QA test checks list alerts against row edges in Climate and Network.
 - 0.73.0: detail panels share one vertical rhythm: 14 px between blocks, 12 px above notes and 22 px above sections. Eight blocks sat at 10, 12 or 16 px. A design QA test checks every mode's detail panel.
 - 0.72.0: circuit rows are the same 49 px as every other two-line list row; the tag's mono font had reset the name line's height and made them 53 px. A design QA test compares row heights across modes.
 - 0.71.0: circuit rows set their tag on the name's line (it sat 7 px low, between the two lines) and indent the amperage line to start under the name. The circuit-name design QA test now checks both.
