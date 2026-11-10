@@ -1747,6 +1747,15 @@ kbd {
   width: 46px;
   flex-shrink: 0;
 }
+/* Inside a name line, the tag sits on the name's baseline. */
+.row-title .row-tag {
+  display: inline-block;
+  vertical-align: baseline;
+}
+/* Hanging indent: the line beneath starts under the name, not the tag. */
+.row-title:has(> .row-tag) + .row-sub {
+  padding-left: 46px;
+}
 .row[aria-selected='true'] .row-tag {
   color: var(--t1);
 }

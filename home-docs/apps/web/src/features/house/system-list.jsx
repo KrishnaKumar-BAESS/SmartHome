@@ -287,9 +287,11 @@ export function SystemList({ view }) {
                         style={{ '--c': c.color }}
                         aria-hidden="true"
                       ></span>
-                      <span className="row-tag">{c.tag}</span>
                       <div className="row-main">
-                        <div className="row-title">{c.label}</div>
+                        <div className="row-title">
+                          <span className="row-tag">{c.tag}</span>
+                          {c.label}
+                        </div>
                         <div className="row-sub">{`${c.amp} · ${c.typeLabel}`}</div>
                       </div>
                     </Option>

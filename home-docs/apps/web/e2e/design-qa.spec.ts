@@ -1025,4 +1025,29 @@ test('circuit names read in full in the list', async ({ page }, info) => {
       .first()
       .locator('.row-sub'),
   ).toHaveText(/\d+\u00a0A · \w+/);
+  // The circuit tag reads as part of the name line, not between the lines.
+  const [tag, title] = await rows
+    .filter({ has: page.locator('.row-tag') })
+    .first()
+    .evaluate((row) =>
+      ['.row-tag', '.row-title'].map((sel) => {
+        const r = row.querySelector(sel)!.getBoundingClientRect();
+        return (r.top + r.bottom) / 2;
+      }),
+    );
+  expect(Math.abs(tag - title)).toBeLessThan(2);
+  // Hanging indent: the amperage line starts under the name, not the tag.
+  const [tagRight, subLeft] = await rows
+    .filter({ has: page.locator('.row-tag') })
+    .first()
+    .evaluate((row) => {
+      const sub = row.querySelector('.row-sub')!;
+      const range = document.createRange();
+      range.selectNodeContents(sub);
+      return [
+        row.querySelector('.row-tag')!.getBoundingClientRect().right,
+        range.getBoundingClientRect().left,
+      ];
+    });
+  expect(Math.abs(tagRight - subLeft)).toBeLessThan(2);
 });

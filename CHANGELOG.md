@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- 0.71.0: circuit rows set their tag on the name's line (it sat 7 px low, between the two lines) and indent the amperage line to start under the name. The circuit-name design QA test now checks both.
 - 0.70.0: Electrical list rows use the same two lines as every other list: tag and circuit name, then amperage and type ("15 A · Lighting"). Ten of the 24 circuit names were cut off on desktop when amperage shared their line. A design QA test checks that no circuit name is cut off.
 - 0.69.0: with the details panel hidden, its "Show the details panel" tab tucks inside the window; it used to hang half off the right edge (at every width, and by default from 768 to 900 px). A design QA test checks it at 1440 and 768 px.
 - 0.68.0: Isolate lists floors top-down (All · Second · Main · Basement), matching its room sections and the level chips; "2nd" now reads "Second". The getting-started hint steps aside while Isolate is open instead of running under it. Design QA tests cover both.
