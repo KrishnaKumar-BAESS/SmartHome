@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- The home-docs version now advances with each deployed iteration (0.51.0 for this one) so the UI version tag shows which release is running, not only its commit.
 - Breaker panel cards show their documented spaces (for example 13/34) in the card header, so both cards align instead of the count wrapping under one legend and not the other.
 - The phone details sheet turns opaque when expanded to full height, so the gesture hint and dock beneath it no longer ghost through the glass.
 - The home-docs host compresses text assets (Brotli, or gzip as a fallback) once per file off the event loop and sends `Vary: Accept-Encoding`; the main bundle transfers at about 110 kB instead of 423 kB, which matters most over Tailscale and mobile data.
