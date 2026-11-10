@@ -3196,6 +3196,8 @@ button.callout {
   border-collapse: collapse;
 }
 .keys th {
+  /* One key column width for every table, so descriptions share a line. */
+  width: 11rem;
   text-align: left;
   padding: 7px 14px 7px 0;
   white-space: nowrap;
@@ -3216,6 +3218,7 @@ button.callout {
   }
   .keys th,
   .keys td {
+    width: auto;
     padding: 0;
   }
   .keys th {

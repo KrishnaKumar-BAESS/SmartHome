@@ -23,21 +23,26 @@ const MODEL_KEYS = [
   ['↑ ↓', 'Tilt the model'],
   ['Shift + arrows', 'Pan'],
 ];
-const GESTURES = [
+// Each device sees only gestures it can perform.
+const POINTER = [
   ['Drag', 'Rotate'],
-  ['Shift + drag, right or middle drag', 'Pan'],
+  ['Shift + drag', 'Pan'],
+  ['Right or middle drag', 'Pan'],
   ['Mouse wheel', 'Zoom toward the pointer'],
-  [
-    'Double-click or double-tap',
-    'Zoom in on that spot; at full zoom, fit again',
-  ],
+  ['Double-click', 'Zoom in on that spot; at full zoom, fit again'],
   ['Trackpad scroll', 'Two-finger scroll pans the model'],
   ['Trackpad pinch', 'Zoom toward your fingers'],
   [
     'Scroll gesture',
     'View options → Auto, Pan or Zoom, if scrolling is misread',
   ],
-  ['Two fingers', 'Pinch to zoom, move to pan'],
+  ['Touch screen', 'Pinch to zoom, move two fingers to pan'],
+];
+const TOUCH = [
+  ['Drag', 'Rotate'],
+  ['Pinch', 'Zoom toward your fingers'],
+  ['Two-finger drag', 'Pan'],
+  ['Double-tap', 'Zoom in on that spot; at full zoom, fit again'],
   ['View options', 'Tap-only rotate, tilt, and pan buttons'],
 ];
 
@@ -148,8 +153,8 @@ function Sheet({ view }) {
       {/* Touch screens lead with gestures; keyboards with shortcuts. */}
       {coarse ? (
         <>
-          <h3>Pointer & touch</h3>
-          <Table rows={GESTURES} label="Pointer and touch gestures" />
+          <h3>Touch</h3>
+          <Table rows={TOUCH} label="Touch gestures" />
 
           <h3>Keyboard</h3>
           <Table rows={SHORTCUTS} label="Global shortcuts" />
@@ -181,8 +186,8 @@ function Sheet({ view }) {
           </label>
           <Table rows={MODEL_KEYS} label="Model keyboard controls" />
 
-          <h3>Pointer & touch</h3>
-          <Table rows={GESTURES} label="Pointer and touch gestures" />
+          <h3>Mouse & trackpad</h3>
+          <Table rows={POINTER} label="Mouse and trackpad gestures" />
         </>
       )}
       <h3>Sharing & export</h3>

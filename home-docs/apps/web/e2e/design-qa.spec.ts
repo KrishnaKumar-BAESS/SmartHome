@@ -905,3 +905,31 @@ test('the phone hint steps aside while a panel covers the model', async ({
   await page.getByRole('button', { name: 'List', exact: true }).click();
   await expect(hint).toBeHidden();
 });
+
+test('help tables share one column line and list only usable gestures', async ({
+  page,
+  isMobile,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page
+    .getByRole('button', { name: 'Help and keyboard shortcuts' })
+    .click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  const gestures = await dialog
+    .getByRole('table', { name: /gestures/i })
+    .innerText();
+  if (isMobile) {
+    // A phone has no mouse: no wheel, middle button or Shift key here.
+    expect(gestures).not.toMatch(/wheel|middle|Shift|click|Trackpad/i);
+    expect(gestures).toMatch(/pinch/i);
+  } else {
+    const lefts = await dialog
+      .locator('.keys td')
+      .evaluateAll((tds) =>
+        tds.map((td) => Math.round(td.getBoundingClientRect().left)),
+      );
+    expect(new Set(lefts).size).toBe(1);
+  }
+});
