@@ -40,9 +40,13 @@ scene = bpy.data.scenes[args.scene]
 bpy.context.window.scene = scene
 
 
+collection_of = {}
+
+
 def walk(collection, top, owners):
     for obj in collection.objects:
         owners.setdefault(obj.name, top)
+        collection_of.setdefault(obj.name, collection.name)
     for child in collection.children:
         walk(child, top, owners)
 
@@ -74,6 +78,21 @@ for obj in scene.objects:
     else:
         continue
     obj['smarthome_floor'] = floor
+    # Room tracing in the stage: wall footprints bound the rooms, and a door
+    # assembly (frame, leaves, hardware under one FRAME/HINGE parent pair)
+    # is shown with each room its wall faces.
+    leaf = collection_of.get(obj.name, '').lower()
+    for key in ('smarthome_part', 'smarthome_door', 'smarthome_door_frame'):
+        if key in obj:
+            del obj[key]
+    if 'wall' in leaf and 'baseboard' not in leaf:
+        obj['smarthome_part'] = 'wall'
+    parent = obj.parent
+    while parent and parent.parent:
+        parent = parent.parent
+    if 'door' in leaf and parent and ' • ' in parent.name:
+        obj['smarthome_door'] = parent.name.split(' • ')[0]
+        obj['smarthome_door_frame'] = 'FRAME' in parent.name
     counts[floor] = counts.get(floor, 0) + 1
     obj.select_set(True)
 
@@ -96,6 +115,8 @@ print('EXPORT ' + json.dumps({
     'source_sha256': scene['smarthome_source_sha256'],
     'scene': scene.name,
     'objects': counts,
+    'walls': sum(1 for o in scene.objects if o.get('smarthome_part') == 'wall'),
+    'door_parts': sum(1 for o in scene.objects if 'smarthome_door' in o),
     'bytes': output.stat().st_size,
     'sha256': hashlib.sha256(output.read_bytes()).hexdigest(),
     'output': str(output),

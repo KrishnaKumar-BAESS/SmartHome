@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { rooms } from '../../../data/house';
 import {
   buildRoomCells,
-  roomAt,
+  roomsAt,
   splitTriangle,
   type Vertex,
 } from './room-split';
@@ -35,11 +35,11 @@ const area = (a: Vertex, b: Vertex, c: Vertex) =>
 describe('room ownership for model geometry', () => {
   it('gives every point to the room holding it, or the nearest', () => {
     const cells = buildRoomCells(two);
-    expect(roomAt(cells, 1, 1)).toBe('west');
-    expect(roomAt(cells, 4, 1)).toBe('east');
+    expect(roomsAt(cells, 1, 1)).toEqual(['west']);
+    expect(roomsAt(cells, 4, 1)).toEqual(['east']);
     // An exterior wall just outside the outlines goes with its room.
-    expect(roomAt(cells, -0.3, 1)).toBe('west');
-    expect(roomAt(cells, 5.2, 2.4)).toBe('east');
+    expect(roomsAt(cells, -0.3, 1)).toEqual(['west']);
+    expect(roomsAt(cells, 5.2, 2.4)).toEqual(['east']);
   });
 
   it('cuts a wall that spans two rooms at their shared edge', () => {
@@ -79,13 +79,38 @@ describe('room ownership for model geometry', () => {
     for (const h of heights) expect(h).toBeCloseTo(0, 9);
   });
 
+  it('traces rooms from walls and shares the wall between them', () => {
+    // The real wall stands at x = 2.6–2.8, not on the atlas edge at x = 2,
+    // and the outer walls close the plan.
+    const walls = [
+      { x0: 2.6, x1: 2.8, y0: 0, y1: 2 },
+      { x0: -0.2, x1: 5.2, y0: -0.2, y1: 0 },
+      { x0: -0.2, x1: 5.2, y0: 2, y1: 2.2 },
+      { x0: -0.2, x1: 0, y0: 0, y1: 2 },
+      { x0: 5, x1: 5.2, y0: 0, y1: 2 },
+    ];
+    const cells = buildRoomCells(two, walls);
+    // Floor between the atlas edge and the wall follows the wall.
+    expect(roomsAt(cells, 2.3, 1)).toEqual(['west']);
+    expect(roomsAt(cells, 3.2, 1)).toEqual(['east']);
+    // The dividing wall is drawn for both rooms, outer walls for one.
+    expect(roomsAt(cells, 2.7, 1).sort()).toEqual(['east', 'west']);
+    expect(roomsAt(cells, -0.1, 1)).toEqual(['west']);
+    expect(roomsAt(cells, 5.1, 1)).toEqual(['east']);
+    const copies: Record<string, number> = {};
+    splitTriangle(cells, [v(2.62, 0.5), v(2.78, 0.5), v(2.7, 1.5, 2)], (r) => {
+      copies[r] = (copies[r] ?? 0) + 1;
+    });
+    expect(copies).toEqual({ west: 1, east: 1 });
+  });
+
   it('assigns each recorded basement room its own centre', () => {
     const basement = rooms.filter((r) => r.floor === 'basement');
     const cells = buildRoomCells(basement);
-    const owners = new Set(cells.owner.flat());
+    const owners = new Set(cells.sets.flat());
     for (const room of basement) expect(owners.has(room.id)).toBe(true);
-    expect(roomAt(cells, 1.1, 0.4)).toBe('bsmt_wine_cellar');
-    expect(roomAt(cells, 2.5, 1)).toBe('bsmt_home_theater');
-    expect(roomAt(cells, 6, -0.8)).toBe('bsmt_study');
+    expect(roomsAt(cells, 1.1, 0.4)).toEqual(['bsmt_wine_cellar']);
+    expect(roomsAt(cells, 2.5, 1)).toEqual(['bsmt_home_theater']);
+    expect(roomsAt(cells, 6, -0.8)).toEqual(['bsmt_study']);
   });
 });

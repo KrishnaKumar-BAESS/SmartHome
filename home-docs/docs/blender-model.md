@@ -27,20 +27,27 @@ does not establish device positions, and nothing about it is live telemetry.
 
 ## Room ownership
 
-The model does not record which room a wall, slab or fixture belongs to. For
-room-divided floors the atlas's room outlines stand in
+The model does not record which room a wall, slab or fixture belongs to, so
+on room-divided floors the stage traces rooms from the modeled walls
 ([`room-split.ts`](../apps/web/src/features/house/model/room-split.ts)):
-their edges, extended across the floor, cut the plan into cells, and each cell
-belongs to the room containing it or, outside every outline, the nearest one.
-Objects under about 1.65 m in plan (doors, fixtures, furniture) go whole to
-the room under their centre; walls, slabs and carpet are cut along the cell
-edges when the model loads.
 
-The cuts follow the atlas outlines, not the modeled walls, so with the
-alignment error below a wall can travel with the neighbouring room and
-exterior parts such as deck posts go with the nearest room. This is an
-inspection aid, not surveyed ownership. Add a floor to `roomFloors` once its
-interior is modeled well enough to read room by room.
+- The export tags wall objects (`smarthome_part: wall`) and door assemblies
+  (`smarthome_door`, with `smarthome_door_frame` on the frame parts).
+- Wall footprints cut the plan into cells. Open cells are flood-filled between
+  the walls, with doorless openings up to about 0.9 m closed for tracing; each
+  enclosed area takes the atlas room whose centre falls in it.
+- A wall cell belongs to every room it faces, so an interior wall, and a door
+  assembly in it, is drawn once for each of the two rooms. Exterior walls go
+  to their one room.
+- Slabs, carpet and long parts are cut where ownership changes; objects under
+  about 1.65 m in plan stay whole.
+- Where the model leaves two atlas rooms open to each other (hall and living
+  area), the atlas outlines decide between them. Parts outside the house,
+  such as deck posts, go with the nearest room.
+
+This is an inspection aid, not surveyed ownership. Diagonal walls are traced
+by their bounding boxes. Add a floor to `roomFloors` once its interior walls
+are modeled; re-export after changing the tags.
 
 ## Refresh the export
 
@@ -56,8 +63,8 @@ pnpm build
 
 The script exports the `01 House · complete model` scene, leaves out reference
 drawings, labels, cameras and the site grade, applies modifiers, and tags each
-object with `smarthome_floor` (`basement`, `main`, `second`, `roof`). Exterior
-parts are assigned by height. The GLB must be self-contained and uncompressed
+object with `smarthome_floor` (`basement`, `main`, `second`, `roof`) plus the
+wall and door tags described above. Exterior parts are assigned by height. The GLB must be self-contained and uncompressed
 (no Draco, Meshopt or KTX2); textures are not drawn.
 
 Vite emits the file as a hashed asset under `dist/assets/`, so the existing

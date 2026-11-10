@@ -1,6 +1,7 @@
 import {
   AmbientLight,
   BufferAttribute,
+  Box3,
   BufferGeometry,
   DirectionalLight,
   Group,
@@ -23,14 +24,22 @@ import {
 } from './alignment';
 import {
   buildRoomCells,
-  roomAt,
+  roomsAt,
   splitTriangle,
+  type Rect,
   type RoomCells,
   type RoomOutline,
   type Vertex,
 } from './room-split';
 
 const DEPTH = 20000;
+
+/** An export tag on the object or the nearest ancestor that carries it. */
+function tagOf(object: Object3D, name: string): unknown {
+  for (let o: Object3D | null = object; o; o = o.parent)
+    if (o.userData[name] !== undefined) return o.userData[name];
+  return undefined;
+}
 
 function floorOf(object: Object3D): ModelFloor | null {
   for (let o: Object3D | null = object; o; o = o.parent) {
@@ -52,7 +61,7 @@ const WHOLE_OBJECT_SPAN = 0.55;
 function mergeByFloor(
   root: Object3D,
   align: Matrix4,
-  roomCells: Partial<Record<ModelFloor, RoomCells>>,
+  roomOutlines: Partial<Record<ModelFloor, readonly RoomOutline[]>>,
 ) {
   type Bucket = {
     floor: ModelFloor;
@@ -61,9 +70,48 @@ function mergeByFloor(
     positions: number[];
     normals: number[];
   };
-  const buckets = new Map<string, Bucket>();
   root.updateMatrixWorld(true);
   const placed = new Matrix4();
+  const planBox = (mesh: Mesh) => {
+    const geometry = mesh.geometry as BufferGeometry;
+    if (!geometry.boundingBox) geometry.computeBoundingBox();
+    return new Box3()
+      .copy(geometry.boundingBox!)
+      .applyMatrix4(placed.multiplyMatrices(align, mesh.matrixWorld));
+  };
+  // First pass: wall footprints trace the rooms, and each door assembly is
+  // located by its frame, which stands in the wall whichever way it swings.
+  const walls: Partial<Record<ModelFloor, Rect[]>> = {};
+  const doorFrames = new Map<string, Box3>();
+  root.traverse((object) => {
+    if (!(object instanceof Mesh)) return;
+    const floor = floorOf(object);
+    if (!floor || !roomOutlines[floor]) return;
+    if (tagOf(object, 'smarthome_part') === 'wall') {
+      const box = planBox(object);
+      (walls[floor] ??= []).push({
+        x0: box.min.x,
+        x1: box.max.x,
+        y0: box.min.y,
+        y1: box.max.y,
+      });
+    }
+    const door = tagOf(object, 'smarthome_door');
+    if (typeof door === 'string' && tagOf(object, 'smarthome_door_frame')) {
+      const key = `${floor}:${door}`;
+      const box = planBox(object);
+      const frame = doorFrames.get(key);
+      if (frame) frame.union(box);
+      else doorFrames.set(key, box);
+    }
+  });
+  const roomCells: Partial<Record<ModelFloor, RoomCells>> = {};
+  for (const floor of MODEL_FLOORS) {
+    const outlines = roomOutlines[floor];
+    if (outlines?.length)
+      roomCells[floor] = buildRoomCells(outlines, walls[floor] ?? []);
+  }
+  const buckets = new Map<string, Bucket>();
   root.traverse((object) => {
     if (!(object instanceof Mesh)) return;
     const floor = floorOf(object);
@@ -105,15 +153,21 @@ function mergeByFloor(
     const cells = roomCells[floor];
     const box = geometry.boundingBox!;
     // Doors, fixtures and furniture stay in one piece, with the room under
-    // their centre; only long parts such as walls and slabs are cut.
-    const whole =
-      cells &&
+    // their centre; only long parts such as walls and slabs are cut. A door
+    // assembly goes whole to every room its frame's wall faces.
+    const door = tagOf(object, 'smarthome_door');
+    const frame =
+      typeof door === 'string' ? doorFrames.get(`${floor}:${door}`) : null;
+    const small =
       box.max.x - box.min.x < WHOLE_OBJECT_SPAN &&
-      box.max.y - box.min.y < WHOLE_OBJECT_SPAN
-        ? roomAt(
+      box.max.y - box.min.y < WHOLE_OBJECT_SPAN;
+    const centre = frame ?? (small ? box : null);
+    const owners =
+      cells && centre
+        ? roomsAt(
             cells,
-            (box.min.x + box.max.x) / 2,
-            (box.min.y + box.max.y) / 2,
+            (centre.min.x + centre.max.x) / 2,
+            (centre.min.y + centre.max.y) / 2,
           )
         : null;
     for (let i = 0; i + 2 < position.count; i += 3) {
@@ -121,7 +175,7 @@ function mergeByFloor(
         b = vertex(mirrored ? i + 2 : i + 1),
         c = vertex(mirrored ? i + 1 : i + 2);
       if (!cells) push(null, a, b, c);
-      else if (whole) push(whole, a, b, c);
+      else if (owners) for (const room of owners) push(room, a, b, c);
       else splitTriangle(cells, [a, b, c], push);
     }
     geometry.dispose();
@@ -160,12 +214,7 @@ export async function mountStageModel(
   const align = new Matrix4().set(
     ...(atlasFromGltf() as Parameters<Matrix4['set']>),
   );
-  const roomCells: Partial<Record<ModelFloor, RoomCells>> = {};
-  for (const floor of MODEL_FLOORS) {
-    const outlines = roomOutlines[floor];
-    if (outlines?.length) roomCells[floor] = buildRoomCells(outlines);
-  }
-  const buckets = mergeByFloor(gltf.scene, align, roomCells);
+  const buckets = mergeByFloor(gltf.scene, align, roomOutlines);
   disposeTree(gltf.scene);
   if (!buckets.length)
     throw new Error('The export contains no floor-tagged geometry.');
