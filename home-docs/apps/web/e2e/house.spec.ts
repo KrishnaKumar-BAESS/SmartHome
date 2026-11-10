@@ -478,3 +478,18 @@ test('detail panels lead with names and do not repeat room circuits', async ({
     details.getByRole('listitem').filter({ hasText: /^BS·\d+ ·/ }),
   ).toHaveCount(0);
 });
+
+test('list headers count filtered records the same way', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const counts: Record<string, string> = {};
+  for (const mode of ['electrical', 'lighting', 'upkeep', 'sound']) {
+    await page.goto(`/#m=${mode}`);
+    counts[mode] =
+      (await page.locator('#panel-left .panel-count').first().textContent()) ??
+      '';
+  }
+  expect(counts.electrical).toMatch(/^\d+ of \d+$/);
+  expect(counts.lighting).toMatch(/^\d+ of \d+$/);
+  expect(counts.upkeep).toMatch(/^\d+ of \d+$/);
+  expect(counts.sound).toMatch(/^\d+ zones?$/);
+});

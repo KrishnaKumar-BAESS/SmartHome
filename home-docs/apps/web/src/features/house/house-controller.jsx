@@ -4019,6 +4019,7 @@ export class HouseController extends Component {
       typeFilters,
       circGroups,
       ecount,
+      etotal: this.circuits.length,
       hasSel: !!selC,
       noSel: !selC && !panelDet,
       circDet,

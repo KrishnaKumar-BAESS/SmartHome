@@ -246,7 +246,7 @@ export function SystemList({ view }) {
           <>
             <Header
               title="Circuits"
-              count={`${view.ecount} shown`}
+              count={`${view.ecount} of ${view.etotal}`}
               onExport={view.exportCurrent}
             >
               <Chips items={view.typeFilters} label="Circuit type" />
@@ -446,7 +446,11 @@ export function SystemList({ view }) {
 
         {view.isSound ? (
           <>
-            <Header title="Sound zones" onExport={view.exportCurrent} />
+            <Header
+              title="Sound zones"
+              count={`${(view.zoneList ?? []).length} zones`}
+              onExport={view.exportCurrent}
+            />
             <div
               className="panel-body"
               style={{ padding: 12 }}
