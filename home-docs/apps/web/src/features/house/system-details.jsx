@@ -838,15 +838,21 @@ export function SystemDetails({ view }) {
                     v: view.nodeDet.plug,
                     ref: view.nodeDet.plugRef,
                   },
-                  {
-                    k: 'Model',
-                    v: view.nodeDet.modelPlaceholder
-                      ? 'not recorded'
-                      : view.nodeDet.model,
-                    note: view.nodeDet.modelPlaceholder
-                      ? `inventory placeholder ${view.nodeDet.model}`
-                      : '',
-                  },
+                  // Skip the model when it is already the title.
+                  ...(!view.nodeDet.modelPlaceholder &&
+                  view.nodeDet.model === view.nodeDet.name
+                    ? []
+                    : [
+                        {
+                          k: 'Model',
+                          v: view.nodeDet.modelPlaceholder
+                            ? 'not recorded'
+                            : view.nodeDet.model,
+                          note: view.nodeDet.modelPlaceholder
+                            ? `inventory placeholder ${view.nodeDet.model}`
+                            : '',
+                        },
+                      ]),
                   ...(view.nodeDet.isGateway
                     ? [{ k: 'Broadcasts', v: 'All recorded networks' }]
                     : []),
@@ -1247,7 +1253,7 @@ export function SystemDetails({ view }) {
                   fontWeight: 400,
                 }}
               >
-                <Icon name="note" size={14} style={{ marginTop: 2 }} />
+                <Icon name="info" size={14} style={{ marginTop: 2 }} />
                 <span className="grow">{view.upDet.note}</span>
               </div>
               <div className="callout callout--plain" style={{ marginTop: 8 }}>

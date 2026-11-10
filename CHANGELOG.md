@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- 0.54.0: detail panels no longer repeat their heading in the specs (upkeep Device rows, network Model rows that match the device name); upkeep notes use the info icon instead of a music note. A design QA test checks every view for repeated headings.
 - 0.53.0: sound-zone speaker markers sit on their schematic positions (the pop-in animation had replaced their centring transform, shifting every marker 11 px and clipping the subwoofers); the `pop` animation now animates `scale` so it cannot override a positioning transform. Climate sensor details show the floor under the name instead of repeating the mount.
 - 0.52.0: breaker panel details lead with the panel name (code and location beneath) instead of the bare code; fixture details no longer repeat the room circuits under "Also in".
 - The home-docs version now advances with each deployed iteration (0.51.0 for this one) so the UI version tag shows which release is running, not only its commit.

@@ -580,3 +580,53 @@ test('speaker markers sit centred on their schematic positions', async ({
   expect(off.length).toBeGreaterThan(10);
   expect(Math.max(...off)).toBeLessThan(1.5);
 });
+
+test('detail specs never repeat the title or subtitle', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Same content on every device.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const repeats: string[] = [];
+  for (const mode of [
+    'electrical',
+    'lighting',
+    'network',
+    'sound',
+    'security',
+    'climate',
+    'upkeep',
+  ]) {
+    await page.goto(`/#m=${mode}`);
+    const rows = page.locator('#panel-left [role=option]');
+    const n = Math.min(await rows.count(), 6);
+    for (let i = 0; i < n; i++) {
+      await rows.nth(i).click();
+      repeats.push(
+        ...(await page.locator('#panel-right').evaluate((panel, m) => {
+          const head = [
+            panel.querySelector('.det-title')?.textContent,
+            panel.querySelector('.det-sub')?.textContent,
+          ]
+            .map((t) => t?.trim())
+            .filter(Boolean);
+          return [...panel.querySelectorAll('.kv-row')]
+            .filter((row) => {
+              const dd = row.querySelector('dd');
+              const value = (
+                dd?.firstChild?.textContent ??
+                dd?.textContent ??
+                ''
+              ).trim();
+              return head.includes(value);
+            })
+            .map(
+              (row) =>
+                `${m}: ${head[0]} → ${row.querySelector('dt')?.textContent}`,
+            );
+        }, mode)),
+      );
+    }
+  }
+  expect(repeats).toEqual([]);
+});

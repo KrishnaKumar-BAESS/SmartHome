@@ -3067,7 +3067,10 @@ export class HouseController extends Component {
           : 'pinned in model',
       specs: [
         { k: 'Part / type', v: su.part, note: this.abbrNote(su.part) },
-        { k: 'Device', v: su.device, note: this.abbrNote(su.device) },
+        // The device is the subtitle; repeat it here only to explain a term.
+        ...(this.abbrNote(su.device)
+          ? [{ k: 'Device', v: su.device, note: this.abbrNote(su.device) }]
+          : []),
         { k: 'Last replaced', v: `${su.lastDone} (placeholder)` },
         {
           k: 'Interval',
