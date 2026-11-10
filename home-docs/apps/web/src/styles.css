@@ -2894,11 +2894,6 @@ button.callout {
   box-shadow: inset 0 0 0 1px var(--line);
   overflow: hidden;
 }
-.speaker-map > .tag {
-  position: absolute;
-  left: 8px;
-  top: 8px;
-}
 .speaker {
   position: absolute;
   translate: -50% -50%;

@@ -947,7 +947,6 @@ export function SystemDetails({ view }) {
                 role="img"
                 aria-label="Generic 7.2.4 speaker placement diagram — schematic, not a surveyed layout"
               >
-                <span className="tag tag--plain">Schematic</span>
                 {(view.zoneDet.spk ?? []).map((p) => (
                   <div
                     key={p.key}

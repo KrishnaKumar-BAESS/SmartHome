@@ -681,3 +681,38 @@ test('a planned sensor says planned once and names its missing readings', async 
   for (const metric of await panel.locator('.metric').all())
     expect(await metric.textContent()).toContain('No reading');
 });
+
+test('speaker diagram labels never overlap', async ({ page }, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page
+    .getByRole('navigation', { name: 'Documentation views' })
+    .getByRole('button', { name: 'Sound', exact: true })
+    .click();
+  if (info.project.name === 'mobile')
+    await page.getByRole('button', { name: 'List', exact: true }).click();
+  await page.locator('.row').first().click();
+  const map = page.locator('.speaker-map');
+  await expect(map).toBeVisible();
+  const hits = await map.evaluate((el) => {
+    const boxes = [...el.children].map((c) => ({
+      name: c.textContent,
+      r: c.getBoundingClientRect(),
+    }));
+    const out: string[] = [];
+    for (let i = 0; i < boxes.length; i++)
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i].r,
+          b = boxes[j].r;
+        if (
+          a.left < b.right &&
+          b.left < a.right &&
+          a.top < b.bottom &&
+          b.top < a.bottom
+        )
+          out.push(`${boxes[i].name} × ${boxes[j].name}`);
+      }
+    return out;
+  });
+  expect(hits).toEqual([]);
+});
