@@ -741,3 +741,61 @@ test('selecting one record highlights only its room', async ({
     expect(bold, mode).toBeLessThanOrEqual(1);
   }
 });
+
+test('detail text never strands one word on its last line', async ({
+  page,
+}, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const nav = page.getByRole('navigation', { name: 'Documentation views' });
+  const orphans: string[] = [];
+  for (const mode of [
+    'Electrical',
+    'Lighting',
+    'Network',
+    'Sound',
+    'Security',
+    'Climate',
+    'Upkeep',
+  ]) {
+    await nav.getByRole('button', { name: mode, exact: true }).click();
+    const list = page.getByRole('button', { name: 'List', exact: true });
+    if (
+      info.project.name === 'mobile' &&
+      (await list.getAttribute('aria-pressed')) !== 'true'
+    )
+      await list.click();
+    await page.locator('.row').first().click();
+    await page.waitForTimeout(250);
+    orphans.push(
+      ...(await page.evaluate(() => {
+        const out: string[] = [];
+        const sel =
+          '.det-title, .det-sub, .det-meta, .det-lead, .note > span, .callout > span';
+        for (const el of document.querySelectorAll(sel)) {
+          const node = [...el.childNodes].find(
+            (n) => n.nodeType === 3 && /\S+\s+\S+/.test(n.textContent ?? ''),
+          );
+          if (!node || el.childNodes.length !== 1) continue;
+          const text = node.textContent ?? '';
+          const tops: number[] = [];
+          const re = /\S+/g;
+          let m: RegExpExecArray | null;
+          while ((m = re.exec(text))) {
+            const r = document.createRange();
+            r.setStart(node, m.index);
+            r.setEnd(node, m.index + m[0].length);
+            const rect = r.getClientRects()[0];
+            if (rect) tops.push(Math.round(rect.top));
+          }
+          if (new Set(tops).size < 2) continue;
+          const last = tops[tops.length - 1];
+          if (tops.filter((t) => Math.abs(t - last) < 3).length === 1)
+            out.push(text.trim());
+        }
+        return out;
+      })),
+    );
+  }
+  expect([...new Set(orphans)]).toEqual([]);
+});

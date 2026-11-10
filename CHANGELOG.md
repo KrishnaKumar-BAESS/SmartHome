@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- 0.62.0: even text rag. Detail headings balance their lines, and subtitles, notes and callouts never leave one word alone on the last line (for example "platforms" under Home Theater). A design QA test checks every mode's detail panel on desktop and phone.
 - 0.61.0: Sound lights up only the selected zone's room, like every other mode; it used to light both zone rooms equally, so the model did not show which zone was open. A design QA test checks one highlighted room per selection in Sound, Security, Climate and Upkeep.
 - 0.60.0: the Sound speaker diagram drops its "Schematic" tag, which covered the front-left speaker and repeated the note below it. A design QA test checks that no diagram labels overlap.
 - 0.59.0: a planned climate sensor says "Planned" once (the badge) instead of repeating it in a banner; the empty temperature and humidity tiles now tell screen readers "No reading" instead of being hidden. A design QA test covers both.

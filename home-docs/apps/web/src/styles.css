@@ -1837,6 +1837,22 @@ kbd {
   flex: 1;
   min-width: 0;
 }
+/* Even rag: headings balance their lines; running text never leaves one
+   word alone on its last line. */
+.det-title,
+.panel-title,
+.help-sheet h2,
+.help-sheet h3 {
+  text-wrap: balance;
+}
+.det-sub,
+.det-meta,
+.det-lead,
+.note > span,
+.callout > span,
+.row-sub--wrap {
+  text-wrap: pretty;
+}
 .det-title {
   margin: 0;
   font: 600 19px/1.2 var(--font);
