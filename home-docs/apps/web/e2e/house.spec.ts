@@ -458,3 +458,23 @@ test('Tab moves from the View options button into its open drawer', async ({
     })
     .toBe(true);
 });
+
+test('detail panels lead with names and do not repeat room circuits', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Desktop panels.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#m=electrical');
+  await page.locator('#panel-right .panel-card').first().click();
+  await expect(
+    page.locator('#panel-right').getByRole('heading', { level: 2 }),
+  ).toHaveText('Main Panel');
+  await page.goto('/#m=lighting');
+  await page.locator('#panel-left [role=option]').first().click();
+  const details = page.locator('#panel-right');
+  await expect(details.getByText('Room circuits')).toBeVisible();
+  await expect(
+    details.getByRole('listitem').filter({ hasText: /^BS·\d+ ·/ }),
+  ).toHaveCount(0);
+});

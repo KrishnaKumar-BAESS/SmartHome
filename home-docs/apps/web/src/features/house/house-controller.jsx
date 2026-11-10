@@ -2595,7 +2595,13 @@ export class HouseController extends Component {
         })),
         related: rid
           ? relatedRows(rid).filter(
-              (r) => !(r.kind === 'bulb' && r.id === sb.id),
+              // Skip this fixture and the circuits listed under Room circuits.
+              (r) =>
+                !(r.kind === 'bulb' && r.id === sb.id) &&
+                !(
+                  r.kind === 'circuit' &&
+                  roomCircuits.some((c) => c.id === r.id)
+                ),
             )
           : [],
         relatedRoom: roomRec?.name,

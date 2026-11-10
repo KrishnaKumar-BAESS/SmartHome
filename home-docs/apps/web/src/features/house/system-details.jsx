@@ -480,14 +480,14 @@ export function SystemDetails({ view }) {
                       <ModeIcon mode="electrical" />
                     </span>
                     <div className="det-head-main">
-                      <h2 className="det-title det-title--mono">
-                        {view.panelDet.short}
-                      </h2>
-                      <div className="det-sub">{view.panelDet.loc}</div>
+                      <h2 className="det-title">{view.panelDet.name}</h2>
+                      <div className="det-sub">
+                        <span className="mono">{view.panelDet.short}</span>
+                        {` · ${view.panelDet.loc}`}
+                      </div>
                     </div>
                     <Badge label="Panel" plain />
                   </div>
-                  <div className="det-lead">{view.panelDet.name}</div>
                   <Specs
                     rows={[
                       { k: 'Size', v: view.panelDet.size },

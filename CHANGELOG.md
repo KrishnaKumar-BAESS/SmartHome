@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- 0.52.0: breaker panel details lead with the panel name (code and location beneath) instead of the bare code; fixture details no longer repeat the room circuits under "Also in".
 - The home-docs version now advances with each deployed iteration (0.51.0 for this one) so the UI version tag shows which release is running, not only its commit.
 - Breaker panel cards show their documented spaces (for example 13/34) in the card header, so both cards align instead of the count wrapping under one legend and not the other.
 - The phone details sheet turns opaque when expanded to full height, so the gesture hint and dock beneath it no longer ghost through the glass.

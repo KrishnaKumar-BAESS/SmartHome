@@ -1846,6 +1846,10 @@ kbd {
   font: 600 19px/1.2 var(--mono);
   letter-spacing: 0;
 }
+.det-sub .mono {
+  font: 600 0.95em var(--mono);
+  color: var(--t2);
+}
 .det-sub {
   margin-top: 4px;
   font: 400 12.5px/1.45 var(--font);
