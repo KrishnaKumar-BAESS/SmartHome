@@ -1119,27 +1119,17 @@ export function SystemDetails({ view }) {
                 </div>
                 <Badge label="Planned" color={WARN} />
               </div>
-              <div
-                className="metrics"
-                style={{ marginTop: 16 }}
-                aria-hidden="true"
-              >
+              {/* The Planned badge says why these are empty; no banner repeats it. */}
+              <div className="metrics" style={{ marginTop: 16 }}>
                 {['Temperature °F', 'Humidity %RH'].map((l) => (
                   <div key={l} className="metric metric--big">
-                    <div className="metric-value">—</div>
+                    <div className="metric-value">
+                      <span aria-hidden="true">—</span>
+                      <span className="sr-only">No reading</span>
+                    </div>
                     <div className="metric-label">{l}</div>
                   </div>
                 ))}
-              </div>
-              <div className="callout" style={{ '--c': WARN, marginTop: 10 }}>
-                <span
-                  className="dot"
-                  style={{ '--c': WARN }}
-                  aria-hidden="true"
-                />
-                <span className="grow">
-                  Planned · not installed · no readings
-                </span>
               </div>
               <Specs
                 rows={[

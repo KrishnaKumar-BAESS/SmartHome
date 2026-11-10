@@ -659,3 +659,25 @@ test('each mode states its pick instruction once', async ({ page }) => {
     expect(shown, mode).toBe(1);
   }
 });
+
+test('a planned sensor says planned once and names its missing readings', async ({
+  page,
+}, info) => {
+  await page.goto('/');
+  await page
+    .getByRole('navigation', { name: 'Documentation views' })
+    .getByRole('button', { name: 'Climate', exact: true })
+    .click();
+  if (info.project.name === 'mobile')
+    await page.getByRole('button', { name: 'List', exact: true }).click();
+  await page.locator('.row').first().click();
+  const panel = page
+    .locator('.side-panel')
+    .filter({ has: page.locator('.det-title') });
+  await expect(panel.locator('.det-title')).toBeVisible();
+  const text = await panel.innerText();
+  expect(text.match(/planned/gi)?.length).toBe(1);
+  await expect(panel.locator('.metric')).toHaveCount(2);
+  for (const metric of await panel.locator('.metric').all())
+    expect(await metric.textContent()).toContain('No reading');
+});
