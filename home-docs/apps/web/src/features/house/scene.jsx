@@ -1636,6 +1636,8 @@ export function renderScene(house, opt = {}) {
             'text',
             {
               key: `label-${r.id}`,
+              'data-room': r.id,
+              'data-hi': sel ? 'true' : undefined,
               x: c.sx.toFixed(1),
               y: c.sy.toFixed(1),
               textAnchor: 'middle',

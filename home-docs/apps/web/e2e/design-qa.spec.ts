@@ -716,3 +716,28 @@ test('speaker diagram labels never overlap', async ({ page }, info) => {
   });
   expect(hits).toEqual([]);
 });
+
+test('selecting one record highlights only its room', async ({
+  page,
+}, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const nav = page.getByRole('navigation', { name: 'Documentation views' });
+  for (const mode of ['Sound', 'Security', 'Climate', 'Upkeep']) {
+    await nav.getByRole('button', { name: mode, exact: true }).click();
+    const list = page.getByRole('button', { name: 'List', exact: true });
+    if (
+      info.project.name === 'mobile' &&
+      (await list.getAttribute('aria-pressed')) !== 'true'
+    )
+      await list.click();
+    await page.locator('.row').first().click();
+    await page.waitForTimeout(250);
+    const bold = await page
+      .getByTestId('house-stage')
+      .locator('svg text[data-room][data-hi]')
+      .count();
+    // A callout may cover the label itself, so zero is fine; two is not.
+    expect(bold, mode).toBeLessThanOrEqual(1);
+  }
+});

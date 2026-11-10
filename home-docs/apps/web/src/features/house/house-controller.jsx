@@ -3296,7 +3296,8 @@ export class HouseController extends Component {
     }
     if (isSound) {
       sceneOpt.hiColor = MODE_ACCENT.sound;
-      sceneOpt.hiRooms = this.zones.map((z) => z.roomId);
+      // Like every other mode, only the selected record's room lights up.
+      sceneOpt.hiRooms = [sz.roomId];
       sceneOpt.soundRoom = sz.roomId;
       sceneOpt.locate = {
         roomId: sz.roomId,
