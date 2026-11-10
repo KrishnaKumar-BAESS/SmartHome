@@ -17,11 +17,30 @@ does not establish device positions, and nothing about it is live telemetry.
 
 - Floors use the model's 2.44 m storey height; rooms become floor-level hit
   areas that tint when hovered or highlighted. The model supplies the walls.
-- Floor separation moves whole floors. **Exploded** separates floors further
-  but does not spread rooms apart: the model has no per-room ownership.
+- Floor separation moves whole floors. **Exploded** also spreads the rooms
+  of floors listed in `MODEL_LAYOUT.roomFloors` (currently the basement);
+  other floors separate further but stay whole.
 - The roof is drawn on the stacked house and lifts away as floors separate.
   It is hidden while a floor or room is isolated.
-- Isolating rooms shows the whole floor they are on.
+- Isolating rooms hides the other rooms on a room-divided floor, and shows
+  the whole floor elsewhere.
+
+## Room ownership
+
+The model does not record which room a wall, slab or fixture belongs to. For
+room-divided floors the atlas's room outlines stand in
+([`room-split.ts`](../apps/web/src/features/house/model/room-split.ts)):
+their edges, extended across the floor, cut the plan into cells, and each cell
+belongs to the room containing it or, outside every outline, the nearest one.
+Objects under about 1.65 m in plan (doors, fixtures, furniture) go whole to
+the room under their centre; walls, slabs and carpet are cut along the cell
+edges when the model loads.
+
+The cuts follow the atlas outlines, not the modeled walls, so with the
+alignment error below a wall can travel with the neighbouring room and
+exterior parts such as deck posts go with the nearest room. This is an
+inspection aid, not surveyed ownership. Add a floor to `roomFloors` once its
+interior is modeled well enough to read room by room.
 
 ## Refresh the export
 

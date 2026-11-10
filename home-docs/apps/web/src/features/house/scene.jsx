@@ -168,6 +168,7 @@ export function renderScene(house, opt = {}) {
       vw: L.vw,
       vh: L.vh,
       floors,
+      rooms: {},
       light,
     };
   }
@@ -192,8 +193,10 @@ export function renderScene(house, opt = {}) {
     return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
   };
   // ---- exploded room layout: spread rooms radially in x/y away from each floor's center ----
-  // The Blender model has no per-room ownership, so its floors stay whole.
-  const EXPL_XY = M || eT <= 1 ? 0 : (eT - 1) * 0.34;
+  // The Blender model spreads only the floors divided among their rooms;
+  // its other floors have no per-room ownership and stay whole.
+  const EXPL_XY = eT <= 1 ? 0 : (eT - 1) * 0.34;
+  const spreads = (f) => !M || M.roomFloors.includes(f);
   const floorCen = {};
   house.rooms.forEach((r) => {
     if (!vis(r)) return;
@@ -213,9 +216,15 @@ export function renderScene(house, opt = {}) {
     const fc = floorCen[r.floor];
     if (!fc) return;
     const [cx, cy] = cen2(r.verts);
-    roomOff[r.id] = { ox: (cx - fc.x) * EXPL_XY, oy: (cy - fc.y) * EXPL_XY };
+    const k = spreads(r.floor) ? EXPL_XY : 0;
+    roomOff[r.id] = { ox: (cx - fc.x) * k, oy: (cy - fc.y) * k };
   });
   const offOf = (rid) => roomOff[rid] || { ox: 0, oy: 0 };
+  if (opt.out && M)
+    house.rooms.forEach((r) => {
+      if (M.roomFloors.includes(r.floor))
+        opt.out.camera.rooms[r.id] = { ...offOf(r.id), visible: vis(r) };
+    });
   const projR = (rid, x, y, z) => {
     const o = offOf(rid);
     return project(x + o.ox, y + o.oy, z);

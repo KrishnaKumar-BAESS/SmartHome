@@ -21,6 +21,14 @@ import {
   type ModelFloor,
   type StageCamera,
 } from './alignment';
+import {
+  buildRoomCells,
+  roomAt,
+  splitTriangle,
+  type RoomCells,
+  type RoomOutline,
+  type Vertex,
+} from './room-split';
 
 const DEPTH = 20000;
 
@@ -32,20 +40,30 @@ function floorOf(object: Object3D): ModelFloor | null {
   return null;
 }
 
+/** Objects narrower than this in plan (atlas units) are never cut. */
+const WHOLE_OBJECT_SPAN = 0.55;
+
 /**
- * Bake every mesh into one geometry per floor and material. The export has
- * over two thousand small objects; this keeps the stage to a few dozen draw
- * calls so it can follow the camera every frame.
+ * Bake every mesh into one geometry per floor, room and material, in atlas
+ * coordinates. The export has over two thousand small objects; this keeps
+ * the stage to a few dozen draw calls so it can follow the camera every
+ * frame. Floors listed in `roomCells` are divided among their rooms.
  */
-function mergeByFloor(root: Object3D) {
+function mergeByFloor(
+  root: Object3D,
+  align: Matrix4,
+  roomCells: Partial<Record<ModelFloor, RoomCells>>,
+) {
   type Bucket = {
     floor: ModelFloor;
+    room: string | null;
     material: Material;
     positions: number[];
     normals: number[];
   };
   const buckets = new Map<string, Bucket>();
   root.updateMatrixWorld(true);
+  const placed = new Matrix4();
   root.traverse((object) => {
     if (!(object instanceof Mesh)) return;
     const floor = floorOf(object);
@@ -53,30 +71,58 @@ function mergeByFloor(root: Object3D) {
       ? object.material[0]
       : object.material;
     if (!floor || !material) return;
-    const key = `${floor}:${material.uuid}`;
-    let bucket = buckets.get(key);
-    if (!bucket) {
-      bucket = { floor, material, positions: [], normals: [] };
-      buckets.set(key, bucket);
-    }
+    const push = (room: string | null, ...vertices: Vertex[]) => {
+      const key = `${floor}:${room ?? ''}:${material.uuid}`;
+      let bucket = buckets.get(key);
+      if (!bucket) {
+        bucket = { floor, room, material, positions: [], normals: [] };
+        buckets.set(key, bucket);
+      }
+      for (const p of vertices) {
+        bucket.positions.push(p[0], p[1], p[2]);
+        bucket.normals.push(p[3], p[4], p[5]);
+      }
+    };
     const geometry = (object.geometry as BufferGeometry).index
       ? (object.geometry as BufferGeometry).toNonIndexed()
       : (object.geometry as BufferGeometry).clone();
     if (!geometry.getAttribute('normal')) geometry.computeVertexNormals();
-    geometry.applyMatrix4(object.matrixWorld);
+    placed.multiplyMatrices(align, object.matrixWorld);
+    geometry.applyMatrix4(placed);
+    geometry.computeBoundingBox();
     const position = geometry.getAttribute('position');
     const normal = geometry.getAttribute('normal');
+    const vertex = (j: number): Vertex => [
+      position.getX(j),
+      position.getY(j),
+      position.getZ(j),
+      normal.getX(j),
+      normal.getY(j),
+      normal.getZ(j),
+    ];
     // A mirrored object would otherwise face inward: restore its winding.
-    const mirrored = object.matrixWorld.determinant() < 0;
+    const mirrored = placed.determinant() < 0;
+    const cells = roomCells[floor];
+    const box = geometry.boundingBox!;
+    // Doors, fixtures and furniture stay in one piece, with the room under
+    // their centre; only long parts such as walls and slabs are cut.
+    const whole =
+      cells &&
+      box.max.x - box.min.x < WHOLE_OBJECT_SPAN &&
+      box.max.y - box.min.y < WHOLE_OBJECT_SPAN
+        ? roomAt(
+            cells,
+            (box.min.x + box.max.x) / 2,
+            (box.min.y + box.max.y) / 2,
+          )
+        : null;
     for (let i = 0; i + 2 < position.count; i += 3) {
-      for (const j of mirrored ? [i, i + 2, i + 1] : [i, i + 1, i + 2]) {
-        bucket.positions.push(
-          position.getX(j),
-          position.getY(j),
-          position.getZ(j),
-        );
-        bucket.normals.push(normal.getX(j), normal.getY(j), normal.getZ(j));
-      }
+      const a = vertex(i),
+        b = vertex(mirrored ? i + 2 : i + 1),
+        c = vertex(mirrored ? i + 1 : i + 2);
+      if (!cells) push(null, a, b, c);
+      else if (whole) push(whole, a, b, c);
+      else splitTriangle(cells, [a, b, c], push);
     }
     geometry.dispose();
   });
@@ -107,9 +153,19 @@ export async function mountStageModel(
   canvas: HTMLCanvasElement,
   data: ArrayBuffer,
   onContextLost: () => void,
+  /** Atlas room outlines for the floors to divide among their rooms. */
+  roomOutlines: Partial<Record<ModelFloor, readonly RoomOutline[]>> = {},
 ): Promise<StageModel> {
   const gltf = await new GLTFLoader().parseAsync(data, '');
-  const buckets = mergeByFloor(gltf.scene);
+  const align = new Matrix4().set(
+    ...(atlasFromGltf() as Parameters<Matrix4['set']>),
+  );
+  const roomCells: Partial<Record<ModelFloor, RoomCells>> = {};
+  for (const floor of MODEL_FLOORS) {
+    const outlines = roomOutlines[floor];
+    if (outlines?.length) roomCells[floor] = buildRoomCells(outlines);
+  }
+  const buckets = mergeByFloor(gltf.scene, align, roomCells);
   disposeTree(gltf.scene);
   if (!buckets.length)
     throw new Error('The export contains no floor-tagged geometry.');
@@ -127,9 +183,6 @@ export async function mountStageModel(
   const view = new Group();
   view.matrixAutoUpdate = false;
   scene.add(view);
-  const align = new Matrix4().set(
-    ...(atlasFromGltf() as Parameters<Matrix4['set']>),
-  );
   const floors = {} as Record<
     ModelFloor,
     { group: Group; materials: Material[] }
@@ -139,6 +192,7 @@ export async function mountStageModel(
     view.add(group);
     floors[floor] = { group, materials: [] };
   }
+  const roomGroups = new Map<string, Group>();
   for (const bucket of buckets) {
     const geometry = new BufferGeometry();
     geometry.setAttribute(
@@ -149,7 +203,6 @@ export async function mountStageModel(
       'normal',
       new BufferAttribute(new Float32Array(bucket.normals), 3),
     );
-    geometry.applyMatrix4(align);
     const material = bucket.material.clone();
     // Merged geometry keeps positions and normals only.
     for (const [name, value] of Object.entries(material))
@@ -159,7 +212,17 @@ export async function mountStageModel(
     material.userData.baseTransparent = material.transparent;
     const mesh = new Mesh(geometry, material);
     mesh.frustumCulled = false;
-    floors[bucket.floor].group.add(mesh);
+    let parent = floors[bucket.floor].group;
+    if (bucket.room) {
+      let room = roomGroups.get(bucket.room);
+      if (!room) {
+        room = new Group();
+        roomGroups.set(bucket.room, room);
+        parent.add(room);
+      }
+      parent = room;
+    }
+    parent.add(mesh);
     floors[bucket.floor].materials.push(material);
   }
 
@@ -205,6 +268,11 @@ export async function mountStageModel(
         material.transparent = faded || material.userData.baseTransparent;
         material.opacity = material.userData.baseOpacity * state.opacity;
       }
+    }
+    for (const [id, group] of roomGroups) {
+      const room = c.rooms[id];
+      group.visible = room ? room.visible : true;
+      group.position.set(room?.ox ?? 0, room?.oy ?? 0, 0);
     }
     renderer.render(scene, camera);
   };

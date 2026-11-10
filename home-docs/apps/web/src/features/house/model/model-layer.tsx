@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { validateGlb } from './glb';
 import { MODEL_URL } from './model-url';
+import { rooms } from '../../../data/house';
+import { MODEL_LAYOUT, type ModelFloor } from './alignment';
 import type { StageCamera } from './alignment';
 import type { StageModel } from './stage-model';
 
@@ -43,8 +45,16 @@ export function ModelLayer({
         const data = await response.arrayBuffer();
         validateGlb(data);
         const { mountStageModel } = await import('./stage-model');
-        model.current = await mountStageModel(element, data, () =>
-          report.current('failed'),
+        const outlines: Partial<Record<ModelFloor, typeof rooms>> = {};
+        for (const floor of MODEL_LAYOUT.roomFloors)
+          outlines[floor as ModelFloor] = rooms.filter(
+            (r) => r.floor === floor,
+          );
+        model.current = await mountStageModel(
+          element,
+          data,
+          () => report.current('failed'),
+          outlines,
         );
         if (latest.current) model.current.update(latest.current);
         report.current('ready');

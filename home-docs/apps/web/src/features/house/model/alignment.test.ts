@@ -23,6 +23,7 @@ const camera: StageCamera = {
   vw: 1440,
   vh: 1000,
   light: true,
+  rooms: {},
   floors: {
     basement: { dz: 0, opacity: 1, visible: true },
     main: { dz: 0, opacity: 1, visible: true },

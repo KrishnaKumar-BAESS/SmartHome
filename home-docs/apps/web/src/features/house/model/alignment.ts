@@ -14,6 +14,12 @@ const STOREY_M = 2.44;
 /** Scene layout overrides (atlas units) used while the model is on stage. */
 export const MODEL_LAYOUT = {
   storey: STOREY_M / METRES_PER_UNIT,
+  /**
+   * Floors whose model geometry is divided among the atlas rooms, so the
+   * exploded view can spread them and isolation can hide them. Add a floor
+   * once its interior is modeled well enough to read room by room.
+   */
+  roomFloors: ['basement'] as readonly string[],
   /** Height of the roof above the second-floor ceiling. */
   roof: 2.45 / METRES_PER_UNIT,
 } as const;
@@ -35,6 +41,8 @@ export type StageCamera = {
   vh: number;
   light: boolean;
   floors: Record<ModelFloor, { dz: number; opacity: number; visible: boolean }>;
+  /** Plan offset and visibility per room, for floors divided among rooms. */
+  rooms: Record<string, { ox: number; oy: number; visible: boolean }>;
 };
 
 /**
