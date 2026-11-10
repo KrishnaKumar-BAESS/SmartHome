@@ -145,6 +145,7 @@ export function SystemList({ view }) {
       className="side-panel surface"
       style={css(view.listPanelStyle)}
       data-hidden={view.leftHidden ? 'true' : undefined}
+      data-overlay={view.narrow ? 'true' : undefined}
       aria-label={`${view.modeLabel} inventory`}
       inert={view.leftHidden ? true : undefined}
     >

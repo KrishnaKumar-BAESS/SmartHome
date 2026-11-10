@@ -799,3 +799,18 @@ test('detail text never strands one word on its last line', async ({
   }
   expect([...new Set(orphans)]).toEqual([]);
 });
+
+test('the phone list is opaque over the model', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'Desktop panels sit beside the model.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'List', exact: true }).click();
+  const list = page.locator('#panel-left');
+  await expect(list).not.toHaveAttribute('data-hidden', 'true');
+  const [layers, base] = await list.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return [s.backgroundImage, s.backgroundColor];
+  });
+  expect(layers).toContain('linear-gradient');
+  expect(base).toMatch(/^rgb\(/);
+});
