@@ -2501,6 +2501,15 @@ button.callout {
    button into it, but it is drawn above the bar. */
 .dock-drawer {
   order: -1;
+  /* Content is inset from the dock's rounded edge, and a drawer taller than
+     its max-height scrolls inside itself instead of spilling over the bar. */
+  flex: 0 1 auto;
+  min-height: 0;
+  padding: 8px 8px 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  border-bottom: 1px solid var(--line);
 }
 .dock-drawer .section-label {
   margin: 4px 4px 7px;

@@ -840,3 +840,32 @@ test('amperage reads "15 A" everywhere', async ({ page }, info) => {
   expect(joined.match(/\b\d+A\b/g) ?? []).toEqual([]);
   expect(joined).toMatch(/\b\d+\u00a0A\b/);
 });
+
+test('the view options drawer is inset and scrolls inside its own bounds', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'View options', exact: true }).click();
+  const drawer = page.locator('#view-options');
+  await expect(drawer).toBeVisible();
+  await drawer.evaluate((el) =>
+    Promise.all(el.getAnimations().map((a) => a.finished)),
+  );
+  const m = await drawer.evaluate((el) => {
+    const dock = el.parentElement!.getBoundingClientRect();
+    const bar = el.parentElement!.querySelector('.dock-bar')!;
+    const r = el.getBoundingClientRect();
+    const label = el.querySelector('.section-label')!.getBoundingClientRect();
+    const s = getComputedStyle(el);
+    return {
+      clips: s.overflowY !== 'visible',
+      fits: el.scrollHeight <= el.clientHeight + 1,
+      aboveBar: r.bottom <= bar.getBoundingClientRect().top + 1,
+      inset: label.left - dock.left,
+    };
+  });
+  expect(m.aboveBar).toBe(true);
+  expect(m.clips || m.fits).toBe(true);
+  expect(m.inset).toBeGreaterThanOrEqual(10);
+});
