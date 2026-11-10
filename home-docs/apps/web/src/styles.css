@@ -3486,3 +3486,23 @@ main[data-dragging='true'] #house-stage svg > * {
     display: none;
   }
 }
+
+/* Blender house model: a WebGL canvas under the SVG markers and labels. */
+.stage-model {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-2, 240ms) ease;
+}
+.stage-model[data-shown='true'] {
+  opacity: 1;
+}
+@media print {
+  .stage-model {
+    display: none;
+  }
+}

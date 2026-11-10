@@ -22,6 +22,8 @@ For cross-subsystem context, read [architecture](../../../docs/architecture.md).
 | [house-controller.jsx](src/features/house/house-controller.jsx) | Interaction state, view derivation, search index, mode data, animation lifecycle   |
 | [house-view.jsx](src/features/house/house-view.jsx)             | Compose the named main landmark and UI layers                                      |
 | [house-stage.jsx](src/features/house/house-stage.jsx)           | SVG container and pointer/wheel event boundary                                     |
+| [model/](src/features/house/model/)                             | Optional Blender model layer: lazy Three.js canvas under the SVG, camera alignment |
+| [scripts/export-house-model.py](scripts/export-house-model.py)  | Blender export of the house model ([guide](../../docs/blender-model.md))           |
 | [scene.jsx](src/features/house/scene.jsx)                       | Project room polygons and system overlays to SVG elements                          |
 | [catalog.ts](src/features/house/catalog.ts)                     | Sound zones, room aliases, glossary, circuit-reference resolution, related records |
 | [palette.ts](src/features/house/palette.ts)                     | The single hex palette: view accents, statuses, circuit types, floors              |

@@ -37,3 +37,6 @@ playwright-report/
 test-results/
 *.tsbuildinfo
 .cache/
+
+# The Blender house export is a local build input, not source.
+home-docs/apps/web/models/*.glb

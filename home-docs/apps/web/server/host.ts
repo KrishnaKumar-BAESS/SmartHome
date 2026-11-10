@@ -28,6 +28,7 @@ export function createHouseServer(options: {
     '.png': 'image/png',
     '.ico': 'image/x-icon',
     '.webmanifest': 'application/manifest+json',
+    '.glb': 'model/gltf-binary',
   };
   // Text assets are compressed once per file and encoding (off the event
   // loop), then reused; a release's files never change while it runs.

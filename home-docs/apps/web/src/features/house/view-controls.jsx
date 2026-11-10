@@ -46,6 +46,17 @@ function Drawer({ view }) {
       role="group"
       aria-label="View options"
     >
+      {o.stage ? (
+        <>
+          <div className="section-label">House</div>
+          <Segmented items={o.stage} label="House rendering" />
+          {o.stageNote ? (
+            <div className="note" style={{ margin: '4px 4px 0' }}>
+              {o.stageNote}
+            </div>
+          ) : null}
+        </>
+      ) : null}
       <div className="section-label">Floors</div>
       <Segmented items={view.explodeBtns} label="Floor separation" />
       <div className="section-label">Camera</div>

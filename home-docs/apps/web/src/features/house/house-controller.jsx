@@ -27,6 +27,8 @@ import {
   glossary,
 } from './catalog';
 import { renderScene } from './scene';
+import { MODEL_URL } from './model/model-url';
+import { MODEL_LAYOUT } from './model/alignment';
 import { HouseView } from './house-view';
 import { prefersReducedMotion, tween } from '../../lib/motion';
 import { decodeUrlState, encodeUrlState } from '../../lib/url-state';
@@ -49,6 +51,7 @@ const THEME_KEY = 'housedocs-theme';
 const SHORTCUTS_KEY = 'housedocs-shortcuts';
 const HINT_KEY = 'housedocs-hint';
 const SCROLL_KEY = 'housedocs-scroll';
+const STAGE_KEY = 'housedocs-stage';
 const RECENT_KEY = 'housedocs-recent';
 
 function readRecent() {
@@ -228,6 +231,13 @@ export class HouseController extends Component {
       hintDismissed: hasWindow ? readStorage(HINT_KEY) === '1' : true,
       // Scroll gesture: 'auto' tells trackpad from mouse; 'pan' / 'zoom' force.
       scrollMode: (hasWindow && readStorage(SCROLL_KEY)) || 'auto',
+      // Stage rendering: the Blender model when the build includes one,
+      // or the schematic room blocks. Falls back while loading or on failure.
+      stageStyle:
+        hasWindow && readStorage(STAGE_KEY) === 'schematic'
+          ? 'schematic'
+          : 'model',
+      modelStatus: 'idle',
       notice: null,
       // Search history: focus ids of the last records opened from search.
       recent: hasWindow ? readRecent() : [],
@@ -1132,6 +1142,18 @@ export class HouseController extends Component {
     writeStorage(THEME_KEY, theme);
   };
 
+  setStageStyle = (style) => {
+    this.setState({ stageStyle: style });
+    writeStorage(STAGE_KEY, style);
+  };
+
+  onModelStatus = (status) => {
+    if (this.state.modelStatus === status) return;
+    this.setState({ modelStatus: status });
+    if (status === 'failed' && this.state.stageStyle === 'model')
+      this.notify('3D model unavailable — showing the schematic');
+  };
+
   setScrollMode = (mode) => {
     this.setState({ scrollMode: mode });
     writeStorage(SCROLL_KEY, mode);
@@ -1840,8 +1862,10 @@ export class HouseController extends Component {
     const c = this._sceneCache;
     const camKey = `${S.yaw}|${S.pitch}|${S.zoom}|${S.panX}|${S.panY}|${S.explodeT}|${S.introT}|${S.hoverRoom}|${S.dragging}`;
     if (c && c.opt === view.sceneOpt && c.camKey === camKey) return c.scene;
+    const out = {};
     const scene = {
-      els: renderScene(this, view.sceneOpt),
+      els: renderScene(this, { ...view.sceneOpt, out }),
+      camera: out.camera,
       viewBox: `0 0 ${view.layout.vw} ${view.layout.vh}`,
       dragging: !!S.dragging,
       hoverRoom: S.hoverRoom,
@@ -3250,6 +3274,8 @@ export class HouseController extends Component {
     const onFloorClick = (floor) => set({ isoFloor: floor, isoRooms: [] });
     const floorLabelMinX = narrow ? 22 : L.leftPx + 22;
 
+    const modelWanted = !!MODEL_URL && S.stageStyle === 'model';
+    const modelShown = modelWanted && S.modelStatus === 'ready';
     const sceneOpt = {
       layer: S.mode,
       light,
@@ -3270,6 +3296,7 @@ export class HouseController extends Component {
       },
       roomAliases,
       selRoom: isOverview ? S.selRoom : null,
+      model: modelShown ? MODEL_LAYOUT : null,
     };
     if (isOverview && S.selRoom) sceneOpt.hiRooms = [S.selRoom];
     if (isElectrical) {
@@ -3563,6 +3590,25 @@ export class HouseController extends Component {
         on: !!S.shortcuts,
         label: 'Single-key shortcuts',
       },
+      stage: MODEL_URL
+        ? [
+            ['model', '3D model'],
+            ['schematic', 'Schematic'],
+          ].map(([key, label]) => ({
+            key,
+            label,
+            on: S.stageStyle === key,
+            onClick: () => this.setStageStyle(key),
+          }))
+        : null,
+      stageNote:
+        S.stageStyle !== 'model'
+          ? null
+          : S.modelStatus === 'failed'
+            ? 'The 3D model could not be drawn here; showing the schematic.'
+            : S.modelStatus === 'ready'
+              ? 'Blender reconstruction, work in progress. Dimensions are estimated.'
+              : 'Loading the 3D model…',
       scroll: [
         ['auto', 'Auto'],
         ['pan', 'Pan'],
@@ -3946,6 +3992,12 @@ export class HouseController extends Component {
       isClimate,
       isUpkeep,
       sceneOpt,
+      stageModel: {
+        available: !!MODEL_URL,
+        wanted: modelWanted,
+        shown: modelShown,
+        onStatus: this.onModelStatus,
+      },
       stageRef: this.stageRef,
       onPointerDown: this.onPointerDown,
       onPointerMove: this.onPointerMove,

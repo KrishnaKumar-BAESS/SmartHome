@@ -1,4 +1,5 @@
 import { css } from '../../lib/css';
+import { ModelLayer } from './model/model-layer';
 
 export function HouseStage({ view, scene }) {
   return (
@@ -25,6 +26,14 @@ export function HouseStage({ view, scene }) {
         Drag to rotate. Arrow keys rotate and tilt; Shift plus arrow keys pan.
         Rooms and markers are buttons: Tab to reach them, Enter to select.
       </span>
+      {view.stageModel.available ? (
+        <ModelLayer
+          wanted={view.stageModel.wanted}
+          shown={view.stageModel.shown}
+          camera={scene.camera}
+          onStatus={view.stageModel.onStatus}
+        />
+      ) : null}
       <svg
         viewBox={scene.viewBox}
         preserveAspectRatio="none"
@@ -36,8 +45,9 @@ export function HouseStage({ view, scene }) {
       >
         <title id="house-svg-title">{`House model · ${view.modeLabel}`}</title>
         <desc id="house-svg-desc">
-          Three-floor isometric model of the house. Positions are recorded
-          prototype geometry, not surveyed measurements.
+          {view.stageModel.shown
+            ? 'Three-floor Blender reconstruction of the house with the recorded rooms and devices placed over it. Dimensions are estimated, not surveyed.'
+            : 'Three-floor isometric model of the house. Positions are recorded prototype geometry, not surveyed measurements.'}
         </desc>
         {scene.els}
       </svg>

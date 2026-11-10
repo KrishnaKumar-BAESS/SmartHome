@@ -86,6 +86,7 @@ export function HouseView({ view, scene }) {
         data-intro={view.intro ? 'true' : undefined}
         className="app"
         data-mode={view.mode}
+        data-stage={view.stageModel.shown ? 'model' : undefined}
         style={{ '--accent': view.accent }}
       >
         <a className="skip-link" href="#house-stage">

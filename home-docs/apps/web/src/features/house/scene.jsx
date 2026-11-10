@@ -47,7 +47,13 @@ export function renderScene(house, opt = {}) {
           : 0;
   const EXPL = eT <= 1 ? eT * 1.0 : 1.0 + (eT - 1) * 0.9;
   const floorIdx = { basement: 0, main: 1, second: 2 };
-  const baseElev = { basement: -0.9, main: 0, second: 1.1 };
+  // With the Blender model on stage, floors take its true storey height so
+  // rooms, markers and labels sit on the modeled floors.
+  const M = opt.model || null;
+  const rH = (r) => (M ? M.storey : r.height);
+  const baseElev = M
+    ? { basement: -M.storey, main: 0, second: M.storey }
+    : { basement: -0.9, main: 0, second: 1.1 };
   const layoutBase = (f) => baseElev[f] + floorIdx[f] * EXPL;
   // First-load intro: each floor drops into place in turn, basement first.
   // Bounds use the settled layout so the camera fit holds still meanwhile.
@@ -68,7 +74,7 @@ export function renderScene(house, opt = {}) {
   house.rooms.forEach((r) => {
     if (!vis(r)) return;
     const zb = layoutBase(r.floor),
-      zt = zb + r.height;
+      zt = zb + rH(r);
     r.verts.forEach(([vx, vy]) => {
       if (vx < bx0) bx0 = vx;
       if (vx > bx1) bx1 = vx;
@@ -78,6 +84,9 @@ export function renderScene(house, opt = {}) {
     if (zb < bz0) bz0 = zb;
     if (zt > bz1) bz1 = zt;
   });
+  // Leave room for the modeled roof while it sits on the stacked house.
+  if (M && isoFloor === 'all' && !isoRooms && bz1 > bz0)
+    bz1 += M.roof * Math.max(0, 1 - eT / 0.6);
   const MC = { x: (bx0 + bx1) / 2, y: (by0 + by1) / 2, z: (bz0 + bz1) / 2 };
   const visDiag =
     Math.sqrt((bx1 - bx0) ** 2 + (by1 - by0) ** 2 + (bz1 - bz0) ** 2) || 1;
@@ -94,7 +103,7 @@ export function renderScene(house, opt = {}) {
     house.rooms.forEach((r) => {
       const zb = layoutBase(r.floor);
       z0 = Math.min(z0, zb);
-      z1 = Math.max(z1, zb + r.height);
+      z1 = Math.max(z1, zb + rH(r));
       r.verts.forEach(([vx, vy]) => {
         x0 = Math.min(x0, vx);
         x1 = Math.max(x1, vx);
@@ -132,6 +141,36 @@ export function renderScene(house, opt = {}) {
       depth: Y2,
     };
   };
+  if (opt.out) {
+    const floors = {};
+    ['basement', 'main', 'second'].forEach((f) => {
+      floors[f] = {
+        dz: drawBase(f) - baseElev[f],
+        opacity: introP(f),
+        visible: house.rooms.some((r) => r.floor === f && vis(r)),
+      };
+    });
+    // The roof rides on the second floor and lifts away as floors separate.
+    floors.roof = {
+      dz: floors.second.dz + eT * 0.6,
+      opacity: Math.max(0, 1 - eT / 0.6) * introP('second'),
+      visible: isoFloor === 'all' && !isoRooms,
+    };
+    opt.out.camera = {
+      cx: MC.x,
+      cy: MC.y,
+      cz: MC.z,
+      scale,
+      sx: CX + S.panX,
+      sy: CY + S.panY,
+      yaw,
+      pitch,
+      vw: L.vw,
+      vh: L.vh,
+      floors,
+      light,
+    };
+  }
   const ptStr = (p) => p.sx.toFixed(1) + ',' + p.sy.toFixed(1);
   const polyD = (pts) => 'M' + pts.map(ptStr).join(' L') + ' Z';
   const cen2 = (v) => {
@@ -153,7 +192,8 @@ export function renderScene(house, opt = {}) {
     return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
   };
   // ---- exploded room layout: spread rooms radially in x/y away from each floor's center ----
-  const EXPL_XY = eT <= 1 ? 0 : (eT - 1) * 0.34;
+  // The Blender model has no per-room ownership, so its floors stay whole.
+  const EXPL_XY = M || eT <= 1 ? 0 : (eT - 1) * 0.34;
   const floorCen = {};
   house.rooms.forEach((r) => {
     if (!vis(r)) return;
@@ -184,7 +224,7 @@ export function renderScene(house, opt = {}) {
     const r = roomById(rid);
     if (!r || !vis(r)) return null;
     const [rx, ry] = cen2(r.verts);
-    return { r, c: projR(rid, rx, ry, drawBase(r.floor) + r.height) };
+    return { r, c: projR(rid, rx, ry, drawBase(r.floor) + rH(r)) };
   };
 
   const selC = opt.selC || null,
@@ -235,7 +275,7 @@ export function renderScene(house, opt = {}) {
   house.rooms.forEach((r) => {
     if (!vis(r)) return;
     const zb = drawBase(r.floor),
-      zt = zb + r.height,
+      zt = zb + rH(r),
       n = r.verts.length;
     const sel = isHi(r.id);
     const hov = !sel && !!opt.onRoomClick && S.hoverRoom === r.id;
@@ -248,8 +288,11 @@ export function renderScene(house, opt = {}) {
         : top;
     const topStroke = sel || hov ? hiColor : topEdge;
     const wallBase = sel ? house.mixHex(top, hiColor, 0.32) : top;
-    const faceOp =
-      (hasFocus ? (sel ? 1 : hov ? 0.55 : dimOp) : 1) * introP(r.floor);
+    // Over the Blender model a room is an invisible floor-level hit area
+    // that tints when highlighted or hovered; the model supplies the walls.
+    const faceOp = M
+      ? (sel ? 0.42 : hov ? 0.2 : 0) * introP(r.floor)
+      : (hasFocus ? (sel ? 1 : hov ? 0.55 : dimOp) : 1) * introP(r.floor);
     let area2 = 0;
     for (let i = 0; i < n; i++) {
       const a = r.verts[i],
@@ -257,7 +300,7 @@ export function renderScene(house, opt = {}) {
       area2 += a[0] * b[1] - b[0] * a[1];
     }
     const ccw = area2 > 0;
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < (M ? 0 : n); i++) {
       const a = r.verts[i],
         b = r.verts[(i + 1) % n];
       const dx = b[0] - a[0],
@@ -287,11 +330,11 @@ export function renderScene(house, opt = {}) {
         room: r,
       });
     }
-    const tp = r.verts.map((v) => projR(r.id, v[0], v[1], zt));
+    const tp = r.verts.map((v) => projR(r.id, v[0], v[1], M ? zb + 0.02 : zt));
     faces.push({
       key: `top-${r.id}`,
       d: polyD(tp),
-      fill: topFill,
+      fill: M ? hiColor : topFill,
       stroke: topStroke,
       sw: sel ? 1.6 : hov ? 1.3 : 0.9,
       depth: tp.reduce((s, p) => s + p.depth, 0) / tp.length,
@@ -321,7 +364,7 @@ export function renderScene(house, opt = {}) {
   // ---- floor plates: a thin slab under each separated floor ----
   // They fade in with separation (absent when stacked) and sort just behind
   // their own floor's rooms so each floor reads as one object.
-  const plateT = Math.max(0, Math.min(1, (eT - 0.25) / 0.6));
+  const plateT = M ? 0 : Math.max(0, Math.min(1, (eT - 0.25) / 0.6));
   const platePts = {};
   if (plateT > 0.01)
     ['basement', 'main', 'second'].forEach((fl) => {
@@ -625,7 +668,7 @@ export function renderScene(house, opt = {}) {
       filter: `drop-shadow(0 0 2px ${hiColor}) drop-shadow(0 0 5px ${hiColor})`,
     };
     rooms.forEach((r) => {
-      const zt = drawBase(r.floor) + r.height + 0.05;
+      const zt = drawBase(r.floor) + rH(r) + 0.05;
       const o = offOf(r.id);
       const c0 = cen2(r.verts);
       const rx = c0[0] + o.ox,
@@ -666,7 +709,7 @@ export function renderScene(house, opt = {}) {
       );
     });
     rooms.forEach((r) => {
-      const zt = drawBase(r.floor) + r.height + 0.05;
+      const zt = drawBase(r.floor) + rH(r) + 0.05;
       const [rx, ry] = cen2(r.verts);
       const c = projR(r.id, rx, ry, zt);
       els.push(
@@ -705,7 +748,7 @@ export function renderScene(house, opt = {}) {
       minSy = 300;
     fRooms.forEach((r) => {
       const zb = drawBase(r.floor),
-        zt = zb + r.height,
+        zt = zb + rH(r),
         o = offOf(r.id);
       r.verts.forEach(([vx, vy]) => {
         const pb = project(vx + o.ox, vy + o.oy, zb),
@@ -1482,7 +1525,7 @@ export function renderScene(house, opt = {}) {
   if (locate && locate.roomId && visById(locate.roomId)) {
     const r = roomById(locate.roomId);
     if (r) {
-      const zt = drawBase(r.floor) + r.height;
+      const zt = drawBase(r.floor) + rH(r);
       const [rx, ry] = cen2(r.verts);
       const foot = projR(locate.roomId, rx, ry, zt),
         head = projR(locate.roomId, rx, ry, zt + 0.95);
@@ -1593,7 +1636,7 @@ export function renderScene(house, opt = {}) {
       .filter((r) => vis(r))
       .map((r) => {
         const [rx, ry] = cen2(r.verts);
-        const c = projR(r.id, rx, ry, drawBase(r.floor) + r.height);
+        const c = projR(r.id, rx, ry, drawBase(r.floor) + rH(r));
         const sel = isHi(r.id);
         return { r, c, sel, rank: (sel ? 1e6 : 0) + polyArea(r.verts) };
       })
