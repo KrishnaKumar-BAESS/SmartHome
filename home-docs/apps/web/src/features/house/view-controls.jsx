@@ -111,6 +111,7 @@ export function ViewControls({ view }) {
     <div
       className="dock surface"
       style={css(view.ctrlClusterStyle)}
+      data-overlay={view.isNarrow && view.viewOptsOpen ? 'true' : undefined}
       data-popover="view"
       role="toolbar"
       aria-label="Model controls"

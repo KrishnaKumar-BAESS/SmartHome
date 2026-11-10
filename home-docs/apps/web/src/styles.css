@@ -1316,10 +1316,12 @@ kbd {
 }
 /* Scrolling rows drop their end padding; a spacer keeps the last tab clear
    of the edge fade, and scroll padding does the same for scrollIntoView. */
-/* A full-height sheet, and the phone list that covers the model, are opaque
-   so the hint, labels and dock beneath them do not ghost through the glass. */
+/* A full-height sheet, and the phone list and view options that cover the
+   model, are opaque so the hint, labels and dock beneath them do not ghost
+   through the glass. */
 .side-panel--sheet[data-full='true'],
-.side-panel[data-overlay='true'] {
+.side-panel[data-overlay='true'],
+.dock[data-overlay='true'] {
   background:
     linear-gradient(var(--glass-strong), var(--glass-strong)), var(--bg);
 }

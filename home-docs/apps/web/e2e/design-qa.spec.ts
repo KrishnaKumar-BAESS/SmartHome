@@ -869,3 +869,39 @@ test('the view options drawer is inset and scrolls inside its own bounds', async
   expect(m.clips || m.fits).toBe(true);
   expect(m.inset).toBeGreaterThanOrEqual(10);
 });
+
+test('the phone view options drawer is opaque over the model', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'Desktop keeps the glass dock.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'View options', exact: true }).click();
+  await expect(page.locator('#view-options')).toBeVisible();
+  const [layers, base] = await page
+    .getByRole('toolbar', { name: 'Model controls' })
+    .evaluate((el) => {
+      const s = getComputedStyle(el);
+      return [s.backgroundImage, s.backgroundColor];
+    });
+  expect(layers).toContain('linear-gradient');
+  expect(base).toMatch(/^rgb\(/);
+});
+
+test('the phone hint steps aside while a panel covers the model', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'Desktop panels sit beside the hint.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const hint = page.getByRole('note');
+  await expect(hint).toBeVisible();
+  await page.getByRole('button', { name: 'View options', exact: true }).click();
+  await expect(hint).toBeHidden();
+  await page.getByRole('button', { name: 'View options', exact: true }).click();
+  await expect(hint).toBeVisible();
+  await page.getByRole('button', { name: 'List', exact: true }).click();
+  await expect(hint).toBeHidden();
+});

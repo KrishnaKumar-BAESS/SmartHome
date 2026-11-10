@@ -3353,7 +3353,13 @@ export class HouseController extends Component {
       : isLighting
         ? 'Pick a fixture, or a room to filter'
         : '';
-    const showHint = !S.hintDismissed && isOverview && !showPrompt;
+    // On phones the List and View options cover the hint's spot; it steps
+    // aside rather than peeking out half-hidden behind them.
+    const showHint =
+      !S.hintDismissed &&
+      isOverview &&
+      !showPrompt &&
+      !(narrow && (S.viewOptsOpen || !S.leftHidden));
     const hintText = narrow
       ? 'Drag to rotate · pinch or double-tap to zoom'
       : 'Drag to rotate · pinch or wheel to zoom · two-finger scroll to pan';

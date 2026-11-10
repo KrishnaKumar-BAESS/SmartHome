@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- 0.66.0: on phones, View options is opaque like the List, and the getting-started hint steps aside while either covers it instead of peeking out half-hidden. Design QA tests cover both.
 - 0.65.0: the View options drawer is inset from the dock's edge and scrolls inside itself. On phones its content used to spill over the List and Details buttons. A design QA test checks the inset and that the drawer stays above the dock bar.
 - 0.64.0: amperage reads "15 A" everywhere, with a no-break space so it never splits across lines. Search results, circuit rows and circuit details previously read "15A" while related-record rows read "15 A". A design QA test covers list, details and search.
 - 0.63.0: on phones the List panel is opaque, like the full-height details sheet, so the stage hint and room labels no longer ghost through its glass. A design QA test checks it.
