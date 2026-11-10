@@ -90,7 +90,7 @@ toggle, and the first-run hint persist in the browser.
 
 ## Isolate floors or rooms
 
-Open **Isolate**. Choose **Basement**, **Main**, or **2nd** for a whole floor.
+Open **Isolate**. Choose **Second**, **Main**, or **Basement** for a whole floor.
 Alternatively, choose room chips to show a selected group. Choosing a floor clears
 the room selection; choosing rooms switches to room-based isolation.
 

@@ -933,3 +933,43 @@ test('help tables share one column line and list only usable gestures', async ({
     expect(new Set(lefts).size).toBe(1);
   }
 });
+
+test('isolate lists floors top-down with one name each', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page
+    .getByRole('button', { name: /^Isolate/ })
+    .first()
+    .click();
+  const panel = page.locator('.iso-panel, [aria-label*="solat"]').filter({
+    has: page.locator('.seg'),
+  });
+  await expect(panel.first()).toBeVisible();
+  const seg = await panel.first().locator('.seg button').allInnerTexts();
+  const heads = await panel
+    .first()
+    .locator('.section-label, h3, .group-head')
+    .allInnerTexts();
+  const floors = heads
+    .map((h) => h.trim())
+    .filter((h) => /Floor|Basement/.test(h));
+  expect(seg.slice(1).map((s) => s.trim())).toEqual(
+    floors.map((f) => f.replace(/ Floor$/, '')),
+  );
+});
+
+test('the hint steps aside while the isolate popover is open', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const hint = page.getByRole('note');
+  await expect(hint).toBeVisible();
+  await page
+    .getByRole('button', { name: /^Isolate/ })
+    .first()
+    .click();
+  await expect(hint).toBeHidden();
+  await page.keyboard.press('Escape');
+  await expect(hint).toBeVisible();
+});

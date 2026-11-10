@@ -3353,12 +3353,13 @@ export class HouseController extends Component {
       : isLighting
         ? 'Pick a fixture, or a room to filter'
         : '';
-    // On phones the List and View options cover the hint's spot; it steps
-    // aside rather than peeking out half-hidden behind them.
+    // Isolate (and, on phones, the List and View options) cover the hint's
+    // spot; it steps aside rather than peeking out half-hidden behind them.
     const showHint =
       !S.hintDismissed &&
       isOverview &&
       !showPrompt &&
+      !S.isoPanel &&
       !(narrow && (S.viewOptsOpen || !S.leftHidden));
     const hintText = narrow
       ? 'Drag to rotate · pinch or double-tap to zoom'
@@ -3628,10 +3629,11 @@ export class HouseController extends Component {
         ? isoTotal
         : this.rooms.filter((r) => r.floor === isoFloor).length;
     const isoFloorDefs = [
+      // Top-down, like the room sections below and the level chips.
       ['all', 'All'],
-      ['basement', 'Basement'],
+      ['second', 'Second'],
       ['main', 'Main'],
-      ['second', '2nd'],
+      ['basement', 'Basement'],
     ];
     const isoFloors = isoFloorDefs.map(([key, label]) => {
       const on = isoRooms.length === 0 && isoFloor === key;
