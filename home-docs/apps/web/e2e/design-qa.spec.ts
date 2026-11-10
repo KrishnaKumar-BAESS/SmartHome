@@ -973,3 +973,33 @@ test('the hint steps aside while the isolate popover is open', async ({
   await page.keyboard.press('Escape');
   await expect(hint).toBeVisible();
 });
+
+test('panel toggles stay fully on screen when their panel is hidden', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Phones use the dock instead of edge toggles.');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const size of [
+    { width: 1440, height: 1000 },
+    { width: 768, height: 1024 },
+  ]) {
+    await page.setViewportSize(size);
+    await page.goto('/');
+    const hide = page.getByRole('button', { name: 'Hide the details panel' });
+    if (await hide.isVisible()) await hide.click();
+    const show = page.getByRole('button', { name: 'Show the details panel' });
+    await expect(show).toBeVisible();
+    await show.evaluate((el) =>
+      Promise.all(el.getAnimations().map((a) => a.finished)),
+    );
+    await expect
+      .poll(() =>
+        show.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return r.left >= 0 && r.right <= innerWidth;
+        }),
+      )
+      .toBe(true);
+  }
+});

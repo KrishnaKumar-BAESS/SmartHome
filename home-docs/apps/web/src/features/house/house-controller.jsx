@@ -3986,7 +3986,9 @@ export class HouseController extends Component {
       sheetFull: !!S.sheetFull,
       setSheetFull: (on) => set({ sheetFull: on }),
       leftTabStyle: `left:${L.leftPx - 17}px`,
-      rightTabStyle: `right:${L.rightPx - 17}px`,
+      // A hidden details panel leaves no edge to straddle: the tab tucks
+      // inside the window instead of hanging half off it.
+      rightTabStyle: `right:${Math.max(6, L.rightPx - 17)}px`,
       isoFloors,
       isoRoomGroups,
       isoClear,

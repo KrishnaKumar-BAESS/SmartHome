@@ -54,6 +54,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- 0.69.0: with the details panel hidden, its "Show the details panel" tab tucks inside the window; it used to hang half off the right edge (at every width, and by default from 768 to 900 px). A design QA test checks it at 1440 and 768 px.
 - 0.68.0: Isolate lists floors top-down (All · Second · Main · Basement), matching its room sections and the level chips; "2nd" now reads "Second". The getting-started hint steps aside while Isolate is open instead of running under it. Design QA tests cover both.
 - 0.67.0: Help lists only gestures the device can do: phones get a Touch table (drag, pinch, two-finger drag, double-tap) instead of mouse wheel and middle-drag rows, and desktops get Mouse & trackpad. All Help tables now share one column line. A design QA test covers both.
 - 0.66.0: on phones, View options is opaque like the List, and the getting-started hint steps aside while either covers it instead of peeking out half-hidden. Design QA tests cover both.
