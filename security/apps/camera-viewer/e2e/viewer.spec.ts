@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 
 test('SmartHome Security embeds the real player and closes it with the panel', async ({
   page,
+  isMobile,
 }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -30,9 +31,13 @@ test('SmartHome Security embeds the real player and closes it with the panel', a
   ])
     expect((await page.request.get(path)).status()).toBe(404);
   await page.getByRole('button', { name: 'Security', exact: true }).click();
-  await page
-    .getByRole('button', { name: 'Open live cameras XFINITY', exact: true })
-    .click();
+  if (isMobile)
+    await page.getByRole('button', { name: 'List', exact: true }).click();
+  const liveCameras = page.getByRole('button', {
+    name: 'Live cameras',
+    exact: true,
+  });
+  await liveCameras.click();
   const player = page.frameLocator('iframe[title="Live camera player"]');
   await player.getByText('Setup and troubleshooting', { exact: true }).click();
   await expect(
@@ -43,17 +48,10 @@ test('SmartHome Security embeds the real player and closes it with the panel', a
   // Focus is inside the player after expanding its details; Escape still closes.
   await page.keyboard.press('Escape');
   await expect(page.locator('iframe')).toHaveCount(0);
-  await expect(
-    page.getByRole('button', {
-      name: 'Open live cameras XFINITY',
-      exact: true,
-    }),
-  ).toBeFocused();
-  await page
-    .getByRole('button', { name: 'Open live cameras XFINITY', exact: true })
-    .click();
+  await expect(liveCameras).toBeFocused();
+  await liveCameras.click();
   await expect(player.locator('#live-label')).toHaveText('STANDBY');
-  await page.getByRole('button', { name: 'Close ✕' }).click();
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(page.locator('iframe')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
