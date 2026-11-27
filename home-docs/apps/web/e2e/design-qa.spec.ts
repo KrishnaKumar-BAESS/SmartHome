@@ -1144,9 +1144,11 @@ test('list callouts share the rows edges', async ({ page, isMobile }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const mode of ['climate', 'network']) {
     await page.goto('/#m=' + mode);
-    if (isMobile)
-      await page.getByRole('button', { name: 'List', exact: true }).click();
+    await expect(page.locator('main.app')).toHaveAttribute('data-mode', mode);
     const panel = page.locator('#panel-left');
+    // A hash-only navigation can preserve the open list from the previous mode.
+    if (isMobile && (await panel.getAttribute('inert')) !== null)
+      await page.getByRole('button', { name: 'List', exact: true }).click();
     await expect(panel.locator('[role=option]').first()).toBeVisible();
     const [callout, row] = await panel.evaluate((p) =>
       [p.querySelector('.callout')!, p.querySelector('[role=option]')!].map(
