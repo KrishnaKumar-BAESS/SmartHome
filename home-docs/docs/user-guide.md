@@ -191,3 +191,7 @@ Its app password belongs in the host’s `service.env.local`, followed by contai
 recreation. See the [deployment guide](../../docs/deployment.md#home-server-deployment).
 A static-only `dist/` deployment or the separate camera server has no Pi-hole stats
 endpoint; the dashboard link remains usable there.
+
+## Watering system
+
+Open **Upkeep → Manage watering system**. See the [connection, operation, and calibration guide](watering.md).

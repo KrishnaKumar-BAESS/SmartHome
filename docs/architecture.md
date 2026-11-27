@@ -159,3 +159,7 @@ feature. [Known limitations](limitations.md) describes the implications.
 
 Shared packages are justified by demonstrated reuse. A task orchestrator,
 database, and server framework are not prerequisites for the current static app.
+
+## Watering controllers
+
+The Upkeep panel connects to one controller using browser USB serial or MQTT over WebSocket. The firmware owns actuation, schedule execution and operational settings. [Decision 0008](decisions/0008-watering-controller.md) records the access and persistence boundaries.

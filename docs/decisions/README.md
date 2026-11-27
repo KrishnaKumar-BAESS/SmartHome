@@ -41,3 +41,5 @@ when later work changes its consequences.
 An ADR is warranted for subsystem ownership, runtime integration, new persistence
 or authentication, or similarly lasting commitments. Routine implementation
 details belong in code and contributor guides.
+
+[0008 — Watering controllers](0008-watering-controller.md) covers direct browser connections and firmware ownership of actuation.

@@ -10,6 +10,7 @@ const BUDGET = {
   // Three.js and the model renderer load only when the Blender model is
   // shown; they are budgeted apart so the app shell stays held to its own.
   modelJs: 150 * 1024,
+  wateringJs: 112 * 1024, // on-demand controls and MQTT browser client
   // Styling moved from inline JS strings into the stylesheet's design
   // system (JS fell ~5 kB gzip while CSS grew ~6 kB).
   css: 14 * 1024, // total gzip CSS
@@ -21,8 +22,10 @@ const gz = (name) => gzipSync(readFileSync(new URL(name, dist))).length;
 const sum = (ext) =>
   files.filter((f) => f.endsWith(ext)).reduce((a, f) => a + gz(f), 0);
 const isModel = (f) => f.startsWith('stage-model-') && f.endsWith('.js');
+const isWatering = (f) => /^(watering-dialog|mqtt\.esm)-.*\.js$/.test(f);
+const wateringJs = files.filter(isWatering).reduce((a, f) => a + gz(f), 0);
 const js = files
-  .filter((f) => f.endsWith('.js') && !isModel(f))
+  .filter((f) => f.endsWith('.js') && !isModel(f) && !isWatering(f))
   .reduce((a, f) => a + gz(f), 0);
 const modelJs = files.filter(isModel).reduce((a, f) => a + gz(f), 0);
 const css = sum('.css');
@@ -36,6 +39,7 @@ const raw = files.reduce(
 const kb = (n) => `${(n / 1024).toFixed(1)} kB`;
 const rows = [
   ['JS (gzip)', js, BUDGET.js],
+  ['Pump JS (gzip)', wateringJs, BUDGET.wateringJs],
   ['3D JS (gzip)', modelJs, BUDGET.modelJs],
   ['CSS (gzip)', css, BUDGET.css],
   ['woff2 faces', woff2, BUDGET.fontFiles],

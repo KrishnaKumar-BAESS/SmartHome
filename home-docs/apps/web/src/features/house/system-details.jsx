@@ -1,3 +1,4 @@
+import { WateringPanel } from './watering-panel';
 import { useRef } from 'react';
 import { PiholePanel } from './pihole-panel';
 import { css } from '../../lib/css';
@@ -1170,6 +1171,7 @@ export function SystemDetails({ view }) {
                   color={view.upDet.statusColor}
                 />
               </div>
+              <WateringPanel />
               <div className="kv" style={{ padding: '14px 14px 12px' }}>
                 <div
                   style={{

@@ -7,8 +7,7 @@ network, sound, security, climate, and upkeep information.
 
 **Home atlas scope:** read-only house documentation with recorded device statuses
 and demonstration history. When served by the local security service, its
-**Security → Live cameras** panel also displays real Xfinity video. Device control
-and persistent editing are not implemented.
+**Security → Live cameras** panel also displays real Xfinity video. The **Upkeep → Manage watering system** panel connects to a watering controller for bounded pump operations, calibration and scheduling. See the [watering guide](home-docs/docs/watering.md).
 
 The [local camera player](security/apps/camera-viewer/README.md) supports Windows
 account sign-in and automatic credential renewal, with an optional phone-import
