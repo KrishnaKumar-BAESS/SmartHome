@@ -26,7 +26,7 @@ On a narrow screen the model shows first with the details as a bottom sheet.
 The controls cluster offers **List**, **Details**, and **Show model / Show
 panels** toggles.
 
-## Documentation modes
+## Main navigation
 
 | Mode       | What it shows                                                                  | Typical use                                      |
 | ---------- | ------------------------------------------------------------------------------ | ------------------------------------------------ |
@@ -38,10 +38,9 @@ panels** toggles.
 | Security   | Camera inventory, illustrative coverage, demo history, and a live-camera panel | Inspect placement or open live Xfinity video     |
 | Climate    | Planned sensors, target measurements, and mount locations                      | Review the documented sensor plan                |
 | Upkeep     | Maintenance items, recorded usage/life values, parts, and status               | Find a documented maintenance item               |
+| Watering   | Live controller connection, pump controls, calibration and schedules           | Operate a connected watering controller          |
 
-Selecting items changes the displayed details and relevant model highlighting.
-The app does not send commands, update hardware configuration, schedule work, or
-save changes to the inventory.
+Selecting an inventory item opens its details and highlights it on the house model. Watering opens a dedicated workspace. Select another destination to return to the atlas.
 
 ## Search
 
@@ -125,7 +124,7 @@ implemented; see the [player guide](../../security/apps/camera-viewer/README.md)
 Tab reaches every control, list row, and model marker; Enter or Space activates
 them, and arrow keys move between rows in a list. With the model focused, the
 arrow keys rotate and tilt and Shift + arrows pan. A skip link jumps to the model.
-Single-key shortcuts (`1`–`8`, `/`, `+`, `−`, `0`, `r`) can be turned off in
+Single-key shortcuts (`1`–`9`, `/`, `+`, `−`, `0`, `r`) can be turned off in
 View options or the help sheet if they conflict with speech or switch input;
 `?` and Escape always work. Selection changes and search counts are announced
 to assistive technology. Screen-reader output on real devices is still
@@ -194,4 +193,4 @@ endpoint; the dashboard link remains usable there.
 
 ## Watering system
 
-Open **Upkeep → Manage watering system**. See the [connection, operation, and calibration guide](watering.md).
+Select **Watering** in the main navigation. See the [connection, operation, and calibration guide](watering.md).

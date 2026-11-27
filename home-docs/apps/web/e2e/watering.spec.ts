@@ -101,51 +101,63 @@ test('operate a simulated single-pump controller and edit its stored settings', 
     });
   });
   await page.goto('/#m=upkeep&s=u5&f=main');
-  await page.getByRole('button', { name: 'Manage watering system' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Watering system' });
+  await expect(page.locator('#panel-right')).not.toContainText(
+    'Manage watering system',
+  );
+  const nav = page.getByRole('navigation', { name: 'Documentation views' });
+  await nav.getByRole('button', { name: 'Watering', exact: true }).click();
+  await expect(
+    nav.getByRole('button', { name: 'Watering', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+  await expect(page).toHaveURL(/m=watering/);
+  await expect(page.getByTestId('house-stage')).toBeHidden();
+  const workspace = page.getByRole('region', { name: 'Watering system' });
   const button = (name: string) =>
-    dialog.getByRole('button', { name, exact: true });
+    workspace.getByRole('button', { name, exact: true });
   await button('Select USB device').click();
-  await dialog.getByLabel('Prime duration (s)').fill('5');
+  await workspace.getByLabel('Prime duration (s)').fill('5');
   await button('Prime pump').click();
-  await expect(dialog.locator('.water-state strong')).toHaveText('running');
+  await expect(workspace.locator('.water-state strong')).toHaveText('running');
   await button('Stop pump').click();
-  await expect(dialog.locator('.water-state strong')).toHaveText('idle');
+  await expect(workspace.locator('.water-state strong')).toHaveText('idle');
   await button('Calibration').click();
-  await dialog.getByLabel('Trial duration (s)').fill('3');
+  await workspace.getByLabel('Trial duration (s)').fill('3');
   await button('Start trial').click();
-  await dialog.getByLabel('Collected water (mL)').fill('6');
+  await workspace.getByLabel('Collected water (mL)').fill('6');
   await button('Save measured flow').click();
-  await expect(dialog.getByText('Stored flow 2 mL/s')).toBeVisible();
+  await expect(workspace.getByText('Stored flow 2 mL/s')).toBeVisible();
   await button('Schedule').click();
-  await dialog.getByLabel('Local time').fill('07:30');
-  await dialog.getByLabel('Dose (mL)', { exact: true }).fill('3');
-  await dialog.getByLabel('mon', { exact: true }).check();
+  await workspace.getByLabel('Local time').fill('07:30');
+  await workspace.getByLabel('Dose (mL)', { exact: true }).fill('3');
+  await workspace.getByLabel('mon', { exact: true }).check();
   await button('Save slot 1').click();
-  await expect(dialog.getByText(/1 of 8 slots/)).toBeVisible();
-  await dialog.getByLabel('Enter dose as').selectOption('seconds');
-  await dialog.getByLabel('Pump duration (s)', { exact: true }).fill('2');
+  await expect(workspace.getByText(/1 of 8 slots/)).toBeVisible();
+  await workspace.getByLabel('Enter dose as').selectOption('seconds');
+  await workspace.getByLabel('Pump duration (s)', { exact: true }).fill('2');
   await button('Save slot 1').click();
   await expect(
-    dialog.getByLabel('Schedule slot').locator('option:checked'),
+    workspace.getByLabel('Schedule slot').locator('option:checked'),
   ).toContainText('4 mL');
   await button('Enable schedule').click();
   await button('Pause schedule').click();
   await button('Delete slot 1').click();
-  await expect(dialog.getByText(/0 of 8 slots/)).toBeVisible();
+  await expect(workspace.getByText(/0 of 8 slots/)).toBeVisible();
   await button('Administration').click();
-  await dialog.getByLabel('Display name').fill('Fern pump');
-  await dialog.getByLabel('Pump zone').fill('Window');
+  await workspace.getByLabel('Display name').fill('Fern pump');
+  await workspace.getByLabel('Pump zone').fill('Window');
   await button('Save browser labels').click();
-  await expect(dialog.getByText('Fern pump · Window')).toBeVisible();
+  await expect(workspace.getByText('Fern pump · Window')).toBeVisible();
   await expect(
-    dialog.getByLabel('Maximum run (s)', { exact: true }),
+    workspace.getByLabel('Maximum run (s)', { exact: true }),
   ).toHaveValue('30');
-  await dialog.getByLabel('Maximum run (s)', { exact: true }).fill('25');
+  await workspace.getByLabel('Maximum run (s)', { exact: true }).fill('25');
   await button('Save limit over USB').click();
-  await expect(dialog.getByText('Current setting 25')).toBeVisible();
+  await expect(workspace.getByText('Current setting 25')).toBeVisible();
   await button('Disconnect').click();
   await expect(button('Prime pump')).toHaveCount(0);
+  await nav.getByRole('button', { name: 'Upkeep', exact: true }).click();
+  await expect(workspace).toHaveCount(0);
+  await expect(page.getByTestId('house-stage')).toBeVisible();
 });
 
 // Exercise the shipped browser MQTT bundle against MQTT 3.1.1 frames.
@@ -239,26 +251,27 @@ test('MQTT correlates replies and allows a stop while priming awaits acknowledge
       );
     });
   });
-  await page.goto('/#m=upkeep&s=u5&f=main');
-  await page.getByRole('button', { name: 'Manage watering system' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Watering system' });
-  await dialog.getByRole('button', { name: 'MQTT', exact: true }).click();
-  await dialog
+  await page.goto('/#m=watering');
+  const workspace = page.getByRole('region', { name: 'Watering system' });
+  await workspace.getByRole('button', { name: 'MQTT', exact: true }).click();
+  await workspace
     .getByLabel('Broker WebSocket URL')
     .fill('ws://127.0.0.1:4173/watering-test');
-  await dialog.getByLabel('Controller ID').fill('fern');
-  await dialog.getByRole('button', { name: 'Connect to controller' }).click();
-  await dialog.getByLabel('Prime duration (s)').fill('5');
-  await dialog.getByRole('button', { name: 'Prime pump' }).click();
+  await workspace.getByLabel('Controller ID').fill('fern');
+  await workspace
+    .getByRole('button', { name: 'Connect to controller' })
+    .click();
+  await workspace.getByLabel('Prime duration (s)').fill('5');
+  await workspace.getByRole('button', { name: 'Prime pump' }).click();
   await expect.poll(() => commands.includes('run 5')).toBe(true);
-  await dialog.getByRole('button', { name: 'Stop pump' }).click();
+  await workspace.getByRole('button', { name: 'Stop pump' }).click();
   await expect.poll(() => commands.includes('stop')).toBe(true);
   expect(commands.filter((c) => c.startsWith('run'))).toEqual(['run 5']);
-  await dialog
+  await workspace
     .getByRole('button', { name: 'Administration', exact: true })
     .click();
-  await expect(dialog.getByText('Current setting 30')).toBeVisible();
+  await expect(workspace.getByText('Current setting 30')).toBeVisible();
   await expect(
-    dialog.getByRole('button', { name: 'Save limit over USB' }),
+    workspace.getByRole('button', { name: 'Save limit over USB' }),
   ).toHaveCount(0);
 });

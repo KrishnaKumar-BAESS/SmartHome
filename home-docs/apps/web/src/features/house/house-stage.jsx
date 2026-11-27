@@ -5,6 +5,7 @@ export function HouseStage({ view, scene }) {
   return (
     <div
       id="house-stage"
+      hidden={view.mode === 'watering'}
       ref={view.stageRef}
       onPointerDown={view.onPointerDown}
       onPointerMove={view.onPointerMove}

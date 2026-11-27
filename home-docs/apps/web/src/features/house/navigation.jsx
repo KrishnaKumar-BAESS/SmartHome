@@ -11,6 +11,7 @@ const ORDER = [
   'security',
   'climate',
   'upkeep',
+  'watering',
 ];
 
 export function Navigation({ view }) {

@@ -11,7 +11,7 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
-- Manage single-pump watering controllers from Upkeep over USB or MQTT, including bounded priming, calibration, recurring schedules, and USB runtime limits. The on-demand controls and MQTT client have a separate 112 KiB gzip budget.
+- Manage single-pump watering controllers from a dedicated Watering destination in the main navigation over USB or MQTT, including bounded priming, calibration, recurring schedules, and USB runtime limits. The on-demand controls and MQTT client have a separate 112 KiB gzip budget.
 
 - Trace the basement's rooms on the Blender model stage from its modeled walls instead of the atlas outlines: the export tags walls and door assemblies, rooms are flood-filled between wall footprints, and each interior wall and its door is drawn once for both rooms it separates in the exploded view.
 - Spread and isolate the basement's rooms on the Blender model stage: its geometry is divided among the atlas room outlines when the model loads (long walls and slabs cut at room edges, small objects kept whole), so **Exploded** separates basement rooms and room isolation hides the others. Other floors stay whole until listed in `MODEL_LAYOUT.roomFloors`.

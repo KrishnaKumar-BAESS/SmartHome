@@ -300,33 +300,41 @@ export function TopBar({ view }) {
         </button>
       ) : (
         <div className="topbar-actions">
-          <button
-            type="button"
-            onClick={view.toggleIso}
-            className={`ia btn ${view.isoOn ? 'is-on' : 'btn--ghost'}`}
-            aria-expanded={view.showIsoPanel}
-            aria-controls={view.showIsoPanel ? 'isolation-panel' : undefined}
-            data-popover="iso"
-          >
-            <Icon name="layers" size={14} />
-            {narrow && !view.isoActive ? (
-              <span className="sr-only">{view.isoTopLabel}</span>
-            ) : (
-              view.isoTopLabel
-            )}
-          </button>
-          {view.isoActive ? (
-            <button
-              type="button"
-              onClick={view.isoClear}
-              className="ia icon-btn"
-              aria-label="Clear isolation and show all rooms"
-              data-tip="Clear isolation"
-            >
-              <Icon name="close" size={12} />
-            </button>
-          ) : null}
-          {narrow ? null : <span className="topbar-sep" aria-hidden="true" />}
+          {view.mode !== 'watering' && (
+            <>
+              <button
+                type="button"
+                onClick={view.toggleIso}
+                className={`ia btn ${view.isoOn ? 'is-on' : 'btn--ghost'}`}
+                aria-expanded={view.showIsoPanel}
+                aria-controls={
+                  view.showIsoPanel ? 'isolation-panel' : undefined
+                }
+                data-popover="iso"
+              >
+                <Icon name="layers" size={14} />
+                {narrow && !view.isoActive ? (
+                  <span className="sr-only">{view.isoTopLabel}</span>
+                ) : (
+                  view.isoTopLabel
+                )}
+              </button>
+              {view.isoActive ? (
+                <button
+                  type="button"
+                  onClick={view.isoClear}
+                  className="ia icon-btn"
+                  aria-label="Clear isolation and show all rooms"
+                  data-tip="Clear isolation"
+                >
+                  <Icon name="close" size={12} />
+                </button>
+              ) : null}
+              {narrow ? null : (
+                <span className="topbar-sep" aria-hidden="true" />
+              )}
+            </>
+          )}
           <button
             type="button"
             onClick={view.helpBtn.onClick}

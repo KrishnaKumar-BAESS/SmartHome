@@ -543,8 +543,7 @@ function Calibration({
 }
 
 const tabs = ['Operate', 'Calibration', 'Schedule', 'Administration'];
-export default function WateringDialog({ onClose }: { onClose: () => void }) {
-  const dialog = useRef<HTMLDialogElement>(null);
+export default function WateringView() {
   const live = useRef<Connection | null>(null),
     epoch = useRef(0),
     lock = useRef(false);
@@ -566,15 +565,10 @@ export default function WateringDialog({ onClose }: { onClose: () => void }) {
     scope = useRef(''),
     identity = useRef('');
   useEffect(() => {
-    const element = dialog.current,
-      previous = document.activeElement;
-    element?.showModal();
     return () => {
       epoch.current = epoch.current + 1;
       live.current?.close();
       live.current = null;
-      element?.close();
-      if (previous instanceof HTMLElement) previous.focus();
     };
   }, []);
   function disconnect(reason = '') {
@@ -730,19 +724,12 @@ export default function WateringDialog({ onClose }: { onClose: () => void }) {
   const runDisabled =
     !status || status.state !== 'idle' || !status.storage || busy;
   return (
-    <dialog
-      ref={dialog}
-      className="pihole-dialog water-dialog"
-      aria-labelledby="water-title"
-      onCancel={(e) => {
-        e.preventDefault();
-        onClose();
-      }}
-      onKeyDown={(e) => e.stopPropagation()}
-    >
+    <section className="pihole-dialog water-view" aria-labelledby="water-title">
       <header>
         <div>
-          <h2 id="water-title">Watering system</h2>
+          <h2 id="water-title" tabIndex={-1}>
+            Watering system
+          </h2>
           <p>
             {status
               ? (names.name || status.id) + ' · ' + (names.zone || 'Pump 1')
@@ -751,9 +738,6 @@ export default function WateringDialog({ onClose }: { onClose: () => void }) {
                 : 'Pump management'}
           </p>
         </div>
-        <button autoFocus onClick={onClose}>
-          Close
-        </button>
       </header>
       <div className="pihole-content">
         {!session ? (
@@ -974,6 +958,6 @@ export default function WateringDialog({ onClose }: { onClose: () => void }) {
         {notice && <p role="status">{notice}</p>}
         {alert && <p role="alert">{alert}</p>}
       </div>
-    </dialog>
+    </section>
   );
 }

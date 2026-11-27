@@ -18,6 +18,7 @@ export const MODE_ACCENT = {
   security: '#f0644d',
   climate: '#3ab0e6',
   upkeep: '#e3679f',
+  watering: '#269b78',
 } as const;
 
 export type ModeKey = keyof typeof MODE_ACCENT;

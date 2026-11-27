@@ -19,6 +19,7 @@ import { Tooltips } from './tooltips';
 import { offlineCapable } from '../../lib/offline';
 
 // Dialogs load on first open, keeping them out of the initial bundle.
+const WateringView = lazy(() => import('./watering-view'));
 const loadLiveCameras = () => import('./live-cameras');
 const loadCameraViewer = () => import('./camera-viewer');
 const loadHelpSheet = () => import('./help-sheet');
@@ -49,14 +50,24 @@ const Chrome = memo(function Chrome({ view }) {
     <>
       <TopBar view={view} />
       <Navigation view={view} />
-      <IsolationPanel view={view} />
-      <SelectionPrompt view={view} />
-      <SystemList view={view} />
-      <ListToggle view={view} />
-      <SystemDetails view={view} />
-      <DetailsToggle view={view} />
-      <SceneLegend view={view} />
-      <ViewControls view={view} />
+      {view.mode === 'watering' ? (
+        <div className="water-workspace">
+          <Suspense fallback={<p role="status">Loading watering controls…</p>}>
+            <WateringView />
+          </Suspense>
+        </div>
+      ) : (
+        <>
+          <IsolationPanel view={view} />
+          <SelectionPrompt view={view} />
+          <SystemList view={view} />
+          <ListToggle view={view} />
+          <SystemDetails view={view} />
+          <DetailsToggle view={view} />
+          <SceneLegend view={view} />
+          <ViewControls view={view} />
+        </>
+      )}
       <NoticeToast view={view} />
       <Suspense fallback={null}>
         {view.isSecurity && view.showGrid ? (
@@ -89,8 +100,19 @@ export function HouseView({ view, scene }) {
         data-stage={view.stageModel.shown ? 'model' : undefined}
         style={{ '--accent': view.accent }}
       >
-        <a className="skip-link" href="#house-stage">
-          Skip to the house model
+        <a
+          className="skip-link"
+          href={view.mode === 'watering' ? '#water-title' : '#house-stage'}
+          onClick={(event) => {
+            if (view.mode === 'watering') {
+              event.preventDefault();
+              document.getElementById('water-title')?.focus();
+            }
+          }}
+        >
+          {view.mode === 'watering'
+            ? 'Skip to watering controls'
+            : 'Skip to the house model'}
         </a>
         <StageBackground view={view} />
         <StageGrid view={view} />
@@ -98,7 +120,7 @@ export function HouseView({ view, scene }) {
             views before the model's many rooms; z-index keeps it on top. */}
         <Chrome view={view} />
         <HouseStage view={view} scene={scene} />
-        <StageVignette view={view} />
+        {view.mode !== 'watering' && <StageVignette view={view} />}
       </main>
       <PrintInventory />
     </>

@@ -1,6 +1,6 @@
 # Watering controllers
 
-Open **Upkeep → Manage watering system** in the HOUSE.SYS details pane. Choose USB or MQTT. A successful status query identifies the device. The panel monitors one selected controller and its single pump. Disconnect to select another. Pump state describes the commanded output. Volumes are estimates based on calibrated flow. This hardware has no flow, moisture, reservoir, or valve feedback.
+Select **Watering** in the HOUSE.SYS main navigation or open the atlas with `#m=watering`. Choose USB or MQTT. A successful status query identifies the device. The panel monitors one selected controller and its single pump. Disconnect to select another. Pump state describes the commanded output. Volumes are estimates based on calibrated flow. This hardware has no flow, moisture, reservoir, or valve feedback.
 
 ## Connect
 
@@ -11,7 +11,7 @@ Open **Upkeep → Manage watering system** in the HOUSE.SYS details pane. Choose
 
 1. Place the outlet in a catch container. Enter a prime duration in seconds and press **Prime pump**. The device enforces its own maximum run, rest interval, and daily budgets. **Stop pump** sends an immediate stop request. The panel reads back the pump state.
 2. In **Calibration**, collect a timed trial of at least three seconds. When the device reports its completed trial, enter the measured mL and save. The firmware validates the resulting flow and writes it to flash. Verify a different volume using **Water by volume**.
-3. Keep the board’s power disconnect accessible during commissioning. Closing the dialog or losing the connection ends monitoring. An accepted dose ends at its device deadline. If a reply times out, check the pump locally before repeating a command.
+3. Keep the board’s power disconnect accessible during commissioning. Leaving the Watering view or losing the connection ends monitoring. An accepted dose ends at its device deadline. If a reply times out, check the pump locally before repeating a command.
 
 ## Schedule and administer
 

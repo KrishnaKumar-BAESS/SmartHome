@@ -22,7 +22,7 @@ const gz = (name) => gzipSync(readFileSync(new URL(name, dist))).length;
 const sum = (ext) =>
   files.filter((f) => f.endsWith(ext)).reduce((a, f) => a + gz(f), 0);
 const isModel = (f) => f.startsWith('stage-model-') && f.endsWith('.js');
-const isWatering = (f) => /^(watering-dialog|mqtt\.esm)-.*\.js$/.test(f);
+const isWatering = (f) => /^(watering-view|mqtt\.esm)-.*\.js$/.test(f);
 const wateringJs = files.filter(isWatering).reduce((a, f) => a + gz(f), 0);
 const js = files
   .filter((f) => f.endsWith('.js') && !isModel(f) && !isWatering(f))

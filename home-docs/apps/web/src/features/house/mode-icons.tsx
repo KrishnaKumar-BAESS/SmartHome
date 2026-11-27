@@ -50,6 +50,9 @@ const GLYPHS: Record<string, ReactNode> = {
       <path d="M2.5 16.75h15M8 16.75v-5.5h4v5.5" />
     </>
   ),
+  watering: (
+    <path d="M10 2.5C8.2 5.2 4.5 9.2 4.5 12.2a5.5 5.5 0 0 0 11 0c0-3-3.7-7-5.5-9.7ZM7.3 12.4a2.8 2.8 0 0 0 2.8 2.8" />
+  ),
   upkeep: (
     <>
       <path d="M15.6 7.2A6 6 0 1 0 16.2 12" />

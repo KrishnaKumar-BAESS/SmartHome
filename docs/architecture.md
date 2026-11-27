@@ -162,4 +162,4 @@ database, and server framework are not prerequisites for the current static app.
 
 ## Watering controllers
 
-The Upkeep panel connects to one controller using browser USB serial or MQTT over WebSocket. The firmware owns actuation, schedule execution and operational settings. [Decision 0008](decisions/0008-watering-controller.md) records the access and persistence boundaries.
+The Watering view connects to one controller using browser USB serial or MQTT over WebSocket. The firmware owns actuation, schedule execution and operational settings. [Decision 0008](decisions/0008-watering-controller.md) records the access and persistence boundaries.

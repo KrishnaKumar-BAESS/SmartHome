@@ -5,7 +5,7 @@ import { BUILD, builtAt } from '../../build-info';
 const REPO = 'https://github.com/KrishnaKumar-BAESS/SmartHome';
 
 const SHORTCUTS = [
-  ['1 – 8', 'Switch view (Overview … Upkeep)'],
+  ['1 – 9', 'Switch view (Overview … Watering)'],
   ['/', 'Focus search'],
   ['⌘K or Ctrl+K', 'Focus search (always on)'],
   ['+ / −', 'Zoom in / out'],

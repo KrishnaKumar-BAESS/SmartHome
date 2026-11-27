@@ -99,6 +99,7 @@ const MODE_DEF = [
   ['security', 'Security'],
   ['climate', 'Climate'],
   ['upkeep', 'Upkeep'],
+  ['watering', 'Watering'],
 ];
 const MODE_ORDER = MODE_DEF.map(([key]) => key);
 
@@ -912,7 +913,8 @@ export class HouseController extends Component {
           toPhone ? { vw: w, vh: h, leftHidden: true } : { vw: w, vh: h },
         );
       });
-      this._resize.observe(element);
+      // The app fills the same viewport even when Watering hides the model.
+      this._resize.observe(element.parentElement);
     }
   };
 
@@ -1522,8 +1524,10 @@ export class HouseController extends Component {
     if (e.key === '/') {
       e.preventDefault();
       this.searchRef.current?.focus();
-    } else if (e.key >= '1' && e.key <= '8') {
+    } else if (e.key >= '1' && e.key <= String(MODE_ORDER.length)) {
       this.setState({ mode: MODE_ORDER[Number(e.key) - 1] });
+    } else if (S.mode === 'watering') {
+      return;
     } else if (e.key === '+' || e.key === '=') {
       this.zoomStep(1.15);
     } else if (e.key === '-' || e.key === '_') {
@@ -3274,7 +3278,8 @@ export class HouseController extends Component {
     const onFloorClick = (floor) => set({ isoFloor: floor, isoRooms: [] });
     const floorLabelMinX = narrow ? 22 : L.leftPx + 22;
 
-    const modelWanted = !!MODEL_URL && S.stageStyle === 'model';
+    const modelWanted =
+      S.mode !== 'watering' && !!MODEL_URL && S.stageStyle === 'model';
     const modelShown = modelWanted && S.modelStatus === 'ready';
     const sceneOpt = {
       layer: S.mode,

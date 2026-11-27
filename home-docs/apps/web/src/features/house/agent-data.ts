@@ -33,6 +33,7 @@ export const modes = [
   'security',
   'climate',
   'upkeep',
+  'watering',
 ] as const;
 export type Mode = (typeof modes)[number];
 export const recordModes: Record<RecordKind, Mode> = {
