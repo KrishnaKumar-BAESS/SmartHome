@@ -51,12 +51,12 @@ test('operate a simulated single-pump controller and edit its stored settings', 
       }
       if (cmd === 'sched')
         return 'ok schedule=' + (enabled ? 'on' : 'off') + ' grace=30min' + row;
-      if (cmd === 'sched set 1 07:30 3 mon') {
-        row = '\n1 07:30 3mL mon';
+      if (cmd === 'sched set 1 07:30 3 mon,tue,wed,thu,fri,sat') {
+        row = '\n1 07:30 3mL mon,tue,wed,thu,fri,sat';
         return 'ok schedule updated';
       }
-      if (cmd === 'sched set 1 07:30 4 mon') {
-        row = '\n1 07:30 4mL mon';
+      if (cmd === 'sched set 1 07:30 4 mon,tue,wed,thu,fri,sat') {
+        row = '\n1 07:30 4mL mon,tue,wed,thu,fri,sat';
         return 'ok schedule updated';
       }
       if (cmd === 'sched clear 1') {
@@ -73,6 +73,8 @@ test('operate a simulated single-pump controller and edit its stored settings', 
       }
       if (cmd === 'config limit.max_run_s')
         return 'ok limit.max_run_s=' + limit + '  # longest single dose';
+      const read = /^config limit\.(rest_s|daily_ml|daily_run_s)$/.exec(cmd);
+      if (read) return 'ok limit.' + read[1] + '=60';
       return 'error rejected: unexpected command ' + cmd;
     }
     Object.defineProperty(navigator, 'serial', {
@@ -117,9 +119,10 @@ test('operate a simulated single-pump controller and edit its stored settings', 
   await button('Select USB device').click();
   await workspace.getByLabel('Prime duration (s)').fill('5');
   await button('Prime pump').click();
-  await expect(workspace.locator('.water-state strong')).toHaveText('running');
+  const pump = workspace.getByRole('region', { name: 'Pump output' });
+  await expect(pump.locator('.wv-pump-state')).toHaveText('running');
   await button('Stop pump').click();
-  await expect(workspace.locator('.water-state strong')).toHaveText('idle');
+  await expect(pump.locator('.wv-pump-state')).toHaveText('idle');
   await button('Calibration').click();
   await workspace.getByLabel('Trial duration (s)').fill('3');
   await button('Start trial').click();
@@ -129,30 +132,35 @@ test('operate a simulated single-pump controller and edit its stored settings', 
   await button('Schedule').click();
   await workspace.getByLabel('Local time').fill('07:30');
   await workspace.getByLabel('Dose (mL)', { exact: true }).fill('3');
-  await workspace.getByLabel('mon', { exact: true }).check();
+  await workspace.getByLabel('Sunday', { exact: true }).uncheck();
   await button('Save slot 1').click();
   await expect(workspace.getByText(/1 of 8 slots/)).toBeVisible();
-  await workspace.getByLabel('Enter dose as').selectOption('seconds');
+  const firstSlot = workspace.locator('.wv-slot').first();
+  await expect(firstSlot).toContainText('3 mL · Mon, Tue, Wed, Thu, Fri, Sat');
+  await button('Pump time').click();
   await workspace.getByLabel('Pump duration (s)', { exact: true }).fill('2');
   await button('Save slot 1').click();
-  await expect(
-    workspace.getByLabel('Schedule slot').locator('option:checked'),
-  ).toContainText('4 mL');
-  await button('Enable schedule').click();
-  await button('Pause schedule').click();
+  await expect(firstSlot).toContainText('4 mL');
+  const automatic = button('Automatic watering');
+  await automatic.click();
+  await expect(automatic).toHaveAttribute('aria-pressed', 'true');
+  await automatic.click();
+  await expect(automatic).toHaveAttribute('aria-pressed', 'false');
   await button('Delete slot 1').click();
   await expect(workspace.getByText(/0 of 8 slots/)).toBeVisible();
-  await button('Administration').click();
+  await button('Device').click();
   await workspace.getByLabel('Display name').fill('Fern pump');
   await workspace.getByLabel('Pump zone').fill('Window');
   await button('Save browser labels').click();
-  await expect(workspace.getByText('Fern pump · Window')).toBeVisible();
   await expect(
-    workspace.getByLabel('Maximum run (s)', { exact: true }),
-  ).toHaveValue('30');
-  await workspace.getByLabel('Maximum run (s)', { exact: true }).fill('25');
-  await button('Save limit over USB').click();
-  await expect(workspace.getByText('Current setting 25')).toBeVisible();
+    workspace.getByRole('heading', { name: 'Fern pump' }),
+  ).toBeVisible();
+  await expect(workspace.getByText(/^Window · bench/)).toBeVisible();
+  const maxRun = workspace.getByLabel('Maximum run (s)', { exact: true });
+  await expect(maxRun).toHaveValue('30');
+  await maxRun.fill('25');
+  await button('Save maximum run (s)').click();
+  await expect(maxRun).toHaveValue('25');
   await button('Disconnect').click();
   await expect(button('Prime pump')).toHaveCount(0);
   await nav.getByRole('button', { name: 'Upkeep', exact: true }).click();
@@ -225,8 +233,9 @@ test('MQTT correlates replies and allows a stop while priming awaits acknowledge
         send('reply', waiting + ' ok started 5 s');
         return;
       }
-      if (command === 'config limit.max_run_s') {
-        send('reply', tag + ' ok limit.max_run_s=30  # longest single dose');
+      const limit = /^config limit\.(\w+)$/.exec(command);
+      if (limit) {
+        send('reply', tag + ' ok limit.' + limit[1] + '=30  # limit');
         return;
       }
       send(
@@ -253,7 +262,9 @@ test('MQTT correlates replies and allows a stop while priming awaits acknowledge
   });
   await page.goto('/#m=watering');
   const workspace = page.getByRole('region', { name: 'Watering system' });
-  await workspace.getByRole('button', { name: 'MQTT', exact: true }).click();
+  await workspace
+    .getByRole('button', { name: 'MQTT broker', exact: true })
+    .click();
   await workspace
     .getByLabel('Broker WebSocket URL')
     .fill('ws://127.0.0.1:4173/watering-test');
@@ -267,11 +278,12 @@ test('MQTT correlates replies and allows a stop while priming awaits acknowledge
   await workspace.getByRole('button', { name: 'Stop pump' }).click();
   await expect.poll(() => commands.includes('stop')).toBe(true);
   expect(commands.filter((c) => c.startsWith('run'))).toEqual(['run 5']);
-  await workspace
-    .getByRole('button', { name: 'Administration', exact: true })
-    .click();
-  await expect(workspace.getByText('Current setting 30')).toBeVisible();
+  await workspace.getByRole('button', { name: 'Device', exact: true }).click();
   await expect(
-    workspace.getByRole('button', { name: 'Save limit over USB' }),
+    workspace.getByLabel('Maximum run (s)', { exact: true }),
+  ).toHaveText('30 s');
+  await expect(workspace.getByText('Read-only')).toBeVisible();
+  await expect(
+    workspace.getByRole('button', { name: /^Save maximum run/ }),
   ).toHaveCount(0);
 });

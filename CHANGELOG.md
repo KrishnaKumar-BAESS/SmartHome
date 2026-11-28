@@ -11,7 +11,7 @@ states and are not descriptions of the current application layout.
 
 ### Added
 
-- Manage single-pump watering controllers from a dedicated Watering destination in the main navigation over USB or MQTT, including bounded priming, calibration, recurring schedules, and USB runtime limits. The on-demand controls and MQTT client have a separate 112 KiB gzip budget.
+- Manage single-pump watering controllers from a dedicated Watering destination in the main navigation over USB or MQTT, including bounded priming, calibration, recurring schedules, and USB runtime limits. The on-demand workspace and MQTT client have separate gzip budgets of 124 KiB for JavaScript and 8 KiB for the workspace stylesheet, which no longer counts toward the app shell's CSS budget.
 
 - Trace the basement's rooms on the Blender model stage from its modeled walls instead of the atlas outlines: the export tags walls and door assemblies, rooms are flood-filled between wall footprints, and each interior wall and its door is drawn once for both rooms it separates in the exploded view.
 - Spread and isolate the basement's rooms on the Blender model stage: its geometry is divided among the atlas room outlines when the model loads (long walls and slabs cut at room edges, small objects kept whole), so **Exploded** separates basement rooms and room isolation hides the others. Other floors stay whole until listed in `MODEL_LAYOUT.roomFloors`.
@@ -59,6 +59,7 @@ states and are not descriptions of the current application layout.
 
 ### Changed
 
+- Rebuild the Watering workspace in the atlas design system. A connection screen explains USB and MQTT, detects missing Web Serial, and remembers broker details but never the password. Once connected, a status rail shows a live pump countdown ring, an always-available **Stop pump** (pinned on phones), daily budget meters and controller health. The Operate, Schedule, Calibration and Device tabs add volume and time dose cards with suggested values, session activity from commands and controller events, a week-at-a-glance schedule with the next dose, a stepped calibration guide, and per-limit editing over USB. Fault banners cover inhibited pumps, storage faults and an untrusted clock. The controller protocol and its safety checks are unchanged.
 - Update the CI actions, React, and development tooling dependencies.
 
 - 0.74.0: the Climate list's "sensors are planned" alert lines up with the rows below it; it was inset 4 px more on each side. A design QA test checks list alerts against row edges in Climate and Network.

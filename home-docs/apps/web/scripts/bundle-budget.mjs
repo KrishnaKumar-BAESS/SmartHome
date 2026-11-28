@@ -10,25 +10,31 @@ const BUDGET = {
   // Three.js and the model renderer load only when the Blender model is
   // shown; they are budgeted apart so the app shell stays held to its own.
   modelJs: 150 * 1024,
-  wateringJs: 112 * 1024, // on-demand controls and MQTT browser client
+  // On-demand watering workspace and its MQTT browser client. The
+  // workspace's stylesheet loads with it, so it is budgeted apart from the
+  // app shell's CSS as well.
+  wateringJs: 124 * 1024,
+  wateringCss: 8 * 1024,
   // Styling moved from inline JS strings into the stylesheet's design
   // system (JS fell ~5 kB gzip while CSS grew ~6 kB).
-  css: 14 * 1024, // total gzip CSS
+  css: 14 * 1024, // total gzip CSS, without the lazy watering stylesheet
   fontFiles: 6, // one woff2 per shipped face; woff fallbacks are also emitted
 };
 
 const files = readdirSync(dist);
 const gz = (name) => gzipSync(readFileSync(new URL(name, dist))).length;
-const sum = (ext) =>
-  files.filter((f) => f.endsWith(ext)).reduce((a, f) => a + gz(f), 0);
 const isModel = (f) => f.startsWith('stage-model-') && f.endsWith('.js');
 const isWatering = (f) => /^(watering-view|mqtt\.esm)-.*\.js$/.test(f);
+const isWateringCss = (f) => /^watering-view-.*\.css$/.test(f);
 const wateringJs = files.filter(isWatering).reduce((a, f) => a + gz(f), 0);
 const js = files
   .filter((f) => f.endsWith('.js') && !isModel(f) && !isWatering(f))
   .reduce((a, f) => a + gz(f), 0);
 const modelJs = files.filter(isModel).reduce((a, f) => a + gz(f), 0);
-const css = sum('.css');
+const css = files
+  .filter((f) => f.endsWith('.css') && !isWateringCss(f))
+  .reduce((a, f) => a + gz(f), 0);
+const wateringCss = files.filter(isWateringCss).reduce((a, f) => a + gz(f), 0);
 const woff2 = files.filter((f) => f.endsWith('.woff2')).length;
 const raw = files.reduce(
   (a, f) =>
@@ -42,6 +48,7 @@ const rows = [
   ['Pump JS (gzip)', wateringJs, BUDGET.wateringJs],
   ['3D JS (gzip)', modelJs, BUDGET.modelJs],
   ['CSS (gzip)', css, BUDGET.css],
+  ['Pump CSS (gzip)', wateringCss, BUDGET.wateringCss],
   ['woff2 faces', woff2, BUDGET.fontFiles],
 ];
 let failed = false;
