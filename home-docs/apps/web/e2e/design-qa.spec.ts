@@ -1059,7 +1059,13 @@ test('two-line list rows share one height across modes', async ({
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const height = async (hash: string, sel: string) => {
     await page.goto('/' + hash);
-    if (isMobile)
+    await expect(page.locator('main.app')).toHaveAttribute(
+      'data-mode',
+      hash.replace('#m=', ''),
+    );
+    // A hash-only navigation can preserve the open list from the previous mode.
+    const panel = page.locator('#panel-left');
+    if (isMobile && (await panel.getAttribute('inert')) !== null)
       await page.getByRole('button', { name: 'List', exact: true }).click();
     const row = page.locator(sel).first();
     await expect(row).toBeVisible();
