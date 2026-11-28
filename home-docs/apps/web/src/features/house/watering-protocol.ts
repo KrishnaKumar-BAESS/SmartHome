@@ -94,6 +94,25 @@ function bool(v: unknown) {
   if (typeof v !== 'boolean') throw new Error('Invalid device status.');
   return v;
 }
+/** Reads a field newer firmware reports; absent or malformed reads as null. */
+function optional<T extends 'number' | 'string'>(
+  v: unknown,
+  type: T,
+): (T extends 'number' ? number : string) | null {
+  if (typeof v !== type) return null;
+  if (type === 'number' && !Number.isFinite(v)) return null;
+  return v as T extends 'number' ? number : string;
+}
+function optionalDose(d: Record<string, unknown>) {
+  const ms = optional(d.actual_ms, 'number');
+  if (ms === null) return null;
+  return {
+    source: optional(d.source, 'string') ?? '',
+    end: optional(d.end, 'string') ?? '',
+    seconds: ms / 1000,
+    ml: optional(d.estimated_ml, 'number'),
+  };
+}
 export function parseStatus(reply: string) {
   const s = record(JSON.parse(reply.replace(/^ok /, '')));
   const p = record(s.pump),
@@ -109,8 +128,18 @@ export function parseStatus(reply: string) {
     !['idle', 'running', 'resting', 'inhibited'].includes(state)
   )
     throw new Error('Unrecognized controller.');
+  const last = s.last_dose;
+  const lastDose =
+    last && typeof last === 'object' && !Array.isArray(last)
+      ? optionalDose(last as Record<string, unknown>)
+      : null;
   return {
     id,
+    lastDose,
+    clockUtc: optional(clock.utc, 'number'),
+    clockSource: optional(clock.source, 'string') ?? '',
+    ip: optional(net.ip, 'string') ?? '',
+    rssi: optional(net.rssi_dbm, 'number'),
     fw: str(s.fw),
     build: str(s.build),
     uptime: num(s.uptime_s),
