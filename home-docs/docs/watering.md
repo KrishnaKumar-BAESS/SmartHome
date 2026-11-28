@@ -13,7 +13,7 @@ The header names the controller and shows whether status reports are arriving. T
 
 - **Pump output.** The commanded state, with a countdown ring for a running dose or a rest interval. The countdown starts from each report's remaining time and dims when reports lag. **Stop pump** is always available. On phones it is pinned to the bottom of the screen.
 - **Today.** Estimated volume and pump time against the controller's daily budgets, which reset at controller-local midnight.
-- **Health.** Calibration, clock trust, settings storage, event log and device network.
+- **Health.** Pump interlock, calibration, clock trust, settings storage, event log and device network.
 
 Conditions that limit operation appear above every tab: an inhibited pump, storage faults and an untrusted clock. Confirmations fade after a few seconds. Errors stay until dismissed.
 
