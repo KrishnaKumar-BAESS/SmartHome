@@ -229,14 +229,22 @@
   padding: 0 16px;
   border: 0;
   border-radius: var(--r-lg);
-  color: color-mix(in oklab, var(--bad) var(--mix-text), var(--t1));
-  background: color-mix(in oklab, var(--bad) 11%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--bad) 38%, transparent);
+  /* Always available, but calm until there is output to stop. */
+  color: var(--t1);
+  background: var(--fill);
+  box-shadow: inset 0 0 0 1px var(--line);
   font: 650 14px var(--font);
   letter-spacing: -0.01em;
   cursor: pointer;
+  transition:
+    background var(--dur-2) var(--ease-out),
+    color var(--dur-2) var(--ease-out),
+    box-shadow var(--dur-2) var(--ease-out);
 }
 .wv-stop svg {
+  fill: color-mix(in oklab, var(--bad) var(--mix-text), var(--t1));
+}
+.wv-stop[data-armed] svg {
   fill: currentColor;
 }
 .wv-stop[data-armed] {
@@ -256,7 +264,9 @@
 }
 @media (hover: hover) {
   .wv-stop:hover {
-    background: color-mix(in oklab, var(--bad) 18%, transparent);
+    color: color-mix(in oklab, var(--bad) var(--mix-text), var(--t1));
+    background: color-mix(in oklab, var(--bad) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--bad) 38%, transparent);
   }
   .wv-stop[data-armed]:hover {
     background: linear-gradient(180deg, #f5786c, #e04d40);
@@ -361,6 +371,11 @@
   padding: 0 16px;
   font: 600 26px var(--font);
   letter-spacing: -0.03em;
+}
+.wv-field--lg .wv-input input::placeholder {
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 .wv-field--lg .wv-unit {
   font-size: 14px;
@@ -2072,9 +2087,13 @@
 }
 /* Phones: one column ordered by urgency, with a compact pump summary. */
 @media (max-width: 720px) {
+  .wv-sched-bar > .wv-switch-row {
+    flex: 1 1 100%;
+  }
   .wv-body {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
   }
   .wv-rail {
     display: contents;

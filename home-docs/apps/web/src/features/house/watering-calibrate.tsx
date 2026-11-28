@@ -88,13 +88,16 @@ export function CalibrateTab({
     <div className="wv-stack">
       <section
         className="wv-card wv-flow-hero"
+        aria-labelledby="wv-flow-label"
         data-calibrated={status.flow !== null || undefined}
       >
         <div className="wv-flow-icon">
           <Glyph name="beaker" size={22} />
         </div>
         <div>
-          <span className="section-label">Stored flow</span>
+          <span className="section-label" id="wv-flow-label">
+            Stored flow
+          </span>
           <p className="wv-flow-value">
             {status.flow === null ? (
               'Uncalibrated'
@@ -108,7 +111,7 @@ export function CalibrateTab({
           <p className="wv-lead">
             {status.flow === null
               ? 'Calibrate once so the controller can turn volumes into pump time.'
-              : `Stored flow ${formatNumber(status.flow)} mL/s · saved in the controller’s flash.`}
+              : 'Saved in the controller’s flash. Recalibrate after changing the pump, tubing or outlet height.'}
           </p>
         </div>
       </section>
@@ -135,6 +138,7 @@ export function CalibrateTab({
             >
               <NumberField
                 label="Trial duration (s)"
+                placeholder="Seconds"
                 unit="s"
                 min={3}
                 max={120}
@@ -178,6 +182,7 @@ export function CalibrateTab({
             >
               <NumberField
                 label="Collected water (mL)"
+                placeholder="Measured volume"
                 unit="mL"
                 min={0.001}
                 max={4294967.295}

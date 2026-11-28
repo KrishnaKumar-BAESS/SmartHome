@@ -162,6 +162,7 @@ export function NumberField({
   disabled,
   hint,
   large,
+  placeholder = '',
 }: {
   label: string;
   name?: string;
@@ -174,6 +175,7 @@ export function NumberField({
   disabled?: boolean;
   hint?: ReactNode;
   large?: boolean;
+  placeholder?: string;
 }) {
   const id = useId();
   return (
@@ -191,7 +193,7 @@ export function NumberField({
           step=".001"
           value={value}
           disabled={disabled}
-          placeholder="0"
+          placeholder={placeholder}
           onChange={(e) => onValue(e.target.value)}
         />
         <span className="wv-unit" aria-hidden="true">

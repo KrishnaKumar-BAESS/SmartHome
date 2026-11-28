@@ -67,6 +67,7 @@ function DoseCard({
         large
         label={water ? 'Dose volume (mL)' : 'Prime duration (s)'}
         unit={water ? 'mL' : 's'}
+        placeholder={water ? 'Enter a volume' : 'Enter seconds'}
         min={0.001}
         max={water ? 2000 : 120}
         value={value}

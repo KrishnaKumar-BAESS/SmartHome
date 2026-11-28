@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Segmented } from './segmented';
 import { useWateringController, type Controller } from './watering-controller';
 import { ConnectScreen } from './watering-connect';
@@ -331,8 +331,16 @@ function Workspace({ c }: { c: Controller }) {
 
 export default function WateringView() {
   const c = useWateringController();
+  const root = useRef<HTMLElement>(null);
+  const live = !!c.session;
+  // Connecting or disconnecting swaps the whole layout. Start the new one at
+  // its top instead of where the operator scrolled to reach the button.
+  useEffect(() => {
+    for (let el = root.current?.parentElement; el; el = el.parentElement)
+      if (el.scrollTop > 0) el.scrollTop = 0;
+  }, [live]);
   return (
-    <section className="wv" aria-label="Watering system">
+    <section ref={root} className="wv" aria-label="Watering system">
       {c.session ? <Workspace key="live" c={c} /> : <ConnectScreen c={c} />}
     </section>
   );

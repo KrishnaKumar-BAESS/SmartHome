@@ -128,7 +128,9 @@ test('operate a simulated single-pump controller and edit its stored settings', 
   await button('Start trial').click();
   await workspace.getByLabel('Collected water (mL)').fill('6');
   await button('Save measured flow').click();
-  await expect(workspace.getByText('Stored flow 2 mL/s')).toBeVisible();
+  await expect(
+    workspace.getByRole('region', { name: 'Stored flow' }),
+  ).toContainText('2 mL/s');
   await button('Schedule').click();
   await workspace.getByLabel('Local time').fill('07:30');
   await workspace.getByLabel('Dose (mL)', { exact: true }).fill('3');
