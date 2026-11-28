@@ -137,6 +137,37 @@ export function sentence(text: string): string {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
+const LIMIT_NAMES: Record<string, string> = {
+  max_run_s: 'Maximum run',
+  rest_s: 'Minimum rest',
+  daily_ml: 'Daily volume',
+  daily_run_s: 'Daily runtime',
+};
+
+/**
+ * Turns a controller's `ok` reply (without the `ok `) into a confirmation in
+ * the operator's words. Unknown replies keep their text.
+ */
+export function describeReply(text: string): string {
+  let m = text.match(/^started ([\d.]+) s for ([\d.]+) mL/);
+  if (m)
+    return `Watering ${formatNumber(Number(m[2]))} mL · ${formatDuration(Number(m[1]))}`;
+  if ((m = text.match(/^started ([\d.]+) s/)))
+    return `Pump running for ${formatDuration(Number(m[1]))}`;
+  if (/^already stopped/.test(text)) return 'The pump was already stopped';
+  if (/^stopped/.test(text)) return 'Pump stopped';
+  if ((m = text.match(/^flow=([\d.]+) mL\/s/)))
+    return `Flow ${formatNumber(Number(m[1]))} mL/s saved`;
+  if (/^schedule updated/.test(text)) return 'Schedule saved';
+  if ((m = text.match(/^tz\.offset=(-?\d+)/)))
+    return `Clock offset ${formatOffset(Number(m[1]))} saved`;
+  if ((m = text.match(/^limit\.(\w+)=([\d.]+)/)) && LIMIT_NAMES[m[1]]) {
+    const unit = m[1].endsWith('_ml') ? 'mL' : 's';
+    return `${LIMIT_NAMES[m[1]]} set to ${formatNumber(Number(m[2]))} ${unit}`;
+  }
+  return sentence(text);
+}
+
 const EVENT_TITLES: Record<string, string> = {
   boot: 'Controller started',
   inhibited: 'Pump inhibited',

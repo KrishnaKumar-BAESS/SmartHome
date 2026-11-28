@@ -8,7 +8,7 @@ import { parseStatus, type Status } from './watering-protocol';
 import {
   describeEvent,
   formatNumber,
-  sentence,
+  describeReply,
   type EventTone,
 } from './watering-format';
 
@@ -240,12 +240,13 @@ export function useWateringController() {
       if (live.current !== target) return false;
       if (!reply.startsWith('ok '))
         throw new Error('Unexpected device reply. Check pump state.');
-      if (action === latestAction.current) setNotice(reply.slice(3));
+      if (action === latestAction.current)
+        setNotice(describeReply(reply.slice(3)));
       if (!SILENT.has(command))
         log({
           origin: 'browser',
           title: commandTitle(command),
-          detail: sentence(reply.slice(3)),
+          detail: describeReply(reply.slice(3)),
           tone: stopping ? 'warn' : 'ok',
         });
       setRevision((x) => x + 1);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   describeEvent,
+  describeReply,
   formatDuration,
   formatOffset,
   localClock,
@@ -69,6 +70,25 @@ describe('watering display helpers', () => {
     expect(describeEvent({ event: 'storage_error', record: 'log' }).tone).toBe(
       'bad',
     );
+  });
+  it('confirms controller replies in plain words', () => {
+    expect(describeReply('started 20 s for 25 mL')).toBe(
+      'Watering 25 mL · 20 s',
+    );
+    expect(describeReply('started 2.5 s')).toBe('Pump running for 2.5 s');
+    expect(describeReply('stopped (!)')).toBe('Pump stopped');
+    expect(describeReply('already stopped')).toBe(
+      'The pump was already stopped',
+    );
+    expect(describeReply('flow=1.25 mL/s')).toBe('Flow 1.25 mL/s saved');
+    expect(describeReply('schedule updated')).toBe('Schedule saved');
+    expect(describeReply('tz.offset=-300')).toBe(
+      'Clock offset UTC−05:00 saved',
+    );
+    expect(describeReply('limit.daily_ml=900  # limit')).toBe(
+      'Daily volume set to 900 mL',
+    );
+    expect(describeReply('labels_saved')).toBe('Labels saved');
   });
   it('reads optional status fields newer firmware reports', () => {
     const base = {
