@@ -210,7 +210,8 @@ export function DeviceTab({
     ['MQTT', status.mqtt ? 'Connected' : 'Disconnected'],
   ];
   if (status.ip) facts.push(['IP address', status.ip]);
-  if (status.rssi !== null) facts.push(['Signal', `${status.rssi} dBm`]);
+  if (status.rssi !== null)
+    facts.push(['Signal', `${String(status.rssi).replace('-', '−')} dBm`]);
   return (
     <div className="wv-device">
       <div className="wv-col">

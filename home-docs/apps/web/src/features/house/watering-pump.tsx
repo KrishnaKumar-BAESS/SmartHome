@@ -220,11 +220,21 @@ export function HealthCard({
     status.transport ? transportLabel(status.transport) : '',
     status.link ? 'link up' : 'link down',
     status.mqtt ? 'MQTT on' : 'MQTT off',
-    status.rssi !== null ? `${status.rssi} dBm` : '',
+    status.rssi !== null ? `${String(status.rssi).replace('-', '−')} dBm` : '',
   ]
     .filter(Boolean)
     .join(' · ');
+  const inhibited = status.state === 'inhibited';
   const rows: Row[] = [
+    {
+      label: 'Pump interlock',
+      value: inhibited
+        ? status.reason
+          ? sentence(status.reason)
+          : 'Holding doses'
+        : 'Released',
+      tone: inhibited ? 'bad' : 'ok',
+    },
     {
       label: 'Flow calibration',
       value:

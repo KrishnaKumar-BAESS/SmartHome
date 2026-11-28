@@ -126,6 +126,7 @@ function Dock({
       <button
         type="button"
         className="wv-stop ia"
+        data-armed={status.state === 'running' || undefined}
         onClick={() => void c.send('stop')}
       >
         <Glyph name="stop" size={13} />

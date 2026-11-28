@@ -42,6 +42,7 @@ function Week({
   nowMinute,
   selected,
   upcoming,
+  paused,
   onSelect,
 }: {
   entries: Entry[];
@@ -49,6 +50,8 @@ function Week({
   nowMinute: number | null;
   selected: number;
   upcoming: { slot: number; day: number } | null;
+  /** The stored slots will not run, so they are drawn as outlines. */
+  paused: boolean;
   onSelect: (slot: number) => void;
 }) {
   const minute = (t: string) => {
@@ -56,7 +59,12 @@ function Week({
     return h * 60 + m;
   };
   return (
-    <div className="wv-week" role="group" aria-label="Week at a glance">
+    <div
+      className="wv-week"
+      role="group"
+      aria-label="Week at a glance"
+      data-paused={paused || undefined}
+    >
       <div className="wv-week-scale" aria-hidden="true">
         <span />
         {['00', '06', '12', '18', '24'].map((h) => (
@@ -427,6 +435,7 @@ export function ScheduleTab({
                   ? { slot: upcoming.entry.slot, day: upcoming.day }
                   : null
               }
+              paused={!listing.enabled || status.scheduleState !== 'active'}
               onSelect={setSlot}
             />
           </>

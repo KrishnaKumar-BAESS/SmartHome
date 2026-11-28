@@ -20,6 +20,10 @@
   --warn: #ec9a35;
   --bad: #ef5b4b;
   --water: #3ab0e6;
+  /* The accent deep enough for white text to meet WCAG AA. */
+  --wv-solid: color-mix(in oklab, var(--accent) 80%, #000);
+  --wv-solid-top: color-mix(in oklab, var(--accent) 88%, #000);
+  --wv-solid-bottom: color-mix(in oklab, var(--accent) 74%, #000);
   --card-pad: 18px;
   max-width: 1320px;
   margin: 0 auto;
@@ -113,7 +117,7 @@
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  color: var(--t5);
+  color: var(--t4);
   font-size: 12px;
   line-height: 1.5;
   margin-top: 16px !important;
@@ -170,8 +174,8 @@
   color: #fff;
   background: linear-gradient(
     180deg,
-    color-mix(in oklab, var(--accent) 92%, #fff),
-    color-mix(in oklab, var(--accent) 86%, #000)
+    var(--wv-solid-top),
+    var(--wv-solid-bottom)
   );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
@@ -249,7 +253,7 @@
 }
 .wv-stop[data-armed] {
   color: #fff;
-  background: linear-gradient(180deg, #f2675a, #d9463a);
+  background: linear-gradient(180deg, #d24a3e, #b5372c);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
     0 10px 28px -10px rgba(239, 91, 75, 0.9);
@@ -269,7 +273,7 @@
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--bad) 38%, transparent);
   }
   .wv-stop[data-armed]:hover {
-    background: linear-gradient(180deg, #f5786c, #e04d40);
+    background: linear-gradient(180deg, #db5547, #c03e32);
   }
 }
 .wv-refresh {
@@ -1195,9 +1199,12 @@
 }
 .wv-health-label {
   color: var(--t3);
+  white-space: nowrap;
 }
 .wv-health-value {
   margin-left: auto;
+  padding: 6px 0;
+  text-wrap: balance;
   color: var(--t1);
   font-weight: 500;
   text-align: right;
@@ -1462,14 +1469,25 @@
   color: #fff;
   background: linear-gradient(
     180deg,
-    color-mix(in oklab, var(--accent) 85%, #fff),
-    var(--accent)
+    var(--wv-solid-top),
+    var(--wv-solid-bottom)
   );
   box-shadow: 0 2px 6px -2px color-mix(in oklab, var(--accent) 80%, transparent);
   font: 600 10.5px var(--mono);
   cursor: pointer;
   transition: transform var(--dur-2) var(--ease-spring);
   animation: pop var(--dur-3) var(--ease-out) both;
+}
+.wv-week[data-paused] .wv-week-dot {
+  color: var(--acc-text);
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1.5px var(--acc-border);
+}
+.wv-week[data-paused] .wv-week-dot[data-on] {
+  box-shadow:
+    inset 0 0 0 1.5px var(--acc-border),
+    0 0 0 2px var(--raised),
+    0 0 0 4px var(--accent);
 }
 .wv-week-dot[data-past] {
   opacity: 0.45;
@@ -1597,7 +1615,7 @@
   height: 34px;
   border-radius: 11px;
   color: #fff;
-  background: var(--accent);
+  background: var(--wv-solid);
   font: 650 14px var(--mono);
   box-shadow: 0 6px 16px -8px var(--accent);
 }
@@ -1658,7 +1676,7 @@
 }
 .wv-day input:checked + span {
   color: #fff;
-  background: var(--accent);
+  background: var(--wv-solid);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     0 4px 12px -6px var(--accent);
@@ -1783,7 +1801,7 @@
 }
 .wv-step[data-state='done'] .wv-step-mark {
   color: #fff;
-  background: var(--accent);
+  background: var(--wv-solid);
   box-shadow: none;
 }
 .wv-step-body {
@@ -1796,8 +1814,8 @@
   font: 600 14px var(--font);
   letter-spacing: -0.012em;
 }
-.wv-step[data-state='next'] .wv-step-body {
-  opacity: 0.6;
+.wv-step[data-state='next'] .wv-step-body h4 {
+  color: var(--t3);
 }
 .wv-step-body > p {
   color: var(--t4);
@@ -2145,6 +2163,35 @@
 }
 .app[data-narrow='true'] .wv-pump .wv-stop {
   display: none;
+}
+
+/* Touch: every control reaches the atlas 40 px minimum, primary ones 44 px. */
+@media (pointer: coarse) {
+  .wv .seg-btn {
+    min-height: var(--hit-sm);
+  }
+  .wv-tabs .seg-btn {
+    min-height: var(--hit);
+  }
+  .wv-input,
+  .wv-input input,
+  .wv-day span {
+    min-height: var(--hit);
+    height: auto;
+  }
+  .wv-input input {
+    align-self: stretch;
+  }
+  .wv-input--sm,
+  .wv-input--sm input {
+    min-height: var(--hit-sm);
+  }
+  /* The week dots stay small but answer a finger-sized area. */
+  .wv-week-dot::before {
+    content: '';
+    position: absolute;
+    inset: -14px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
